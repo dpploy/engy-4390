@@ -8,4 +8,6 @@
    + [Prof. Valmor F. de Almeida](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) (valmor_dealmeida@uml.edu)
 
 
-The goal of this course is to present to students of (nuclear) chemical engineering an interconnected set of computational methods needed in the core undergraduate chemical engineering curriculum. In particular, methods that assist the students in solving problems in the core areas of chemical reaction equilibria, separations, unit operations, and chemical reactor engineering with applications in nuclear and biochemical engineering.
+The goal of this course is to offer students an opportunity to exercise concepts learned in
+previous courses in the form of a project. Groups of two (or three) students will select a topic for design and 
+analysis of nuclear systems.
