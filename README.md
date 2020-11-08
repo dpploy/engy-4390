@@ -10,4 +10,4 @@
 
 The goal of this course is to offer students an opportunity to exercise concepts learned in
 previous courses in the form of a project. Groups of two (or three) students will select a topic for design and 
-analysis of nuclear systems.
+analysis of nuclear systems. Past projects are kept here as an example for possibilities of future projects.
