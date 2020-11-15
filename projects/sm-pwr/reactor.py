@@ -26,8 +26,6 @@ class SMPWR(Module):
 
     """
 
-    hour = unit.hour
-
     def __init__(self):
         """Constructor.
 
