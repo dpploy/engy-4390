@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
+"""Cortix module"""
 
 import logging
 
@@ -9,9 +10,6 @@ import math
 from scipy.integrate import odeint
 import scipy.constants as unit
 import numpy as np
-
-import iapws.iapws97 as steam
-import iapws.iapws95 as steam2
 
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
@@ -44,16 +42,16 @@ class SMPWR(Module):
                                     'signal-out', 'signal-in']
 
         # Units
-        unit.kg     = unit.kilo*unit.gram
-        unit.meter  = 1.0
-        unit.cm     = unit.centi*unit.meter
+        unit.kg = unit.kilo*unit.gram
+        unit.meter = 1.0
+        unit.cm = unit.centi*unit.meter
         unit.second = 1.0
         unit.pascal = 1.0
-        unit.joule  = 1.0
-        unit.kj     = unit.kilo*unit.joule
+        unit.joule = 1.0
+        unit.kj = unit.kilo*unit.joule
         unit.kelvin = 1.0
-        unit.watt   = 1.0
-        unit.barn   = 1.0e-28 * unit.meter**2
+        unit.watt = 1.0
+        unit.barn = 1.0e-28 * unit.meter**2
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -83,7 +81,7 @@ class SMPWR(Module):
         self.species_rel_yield = [0.033, 0.219, 0.196, 0.395, 0.115, 0.042]
 
         #Data pertaining to two-temperature heat balances
-        self.fis_energy = 180 * 1.602e-13 *unit.joule # J/fission 
+        self.fis_energy = 180 * 1.602e-13 *unit.joule # J/fission
         self.sigma_f_o = 586.2 * 100 * 1e-30 * unit.meter**2
         self.temp_o = 20 + 273.15 # K
         self.temp_c_ss_operation = 265 + 273.15# K desired ss operation temp of coolant
@@ -128,7 +126,7 @@ class SMPWR(Module):
 
         flowrate = Quantity(name='flowrate',
                             formal_name='q_c', unit='kg/s',
-                            value = self.coolant_mass_flowrate,
+                            value=self.coolant_mass_flowrate,
                             latex_name=r'$q_c$',
                             info='Reactor Outflow Coolant Flowrate')
 
@@ -241,7 +239,7 @@ class SMPWR(Module):
             coolant_outflow = dict()
             coolant_outflow['temperature'] = outflow_cool_temp
             coolant_outflow['pressure'] = outflow_cool_temp
-            coolant_outflow['flowrate'] = self.coolant_flowrate
+            coolant_outflow['flowrate'] = self.coolant_mass_flowrate
             self.send((msg_time, coolant_outflow), 'coolant-outflow')
 
         # Interactions in the coolant-inflow port
@@ -279,7 +277,8 @@ class SMPWR(Module):
 
         t_interval_sec = np.linspace(time, time+self.time_step, num=2)
 
-        max_n_steps_per_time_step = 1000 # max number of nonlinear algebraic solver iterations per time step
+        max_n_steps_per_time_step = 1000 # max number of nonlinear algebraic solver
+                                         # iterations per time step
 
         (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
                                          rtol=1e-4, atol=1e-8,
@@ -398,11 +397,11 @@ class SMPWR(Module):
         """
 
         if time <= 100*unit.milli*unit.second: # small time value
-            q = self.q_0
+            qval = self.q_0
         else:
-            q = 0.0
+            qval = 0.0
 
-        return q
+        return qval
 
     def __sigma_fis_func(self, temp):
         """Effective microscopic fission cross section.
@@ -423,21 +422,21 @@ class SMPWR(Module):
 
         fis_nuclide_num_dens = self.fis_nuclide_num_dens #  #/m3
 
-        Sigma_fis = sigma_f * fis_nuclide_num_dens # macroscopic cross section
+        macro_sigma_f = sigma_f * fis_nuclide_num_dens # macroscopic cross section
 
         v_o = self.thermal_neutron_velo # m/s
 
         neutron_flux = n_dens * self.n_dens_ss_operation * v_o
 
         #reaction rate density
-        rxn_rate_dens = Sigma_fis * neutron_flux
+        rxn_rate_dens = macro_sigma_f * neutron_flux
 
         # nuclear heating power density
         q3prime = - rxn_heat * rxn_rate_dens # exothermic reaction W/m3)
 
         return q3prime
 
-    def __heat_sink_rate(self, time, temp_f, temp_c):
+    def __heat_sink_rate(self, temp_f, temp_c):
         """Cooling rate."""
 
         ht_coeff = self.ht_coeff
@@ -457,7 +456,6 @@ class SMPWR(Module):
         temp_c = u_vec[-1] # get temperature of coolant
 
         # initialize f_vec to zero
-        species_decay = self.species_decay
         lambda_vec = np.array(self.species_decay, dtype=np.float64)
         n_species = len(lambda_vec)
 
@@ -497,7 +495,7 @@ class SMPWR(Module):
 
         pwr_dens = self.__nuclear_pwr_dens_func(time, (temp_f+temp_c)/2, n_dens)
 
-        heat_sink = self.__heat_sink_rate(time, temp_f, temp_c)
+        heat_sink = self.__heat_sink_rate(temp_f, temp_c)
 
         f_tmp[-2] = -1/rho_f/cp_f * (pwr_dens - heat_sink/vol_fuel)
 
