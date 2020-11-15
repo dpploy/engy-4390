@@ -1,6 +1,6 @@
 # Engy-4390 Nuclear Systems Design and Analysis 
 
-[![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](http://nbviewer.jupyter.org/github/dpploy/engy-4390/tree/main/notebooks)
+[![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](http://nbviewer.jupyter.org/github/dpploy/engy-4390/tree/main/projects)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/main)
 
    + [University of Massachusetts Lowell](https://www.uml.edu/), Fall 2020
