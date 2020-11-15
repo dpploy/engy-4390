@@ -1,0 +1,9 @@
+// Network::graphviz
+digraph "network-0" {
+	graph [overlap=scale ranksep=2.0 splines=true]
+	node [shape=hexagon style=filled]
+	node [shape=hexagon]
+	0 [label=SMPWR]
+	1 [label=Steamer]
+	0 -> 1
+}
