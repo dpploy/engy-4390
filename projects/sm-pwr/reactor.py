@@ -99,6 +99,7 @@ class SMPWR(Module):
         self.coolant_dens = 669.2294308156266*unit.kg/unit.meter**3
         self.cp_coolant = 1000*5.382268683703659 # J/(mol K) - > J/(kg K)
         self.coolant_volume = 2.8*unit.meter**3
+        self.coolant_pressure = 12.8 #MPa
 
         self.ht_coeff = 466459.62*unit.watt/unit.kelvin
 
@@ -253,7 +254,7 @@ class SMPWR(Module):
             outflow_cool_temp = self.coolant_outflow_phase.get_value('temp', msg_time)
             coolant_outflow = dict()
             coolant_outflow['temperature'] = outflow_cool_temp
-            coolant_outflow['pressure'] = outflow_cool_temp
+            coolant_outflow['pressure'] = self.coolant_pressure
             coolant_outflow['mass_flowrate'] = self.coolant_mass_flowrate
             self.send((msg_time, coolant_outflow), 'coolant-outflow')
 
