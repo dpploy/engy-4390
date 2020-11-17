@@ -63,6 +63,8 @@ class SMPWR(Module):
 
         # Domain attributes
 
+        # Configuration parameters
+
         # Data pertaining to one-group energy neutron balance
         self.gen_time = 1.0e-4*unit.second
         self.beta = 6.5e-3
@@ -107,15 +109,15 @@ class SMPWR(Module):
         self.q_0 = 1./self.gen_time # pulse neutron source
         rho_0_over_beta = 0.25 # $
 
-        n_0 = 0.0 # neutronless steady state before start up
+        self.n_0 = 0.0 # neutronless steady state before start up
         self.rho_0 = rho_0_over_beta * self.beta # neutron source
 
         lambda_vec = np.array(self.species_decay, dtype=np.float64)
         beta_vec = np.array(self.species_rel_yield, dtype=np.float64) * self.beta
-        c_vec_0 = beta_vec/lambda_vec/self.gen_time * n_0
+        c_vec_0 = beta_vec/lambda_vec/self.gen_time * self.n_0
 
-        temp_f_0 = self.temp_o
-        temp_c_0 = self.temp_o
+        self.temp_f_0 = self.temp_o
+        self.temp_c_0 = self.temp_o
 
         self.inflow_cool_temp = self.temp_o
 
@@ -132,7 +134,7 @@ class SMPWR(Module):
 
         temp = Quantity(name='temp',
                         formal_name='T_c', unit='K',
-                        value=temp_c_0,
+                        value=self.temp_c_0,
                         latex_name=r'$T_c$',
                         info='Reactor Outflow Coolant Temperature')
 
@@ -146,14 +148,15 @@ class SMPWR(Module):
         quantities.append(press)
 
         self.coolant_outflow_phase = Phase(time_stamp=self.initial_time,
-                                           time_unit='s', quantities=quantities)
+                                           time_unit='s',
+                                           quantities=quantities)
 
         # Neutron phase history
         quantities = list()
 
         neutron_dens = Quantity(name='neutron-dens',
                                 formal_name='n', unit='1/m^3',
-                                value=n_0,
+                                value=self.n_0,
                                 latex_name=r'$n$',
                                 info='Reactor Neutron Density')
 
@@ -175,7 +178,7 @@ class SMPWR(Module):
 
         fuel_temp = Quantity(name='fuel-temp',
                              formal_name='T_f', unit='K',
-                             value=temp_f_0,
+                             value=self.temp_f_0,
                              latex_name=r'$T_f$',
                              info='Nuclear Fuel Temperature')
 
@@ -183,7 +186,6 @@ class SMPWR(Module):
 
         self.reactor_phase = Phase(time_stamp=self.initial_time, time_unit='s',
                                    quantities=quantities)
-
 
     def run(self, *args):
 
@@ -232,12 +234,13 @@ class SMPWR(Module):
         if self.get_port('coolant-outflow').connected_port:
 
             msg_time = self.recv('coolant-outflow')
+            assert msg_time <= time
 
             outflow_cool_temp = self.coolant_outflow_phase.get_value('temp', msg_time)
             coolant_outflow = dict()
             coolant_outflow['temperature'] = outflow_cool_temp
             coolant_outflow['pressure'] = outflow_cool_temp
-            coolant_outflow['flowrate'] = self.coolant_mass_flowrate
+            coolant_outflow['mass_flowrate'] = self.coolant_mass_flowrate
             self.send((msg_time, coolant_outflow), 'coolant-outflow')
 
         # Interactions in the coolant-inflow port
@@ -248,10 +251,10 @@ class SMPWR(Module):
         if self.get_port('coolant-inflow').connected_port:
 
             self.send(time, 'coolant-inflow')
-            (check_time, inflow_cool_temp) = self.recv('coolant-inflow')
-
+            (check_time, inflow_coolant) = self.recv('coolant-inflow')
             assert abs(check_time-time) <= 1e-6
-            self.inflow_cool_temp = inflow_cool_temp
+
+            self.inflow_cool_temp = inflow_coolant['temperature']
 
     def __step(self, time=0.0):
         r"""ODE IVP problem.
