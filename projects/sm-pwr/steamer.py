@@ -84,7 +84,6 @@ class Steamer(Module):
         self.secondary_outflow_temp = 20 + 273.15
         self.secondary_outflow_pressure = 0.0
 
-
         # Primary outflow phase history
         quantities = list()
 
@@ -120,7 +119,7 @@ class Steamer(Module):
 
         press = Quantity(name='pressure',
                          formal_name='P_2', unit='Pa',
-                         value=self.secondary_outflow_press,
+                         value=self.secondary_outflow_pressure,
                          latex_name=r'$P_2$',
                          info='Secondary Outflow Pressure')
 
@@ -182,7 +181,7 @@ class Steamer(Module):
             primary_outflow['temperature'] = temp
             primary_outflow['pressure'] = self.primary_outflow_pressure
             primary_outflow['flowrate'] = self.primary_outflow_mass_flowrate
-            self.send((msg_time, secondary_outflow), 'secondary-outflow')
+            self.send((msg_time, primary_outflow), 'primary-outflow')
 
         # Interactions in the secondary-outflow port
         #-----------------------------------------
@@ -211,6 +210,7 @@ class Steamer(Module):
         if self.get_port('primary-inflow').connected_port:
 
             self.send(time, 'primary-inflow')
+
             (check_time, primary_inflow) = self.recv('primary-inflow')
             assert abs(check_time-time) <= 1e-6
 
@@ -226,6 +226,7 @@ class Steamer(Module):
         if self.get_port('secondary-inflow').connected_port:
 
             self.send(time, 'secondary-inflow')
+
             (check_time, secondary_inflow) = self.recv('secondary-inflow')
             assert abs(check_time-time) <= 1e-6
 
@@ -235,6 +236,7 @@ class Steamer(Module):
 
     def __step(self, time=0.0):
 
+        '''
         p_out_sg = params['pressure_sg_exit']
         t_in_sg = params['t_sg_entrance']
         m_dot_1 = params['coolant_mass_flowrate']
@@ -294,7 +296,15 @@ class Steamer(Module):
         t_exit_sg = steam_table._TSat_P(p_out_sg)
 
         #return primary_outflow_temp, t_exit_sg, p_out_sg
+        '''
+
+        # temporary to get ports tested
+
+        primary_outflow = self.primary_outflow_phase.get_row(time)
 
         time += self.time_step
+
+        self.primary_outflow_phase.add_row(time, primary_outflow)
+
 
         return time
