@@ -38,7 +38,7 @@ class Cond(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['inflow', 'outflow']
+        self.port_names_expected = ['condenser-inflow', 'condenser_outflow']
 
         # Units
         unit.kg = unit.kilo*unit.gram
@@ -150,9 +150,9 @@ class Cond(Module):
         # one way "to" feedwater
 
         # send to
-        if self.get_port('feedwater-inflow').connected_port:
+        if self.get_port('condenser_outflow').connected_port:
 
-            msg_time = self.recv('feedwater-inflow')
+            msg_time = self.recv('condenser_outflow')
             assert msg_time <= time
             
             temp = self.outflow_phase.get_value('temp', msg_time)
@@ -161,18 +161,18 @@ class Cond(Module):
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
             outflow['flowrate'] = self.outflow_mass_flowrate
-            self.send((msg_time, outflow), 'feedwater-inflow')
+            self.send((msg_time, outflow), 'condenser_outflow')
 
         # Interactions in the inflow port
         #----------------------------------------
         # one way "from" turbine
 
         # receive from
-        if self.get_port('inflow').connected_port:
+        if self.get_port('condenser-inflow').connected_port:
 
-            self.send(time, 'inflow')
+            self.send(time, 'condenser-inflow')
 
-            (check_time, inflow) = self.recv('inflow')
+            (check_time, inflow) = self.recv('condenser-inflow')
             assert abs(check_time-time) <= 1e-6
 
             self.inflow_temp = inflow['temperature']
@@ -183,7 +183,7 @@ class Cond(Module):
 
         # Get state values
         t_exit = self.inflow_temp
-        p_out = self.inflow_pressure
+        p_out = steam_table._PSat_T(t_exit)
         flow_out = self.inflow_mass_flowrate
         h_exit = steam_table._Region4(p_in, 0)['h']
         q_removed = flow_rate*(h_exit-h_in)
