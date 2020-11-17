@@ -226,6 +226,20 @@ class SMPWR(Module):
 
     def __call_ports(self, time):
 
+        # Interactions in the coolant-inflow port
+        #----------------------------------------
+        # one way "from" coolant-inflow
+
+        # receive from
+        if self.get_port('coolant-inflow').connected_port:
+
+            self.send(time, 'coolant-inflow')
+
+            (check_time, inflow_coolant) = self.recv('coolant-inflow')
+            assert abs(check_time-time) <= 1e-6
+
+            self.inflow_cool_temp = inflow_coolant['temperature']
+
         # Interactions in the coolant-outflow port
         #-----------------------------------------
         # one way "to" coolant-outflow
@@ -243,18 +257,6 @@ class SMPWR(Module):
             coolant_outflow['mass_flowrate'] = self.coolant_mass_flowrate
             self.send((msg_time, coolant_outflow), 'coolant-outflow')
 
-        # Interactions in the coolant-inflow port
-        #----------------------------------------
-        # one way "from" coolant-inflow
-
-        # receive from
-        if self.get_port('coolant-inflow').connected_port:
-
-            self.send(time, 'coolant-inflow')
-            (check_time, inflow_coolant) = self.recv('coolant-inflow')
-            assert abs(check_time-time) <= 1e-6
-
-            self.inflow_cool_temp = inflow_coolant['temperature']
 
     def __step(self, time=0.0):
         r"""ODE IVP problem.
@@ -296,12 +298,13 @@ class SMPWR(Module):
         cool_temp = u_vec[8]
 
         #update state variables
-        outflow = self.coolant_outflow_phase.get_row(time)
+        coolant_outflow = self.coolant_outflow_phase.get_row(time)
         neutrons = self.neutron_phase.get_row(time)
         reactor = self.reactor_phase.get_row(time)
+
         time += self.time_step
 
-        self.coolant_outflow_phase.add_row(time, outflow)
+        self.coolant_outflow_phase.add_row(time, coolant_outflow)
         self.neutron_phase.add_row(time, neutrons)
         self.reactor_phase.add_row(time, reactor)
 
