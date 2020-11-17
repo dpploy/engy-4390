@@ -153,14 +153,15 @@ class Cond(Module):
         if self.get_port('feedwater-inflow').connected_port:
 
             msg_time = self.recv('feedwater-inflow')
-
+            assert msg_time <= time
+            
             temp = self.outflow_phase.get_value('temp', msg_time)
             pressure = self.outflow_phase.get_value('pressure', msg_time)
             outflow = dict()
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
             outflow['flowrate'] = self.outflow_mass_flowrate
-            self.send((msg_time, outflow), 'outflow')
+            self.send((msg_time, outflow), 'feedwater-inflow')
 
         # Interactions in the inflow port
         #----------------------------------------
