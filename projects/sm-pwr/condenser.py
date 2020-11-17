@@ -74,8 +74,7 @@ class Cond(Module):
         self.outflow_temp = 20 + 273.15
         self.outflow_mass_flowrate = 0.0
         self.outflow_pressure = 0.0
-        self.heatloss = -3e6 #w
-        self.cp = 4184 #j/kg-k
+
        
         # Outflow phase history
         quantities = list()
@@ -146,19 +145,20 @@ class Cond(Module):
 
     def __call_ports(self, time):
 
-        # Interactions in the outflow port
+        # Interactions in the feed water inflow port
         #-----------------------------------------
         # one way "to" feedwater
 
         # send to
-        if self.get_port('outflow').connected_port:
+        if self.get_port('feedwater-inflow').connected_port:
 
-            msg_time = self.recv('outflow')
+            msg_time = self.recv('feedwater-inflow')
 
             temp = self.outflow_phase.get_value('temp', msg_time)
+            pressure = self.outflow_phase.get_value('pressure', msg_time)
             outflow = dict()
             outflow['temperature'] = temp
-            outflow['pressure'] = self.outflow_pressure
+            outflow['pressure'] = pressure
             outflow['flowrate'] = self.outflow_mass_flowrate
             self.send((msg_time, outflow), 'outflow')
 
@@ -188,11 +188,11 @@ class Cond(Module):
         q_removed = flow_rate*(h_exit-h_in)
         
         #update state variables
-        outflow = self.outflow_phase.get_row(time)
+        condenser_outflow = self.outflow_phase.get_row(time)
               
         time += self.time_step
 
-        self.outflow_phase.add_row(time, outflow)
+        self.outflow_phase.add_row(time, condenser_outflow)
         self.outflow_phase.set_value('temp',t_exit,time)
         self.outflow_phase.set_value('flowrate',flow_out,time)
         self.outflow_phase.set_value('pressure',p_out,time)
