@@ -5,6 +5,5 @@ digraph "network-0" {
 	node [shape=hexagon]
 	0 [label=SMPWR]
 	1 [label=Steamer]
-	2 [label=Steamer]
-	0 -> 2
+	0 -> 1
 }
