@@ -180,8 +180,8 @@ class Cond(Module):
     def __step(self, time=0.0):
 
         Tin = self.inflow_temp
-        Tout = self.heatloss/(self.inflow_mass_flowrate*self.cp)+Tin
-        
+        #Tout = self.heatloss/(self.inflow_mass_flowrate*self.cp)+Tin
+        Tout = 400
         
         
         # temporary to get ports tested
