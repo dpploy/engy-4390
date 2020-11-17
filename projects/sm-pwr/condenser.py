@@ -76,6 +76,7 @@ class Cond(Module):
         self.outflow_pressure = 0.0
         self.heatloss = -3e6 #w
         self.cp = 4184 #j/kg-k
+       
         # Outflow phase history
         quantities = list()
 
@@ -179,21 +180,22 @@ class Cond(Module):
 
     def __step(self, time=0.0):
 
+        # Get state values
         t_exit = self.inflow_temp
         p_out = self.inflow_pressure
         flow_out = self.inflow_mass_flowrate
         h_exit = steam_table._Region4(p_in, 0)['h']
         q_removed = flow_rate*(h_exit-h_in)
         
-        
-        
-        # temporary to get ports tested
-
-        outflow_temp = self.outflow_phase.get_row(time)
-
+        #update state variables
+        outflow = self.outflow_phase.get_row(time)
+              
         time += self.time_step
 
-        self.outflow_phase.add_row(time, outflow_temp)
-        self.outflow_phase.set_value('temp',time, Tout)
-
+        self.outflow_phase.add_row(time, outflow)
+        self.outflow_phase.set_value('temp',t_exit,time)
+        self.outflow_phase.set_value('flowrate',flow_out,time)
+        self.outflow_phase.set_value('pressure',p_out,time)
+        
+        
         return time
