@@ -179,9 +179,12 @@ class Cond(Module):
 
     def __step(self, time=0.0):
 
-        Tin = self.inflow_temp
-        #Tout = self.heatloss/(self.inflow_mass_flowrate*self.cp)+Tin
-        Tout = 400
+        t_exit = self.inflow_temp
+        p_out = self.inflow_pressure
+        flow_out = self.inflow_mass_flowrate
+        h_exit = steam_table._Region4(p_in, 0)['h']
+        q_removed = flow_rate*(h_exit-h_in)
+        
         
         
         # temporary to get ports tested
