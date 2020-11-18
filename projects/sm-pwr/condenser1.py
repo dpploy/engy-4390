@@ -150,9 +150,9 @@ class Cond(Module):
         # one way "to" feedwater
 
         # send to
-        if self.get_port('feedwater-inflow').connected_port:
+        if self.get_port('outflow').connected_port:
 
-            msg_time = self.recv('feedwater-inflow')
+            msg_time = self.recv('outflow')
 
             temp = self.outflow_phase.get_value('temp', msg_time)
             pressure = self.outflow_phase.get_value('pressure', msg_time)
@@ -176,7 +176,7 @@ class Cond(Module):
 
             self.inflow_temp = inflow['temperature']
             self.inflow_pressure = inflow['pressure']
-            self.inflow_mass_flowrate = inflow['mass_flowrate']
+            self.inflow_mass_flowrate = inflow['flowrate']
 
     def __step(self, time=0.0):
 

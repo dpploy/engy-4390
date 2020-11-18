@@ -36,8 +36,7 @@ class SMPWR(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['coolant-inflow', 'coolant-outflow',
-                                    'signal-out', 'signal-in']
+        self.port_names_expected = ['coolant-inflow', 'coolant-outflow']
 
         # Units
         unit.kg = unit.kilo*unit.gram
@@ -90,7 +89,8 @@ class SMPWR(Module):
         self.fis_nuclide_num_dens = 9.84e26/unit.meter**3 # (fissile nuclei)/m3
         self.condenser_pressure = 0.008066866 #MPa
         self.temp_inlet_ss = 265 + 273.15
-
+        self.pressure = 12.8
+        
         self.fuel_dens = 10800*unit.kg/unit.meter**3
         self.cp_fuel = 300*unit.joule/unit.kg/unit.kelvin
         self.fuel_volume = .8565*unit.meter**3
@@ -142,6 +142,7 @@ class SMPWR(Module):
 
         press = Quantity(name='pressure',
                          formal_name='P_c', unit='Pa',
+                         value= 12.8,
                          latex_name=r'$P_c$',
                          info='Reactor Outflow Coolant Pressure')
 
@@ -251,9 +252,10 @@ class SMPWR(Module):
             assert msg_time <= time
 
             outflow_cool_temp = self.coolant_outflow_phase.get_value('temp', msg_time)
+            outflow_cool_press = self.coolant_outflow_phase.get_value('pressure', msg_time)
             coolant_outflow = dict()
             coolant_outflow['temperature'] = outflow_cool_temp
-            coolant_outflow['pressure'] = outflow_cool_temp
+            coolant_outflow['pressure'] = outflow_cool_pressure
             coolant_outflow['mass_flowrate'] = self.coolant_mass_flowrate
             self.send((msg_time, coolant_outflow), 'coolant-outflow')
 
