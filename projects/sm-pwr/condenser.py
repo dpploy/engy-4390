@@ -96,7 +96,7 @@ class Condenser(Module):
         quantities.append(temp)
 
         press = Quantity(name='pressure',
-                         formal_name='P_2', unit='Pa',
+                         formal_name='P_2', unit='MPa',
                          value=self.outflow_pressure,
                          latex_name=r'$P_2$',
                          info='Outflow Pressure')
