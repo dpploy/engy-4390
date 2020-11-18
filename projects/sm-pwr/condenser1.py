@@ -72,8 +72,8 @@ class Cond(Module):
         self.inflow_mass_flowrate = 0.0
 
         self.outflow_temp = 20 + 273.15
-        self.outflow_mass_flowrate = 0.0
-        self.outflow_pressure = 0.0
+        self.outflow_mass_flowrate = 67 
+        self.outflow_pressure = 3.447
 
        
         # Outflow phase history

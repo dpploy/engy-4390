@@ -179,7 +179,8 @@ class Steamer(Module):
             temp = self.primary_outflow_phase.get_value('temp', msg_time)
             primary_outflow = dict()
             primary_outflow['temperature'] = temp
-            
+            primary_outflow['pressure'] = self.primary_outflow_pressure
+            primary_outflow['flowrate'] = self.primary_outflow_mass_flowrate
             self.send((msg_time, primary_outflow), 'primary-outflow')
 
         # Interactions in the secondary-outflow port
