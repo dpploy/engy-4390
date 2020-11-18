@@ -17,7 +17,7 @@ from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
 
-class Cond(Module):
+class Condenser(Module):
     """Steam generator.
 
     Notes
@@ -38,7 +38,7 @@ class Cond(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['condenser-inflow', 'condenser_outflow']
+        self.port_names_expected = ['condenser-inflow', 'condenser-outflow']
 
         # Units
         unit.kg = unit.kilo*unit.gram
@@ -150,9 +150,9 @@ class Cond(Module):
         # one way "to" feedwater
 
         # send to
-        if self.get_port('condenser_outflow').connected_port:
+        if self.get_port('condenser-outflow').connected_port:
 
-            msg_time = self.recv('condenser_outflow')
+            msg_time = self.recv('condenser-outflow')
             assert msg_time <= time
             
             temp = self.outflow_phase.get_value('temp', msg_time)
@@ -161,7 +161,7 @@ class Cond(Module):
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
             outflow['flowrate'] = self.outflow_mass_flowrate
-            self.send((msg_time, outflow), 'condenser_outflow')
+            self.send((msg_time, outflow), 'condenser-outflow')
 
         # Interactions in the inflow port
         #----------------------------------------
