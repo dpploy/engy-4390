@@ -72,7 +72,7 @@ class Turbine(Module):
         self.inflow_temp = 0.0
         self.inflow_mass_flowrate = 0.0
 
-        self.outflow_temp = 20 + 273.15
+        self.outflow_temp = 0
         self.outflow_mass_flowrate = 0.0
         self.outflow_pressure = 0.008066866 #MPa
 
@@ -224,22 +224,24 @@ class Turbine(Module):
 
                 h_2_prime = bubl_enthalpy + quality * (dew_enthalpy - bubl_enthalpy)
 
-            #if run off is superheated
+            #if ideal run off is superheated
             elif s_2_prime > dew_entropy:
 
                 t_ideal = steam_table._Backward2_T_Ps(p_out, s_2_prime)
-
+                
                 h_2_prime = steam_table._Region2(t_ideal, p_out)['h']
+                
                 quality = 1
-            #else run off is subcooled
+            
+            #else ideal run off is subcooled
             else:
                 t_ideal = steam_table._Backward1_T_Ps(p_out, s_2_prime)
 
                 h_2_prime = steam_table._Region1(t_ideal, p_out)['h']
+                
                 quality = 0
 
-                t_runoff = steam_table._TSat_P(p_out)
-    
+                
             #calculate the real runoff enthalpy
             w_ideal = h_1 - h_2_prime  #on a per mass basis
             assert (w_ideal > 0)
@@ -249,17 +251,34 @@ class Turbine(Module):
             if w_real < 0:
                 w_real = 0
 
-            #if the real runoff is a subcooled liquid
+            #if run off is actually subcooled
             if h_real < bubl_enthalpy:
+               
                 t_runoff = steam_table._Backward1_T_Ph(p_out, h_real)
+                
                 quality = 0  # subcooled liquid
-
+            
+            #if run off is actually superheated
+            elif h_real > dew_enthalpy:
+                
+                t_runoff = steam_table._Backward2_T_Ph(p_out, h_real)
+                
+                quality = 1 # superheated steam
+            #else run off is actually in two phase region
+            else:
+                
+                quality = (h_real - bubl_enthalpy)/(dew_enthalpy - bubl_enthalpy)
+                
+                t_runoff = steam_table._Region4(p_out, quality)['T']
+            
+            
+            
             power = m_dot_2 * (w_real)
         
                 
         
         #update state variables
-        condenser_outflow = self.outflow_phase.get_row(time)
+        turbine_outflow = self.outflow_phase.get_row(time)
               
         time += self.time_step
 
