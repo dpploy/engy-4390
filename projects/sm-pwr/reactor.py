@@ -401,7 +401,8 @@ class SMPWR(Module):
         --------
         """
 
-        if time <= 100*unit.milli*unit.second: # small time value
+        #broken on Mac/Windows if time <= 100*unit.milli*unit.second: # small time value
+        if time <= 100*unit.milli: # small time value
             qval = self.q_0
         else:
             qval = 0.0
