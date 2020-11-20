@@ -6,10 +6,7 @@
 
 import logging
 
-import math
-from scipy.integrate import odeint
 import scipy.constants as unit
-import numpy as np
 
 import iapws.iapws97 as steam_table
 
@@ -198,7 +195,7 @@ class Steamer(Module):
             secondary_outflow = dict()
             secondary_outflow['temperature'] = temp
             secondary_outflow['pressure'] = press
-            secondary_outflow['flowrate'] = flowrate
+            secondary_outflow['mass_flowrate'] = flowrate
 
             self.send((msg_time, secondary_outflow), 'secondary-outflow')
 
