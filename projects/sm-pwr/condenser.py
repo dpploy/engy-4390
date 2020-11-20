@@ -6,10 +6,7 @@
 
 import logging
 
-import math
-from scipy.integrate import odeint
 import scipy.constants as unit
-import numpy as np
 
 import iapws.iapws97 as steam_table
 
@@ -38,7 +35,7 @@ class Condenser(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['condenser-inflow', 'condenser-outflow']
+        self.port_names_expected = ['inflow', 'outflow']
 
         # Units
         unit.kg = unit.kilo*unit.gram
@@ -75,7 +72,6 @@ class Condenser(Module):
         self.outflow_mass_flowrate = 0.0
         self.outflow_pressure = 0.0
 
-       
         # Outflow phase history
         quantities = list()
 
@@ -150,29 +146,29 @@ class Condenser(Module):
         # one way "to" feedwater
 
         # send to
-        if self.get_port('condenser-outflow').connected_port:
+        if self.get_port('outflow').connected_port:
 
-            msg_time = self.recv('condenser-outflow')
+            msg_time = self.recv('outflow')
             assert msg_time <= time
-            
+
             temp = self.outflow_phase.get_value('temp', msg_time)
             pressure = self.outflow_phase.get_value('pressure', msg_time)
             outflow = dict()
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
             outflow['flowrate'] = self.outflow_mass_flowrate
-            self.send((msg_time, outflow), 'condenser-outflow')
+            self.send((msg_time, outflow), 'outflow')
 
         # Interactions in the inflow port
         #----------------------------------------
         # one way "from" turbine
 
         # receive from
-        if self.get_port('condenser-inflow').connected_port:
+        if self.get_port('inflow').connected_port:
 
-            self.send(time, 'condenser-inflow')
+            self.send(time, 'inflow')
 
-            (check_time, inflow) = self.recv('condenser-inflow')
+            (check_time, inflow) = self.recv('inflow')
             assert abs(check_time-time) <= 1e-6
 
             self.inflow_temp = inflow['temperature']
@@ -187,16 +183,15 @@ class Condenser(Module):
         flow_out = self.inflow_mass_flowrate
         h_exit = steam_table._Region4(p_in, 0)['h']
         q_removed = flow_rate*(h_exit-h_in)
-        
+
         #update state variables
         condenser_outflow = self.outflow_phase.get_row(time)
-              
+
         time += self.time_step
 
         self.outflow_phase.add_row(time, condenser_outflow)
-        self.outflow_phase.set_value('temp',t_exit,time)
-        self.outflow_phase.set_value('flowrate',flow_out,time)
-        self.outflow_phase.set_value('pressure',p_out,time)
-        
-        
+        self.outflow_phase.set_value('temp', t_exit, time)
+        self.outflow_phase.set_value('flowrate', flow_out, time)
+        self.outflow_phase.set_value('pressure', p_out, time)
+
         return time
