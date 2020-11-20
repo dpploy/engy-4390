@@ -64,13 +64,13 @@ class Condenser(Module):
 
         # Initialization
 
-        self.inflow_pressure = 0.0
-        self.inflow_temp = 0.0
-        self.inflow_mass_flowrate = 0.0
+        self.inflow_pressure = 3.4
+        self.inflow_temp = 200+273
+        self.inflow_mass_flowrate = 67
 
         self.outflow_temp = 20 + 273.15
-        self.outflow_mass_flowrate = 0.0
-        self.outflow_pressure = 0.0
+        self.outflow_mass_flowrate = 67
+        self.outflow_pressure = 3.4
 
         # Outflow phase history
         quantities = list()
@@ -182,7 +182,7 @@ class Condenser(Module):
         p_out = steam_table._PSat_T(t_exit)
         flow_out = self.inflow_mass_flowrate
         h_exit = steam_table._Region4(p_in, 0)['h']
-        q_removed = flow_rate*(h_exit-h_in)
+        #q_removed = flow_rate*(h_exit-h_in)
 
         #update state variables
         condenser_outflow = self.outflow_phase.get_row(time)

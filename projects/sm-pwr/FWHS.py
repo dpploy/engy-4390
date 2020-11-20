@@ -68,16 +68,16 @@ class FWHS(Module):
         #self.inturb_temp = 0.0
         #self.inturb_mass_flowrate = 0.0
         
-        self.incond_pressure = 0.0
-        self.incond_temp = 0.0
-        self.incond_mass_flowrate = 0.0
+        self.incond_pressure = 3.4
+        self.incond_temp = 100+273
+        self.incond_mass_flowrate = 67
 
         self.outflow_temp = 20 + 273.15
         self.outflow_temp_ss = 422 #k
-        self.outflow_mass_flowrate = 0.0
-        self.outflow_pressure = 0.0
+        self.outflow_mass_flowrate = 67
+        self.outflow_pressure = 3.4
         self.outflow_pressure_ss = 3.44738 #MPa
-        self.outflow_h = steam_table._Region4(p_out, 0)
+        self.outflow_h = steam_table._Region4(self.outflow_pressure_ss, 0)
         
         # Outflow phase history
         quantities = list()

@@ -65,21 +65,21 @@ class Steamer(Module):
 
         # Initialization
 
-        self.primary_inflow_pressure = 0.0
-        self.primary_inflow_temp = 0.0
-        self.primary_inflow_mass_flowrate = 0.0
+        self.primary_inflow_pressure = 12.8
+        self.primary_inflow_temp = 20 + 273.15
+        self.primary_inflow_mass_flowrate = 666
 
-        self.secondary_inflow_pressure = 0.0
-        self.secondary_inflow_temp = 0.0
+        self.secondary_inflow_pressure = 3.5
+        self.secondary_inflow_temp = 20 + 273.15
         self.secondary_inflow_mass_flowrate = 0.0
 
         self.primary_outflow_temp = 20 + 273.15
-        self.primary_outflow_mass_flowrate = 0.0
-        self.primary_outflow_pressure = 0.0
+        self.primary_outflow_mass_flowrate = 666
+        self.primary_outflow_pressure = 12.8
 
-        self.secondary_outflow_mass_flowrate = 0.0
+        self.secondary_outflow_mass_flowrate = 67
         self.secondary_outflow_temp = 20 + 273.15
-        self.secondary_outflow_pressure = 0.0
+        self.secondary_outflow_pressure = 3.4
 
         # Primary outflow phase history
         quantities = list()
@@ -211,9 +211,9 @@ class Steamer(Module):
             (check_time, primary_inflow) = self.recv('primary-inflow')
             assert abs(check_time-time) <= 1e-6
 
-            primary_inflow['temperature'] = self.primary_inflow_temp
-            primary_inflow['pressure'] = self.primary_inflow_pressure
-            primary_inflow['mass_flowrate'] = self.primary_inflow_mass_flowrate
+            self.primary_inflow_temp = primary_inflow['temperature']
+            self.primary_inflow_pressure = primary_inflow['pressure']
+            self.primary_inflow_mass_flowrate = primary_inflow['mass_flowrate']
 
         # Interactions in the secondary-inflow port
         #----------------------------------------

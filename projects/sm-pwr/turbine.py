@@ -65,12 +65,12 @@ class Turbine(Module):
         # Initialization
         self.turbine_efficiency = 0.7784
 
-        self.inflow_pressure = 0.0
-        self.inflow_temp = 0.0
-        self.inflow_mass_flowrate = 0.0
+        self.inflow_pressure = 3.4
+        self.inflow_temp = 200+273
+        self.inflow_mass_flowrate =67
 
-        self.outflow_temp = 0
-        self.outflow_mass_flowrate = 0.0
+        self.outflow_temp = 150+273
+        self.outflow_mass_flowrate = 67
         self.outflow_pressure = 0.008066866 #MPa
 
         # Outflow phase history
