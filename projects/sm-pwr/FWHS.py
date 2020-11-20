@@ -6,10 +6,7 @@
 
 import logging
 
-import math
-from scipy.integrate import odeint
 import scipy.constants as unit
-import numpy as np
 
 import iapws.iapws97 as steam_table
 
@@ -17,7 +14,7 @@ from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
 
-class Cond(Module):
+class FWHS(Module):
     """Steam generator.
 
     Notes
@@ -38,7 +35,7 @@ class Cond(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['inflow', 'outflow']
+        self.port_names_expected = ['inturb','incond', 'outflow']
 
         # Units
         unit.kg = unit.kilo*unit.gram
@@ -67,15 +64,21 @@ class Cond(Module):
 
         # Initialization
 
-        self.inflow_pressure = 0.0
-        self.inflow_temp = 0.0
-        self.inflow_mass_flowrate = 0.0
+        self.inturb_pressure = 0.0
+        self.inturb_temp = 0.0
+        self.inturb_mass_flowrate = 0.0
+        
+        self.incond_pressure = 0.0
+        self.incond_temp = 0.0
+        self.incond_mass_flowrate = 0.0
 
         self.outflow_temp = 20 + 273.15
-        self.outflow_mass_flowrate = 67 
-        self.outflow_pressure = 3.447
-
-       
+        self.outflow_temp_ss = 422 #k
+        self.outflow_mass_flowrate = 0.0
+        self.outflow_pressure = 0.0
+        self.outflow_pressure_ss = 3.44738 #MPa
+        self.outflow_h = steam_table._Region4(p_out, 0)
+        
         # Outflow phase history
         quantities = list()
 
@@ -96,7 +99,7 @@ class Cond(Module):
         quantities.append(temp)
 
         press = Quantity(name='pressure',
-                         formal_name='P_2', unit='Pa',
+                         formal_name='P_2', unit='MPa',
                          value=self.outflow_pressure,
                          latex_name=r'$P_2$',
                          info='Outflow Pressure')
@@ -147,12 +150,13 @@ class Cond(Module):
 
         # Interactions in the feed water inflow port
         #-----------------------------------------
-        # one way "to" feedwater
+        # one way "to" steam geneator
 
         # send to
         if self.get_port('outflow').connected_port:
 
             msg_time = self.recv('outflow')
+            assert msg_time <= time
 
             temp = self.outflow_phase.get_value('temp', msg_time)
             pressure = self.outflow_phase.get_value('pressure', msg_time)
@@ -162,40 +166,61 @@ class Cond(Module):
             outflow['flowrate'] = self.outflow_mass_flowrate
             self.send((msg_time, outflow), 'outflow')
 
-        # Interactions in the inflow port
+        # Interactions in the incond port
+        #----------------------------------------
+        # one way "from" condenser
+
+        # receive from
+        if self.get_port('incond').connected_port:
+
+            self.send(time, 'incond')
+
+            (check_time, incond) = self.recv('incond')
+            assert abs(check_time-time) <= 1e-6
+
+            self.incond_temp = incond['temperature']
+            self.incond_pressure = incond['pressure']
+            self.incond_mass_flowrate = incond['mass_flowrate']
+            
+         # Interactions in the inturb port
         #----------------------------------------
         # one way "from" turbine
 
         # receive from
-        if self.get_port('inflow').connected_port:
+        if self.get_port('inturb').connected_port:
 
-            self.send(time, 'inflow')
+            self.send(time, 'inturb')
 
-            (check_time, inflow) = self.recv('inflow')
+            (check_time, inturb) = self.recv('inturb')
             assert abs(check_time-time) <= 1e-6
 
-            self.inflow_temp = inflow['temperature']
-            self.inflow_pressure = inflow['pressure']
-            self.inflow_mass_flowrate = inflow['flowrate']
+            self.inturb_temp = inturb['temperature']
+            self.inturb_pressure = inturb['pressure']
+            self.inturb_mass_flowrate = inturb['mass_flowrate']
+            
+       
 
     def __step(self, time=0.0):
 
         # Get state values
-        t_exit = self.inflow_temp
-        p_out = self.inflow_pressure
-        flow_out = self.inflow_mass_flowrate
-        h_exit = steam_table._Region4(p_in, 0)['h']
-        q_removed = flow_rate*(h_exit-h_in)
-        
+        flowturb = self.inturb_mass_flowrate
+        flowcond = self.incond_mass_flowrate
+        hturb_in = steam_table._Region1(self.inturb_temp,self.inturb_pressure)['h']
+        hcond_in = steam_table._Region1(self.incond_temp,self.incond_pressure)['h']
+        t_exit = self.outflow_temp_ss
+        p_out = self.outflow_pressure_ss
+        flow_out = flowturb+flowcond
+        h_exit = steam_table._Region1(t_out,p_out)['h']
+        q_removed = flow_out*h_exit-flowturb*hturbin-flowcond*hcondin
+
         #update state variables
         condenser_outflow = self.outflow_phase.get_row(time)
-              
+
         time += self.time_step
 
-        self.outflow_phase.add_row(time, condenser_outflow)
-        self.outflow_phase.set_value('temp',t_exit,time)
-        self.outflow_phase.set_value('flowrate',flow_out,time)
-        self.outflow_phase.set_value('pressure',p_out,time)
-        
-        
+        self.outflow_phase.add_row(time, flow_out)
+        self.outflow_phase.set_value('temp', t_exit, time)
+        self.outflow_phase.set_value('flowrate', flow_out, time)
+        self.outflow_phase.set_value('pressure', p_out, time)
+
         return time
