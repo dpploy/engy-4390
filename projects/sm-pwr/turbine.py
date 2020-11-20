@@ -14,8 +14,8 @@ from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
 
-class Condenser(Module):
-    """Steam generator.
+class Turbine(Module):
+    """Turbine.
 
     Notes
     -----
@@ -63,14 +63,15 @@ class Condenser(Module):
         # Configuration parameters
 
         # Initialization
+        self.turbine_efficiency = 0.7784
 
         self.inflow_pressure = 0.0
         self.inflow_temp = 0.0
         self.inflow_mass_flowrate = 0.0
 
-        self.outflow_temp = 20 + 273.15
+        self.outflow_temp = 0
         self.outflow_mass_flowrate = 0.0
-        self.outflow_pressure = 0.0
+        self.outflow_pressure = 0.008066866 #MPa
 
         # Outflow phase history
         quantities = list()
@@ -79,7 +80,7 @@ class Condenser(Module):
                             formal_name='q_2', unit='kg/s',
                             value=self.outflow_mass_flowrate,
                             latex_name=r'$q_2$',
-                            info='Outflow Mass Flowrate')
+                            info='Turbine Outflow Mass Flowrate')
 
         quantities.append(flowrate)
 
@@ -87,17 +88,25 @@ class Condenser(Module):
                         formal_name='T_2', unit='K',
                         value=self.outflow_temp,
                         latex_name=r'$T_2$',
-                        info='Outflow Temperature')
+                        info='Turbine Outflow Temperature')
 
         quantities.append(temp)
 
-        press = Quantity(name='pressure',
-                         formal_name='P_2', unit='MPa',
+        quality = Quantity(name='quality',
+                         formal_name='X', unit=' ',
                          value=self.outflow_pressure,
-                         latex_name=r'$P_2$',
-                         info='Outflow Pressure')
+                         latex_name=r'$X$',
+                         info='Turbine Exit Steam Quality')
 
-        quantities.append(press)
+        quantities.append(quality)
+
+        power = Quantity(name='power',
+                         formal_name='W_s', unit='MW_e',
+                         value=self.outflow_pressure,
+                         latex_name=r'$W_s$',
+                         info='Turbine Power')
+
+        quantities.append(power)
 
         self.outflow_phase = Phase(time_stamp=self.initial_time,
                                              time_unit='s', quantities=quantities)
@@ -141,15 +150,14 @@ class Condenser(Module):
 
     def __call_ports(self, time):
 
-        # Interactions in the feed water inflow port
+        # Interactions in the outflow port
         #-----------------------------------------
-        # one way "to" feedwater
+        # one way "to" outflow
 
         # send to
         if self.get_port('outflow').connected_port:
 
             msg_time = self.recv('outflow')
-            assert msg_time <= time
 
             temp = self.outflow_phase.get_value('temp', msg_time)
             pressure = self.outflow_phase.get_value('pressure', msg_time)
@@ -157,11 +165,12 @@ class Condenser(Module):
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
             outflow['flowrate'] = self.outflow_mass_flowrate
+
             self.send((msg_time, outflow), 'outflow')
 
         # Interactions in the inflow port
         #----------------------------------------
-        # one way "from" turbine
+        # one way "from" inflow
 
         # receive from
         if self.get_port('inflow').connected_port:
@@ -177,21 +186,101 @@ class Condenser(Module):
 
     def __step(self, time=0.0):
 
+        # Check for valid intervals
+
+        assert 1.0*unit.pascal <= self.inflow_pressure <= 100*unit.mega*unit.pascal
+        assert 20+273.15 <= self.inflow_temp <= 800+273.15
+
         # Get state values
-        t_exit = self.inflow_temp
-        p_out = steam_table._PSat_T(t_exit)
-        flow_out = self.inflow_mass_flowrate
-        h_exit = steam_table._Region4(p_in, 0)['h']
-        q_removed = flow_rate*(h_exit-h_in)
+        p_in = self.inflow_pressure
+        temp_in = self.inflow_temp
+        p_out = self.outflow_pressure
+        m_dot_2 = self.inflow_mass_flowrate
+
+        #############################################
+
+        #if entering stream is not steam (valve closed scenario)
+        print( p_in )
+        if temp_in < steam_table._TSat_P(p_in):
+            t_runoff = steam_table._TSat_P(p_in)
+            power = 0
+            quality = 0
+
+        else:
+            s_2_prime = steam_table._Region2(temp_in, p_in)['s']
+            h_1 = steam_table._Region2(temp_in, p_in)['h']
+            bubl = steam_table._Region4(p_out, 0)
+            dew = steam_table._Region4(p_out, 1)
+            bubl_entropy = bubl['s']
+            dew_entropy = dew['s']
+            bubl_enthalpy = bubl['h']
+            dew_enthalpy = dew['h']
+
+            #if the ideal runoff is two-phase mixture:
+            if bubl_entropy < s_2_prime < dew_entropy:
+
+                quality = (s_2_prime - bubl_entropy) / (dew_entropy - bubl_entropy)
+
+                h_2_prime = bubl_enthalpy + quality * (dew_enthalpy - bubl_enthalpy)
+
+            #if ideal run off is superheated
+            elif s_2_prime > dew_entropy:
+
+                t_ideal = steam_table._Backward2_T_Ps(p_out, s_2_prime)
+
+                h_2_prime = steam_table._Region2(t_ideal, p_out)['h']
+
+                quality = 1
+
+            #else ideal run off is subcooled
+            else:
+                t_ideal = steam_table._Backward1_T_Ps(p_out, s_2_prime)
+
+                h_2_prime = steam_table._Region1(t_ideal, p_out)['h']
+
+                quality = 0
+
+
+            #calculate the real runoff enthalpy
+            w_ideal = h_1 - h_2_prime  #on a per mass basis
+            assert w_ideal > 0
+            w_real = w_ideal * self.turbine_efficiency
+            h_real = h_1 - w_ideal
+            assert h_real > 0
+            if w_real < 0:
+                w_real = 0
+
+            #if run off is actually subcooled
+            if h_real < bubl_enthalpy:
+
+                t_runoff = steam_table._Backward1_T_Ph(p_out, h_real)
+
+                quality = 0  # subcooled liquid
+
+            #if run off is actually superheated
+            elif h_real > dew_enthalpy:
+
+                t_runoff = steam_table._Backward2_T_Ph(p_out, h_real)
+
+                quality = 1 # superheated steam
+            #else run off is actually in two phase region
+            else:
+
+                quality = (h_real - bubl_enthalpy)/(dew_enthalpy - bubl_enthalpy)
+
+                t_runoff = steam_table._Region4(p_out, quality)['T']
+
+            power = m_dot_2 * w_real
 
         #update state variables
-        condenser_outflow = self.outflow_phase.get_row(time)
+        turbine_outflow = self.outflow_phase.get_row(time)
 
         time += self.time_step
 
-        self.outflow_phase.add_row(time, condenser_outflow)
-        self.outflow_phase.set_value('temp', t_exit, time)
-        self.outflow_phase.set_value('flowrate', flow_out, time)
-        self.outflow_phase.set_value('pressure', p_out, time)
+        self.outflow_phase.add_row(time, turbine_outflow)
+        self.outflow_phase.set_value('temp', t_runoff, time)
+        self.outflow_phase.set_value('flowrate', m_dot_2, time)
+        self.outflow_phase.set_value('quality', quality, time)
+        self.outflow_phase.set_value('power', power, time)
 
         return time
