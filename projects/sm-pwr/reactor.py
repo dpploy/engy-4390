@@ -287,7 +287,7 @@ class SMPWR(Module):
         fuel_temp = u_vec[7]
         cool_temp = u_vec[8]
 
-        #update state variables
+        # Update phases
         coolant_outflow = self.coolant_outflow_phase.get_row(time)
         neutrons = self.neutron_phase.get_row(time)
         reactor = self.reactor_phase.get_row(time)
