@@ -6,7 +6,7 @@
 
 import logging
 
-import scipy.constants as unit
+import unit
 
 import iapws.iapws97 as steam_table
 
@@ -14,8 +14,8 @@ from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
 
-class FWHS(Module):
-    """Steam generator.
+class WaterHeater(Module):
+    """Water heater system.
 
     Notes
     -----
@@ -37,16 +37,6 @@ class FWHS(Module):
 
         #self.port_names_expected = ['inturb','incond', 'outflow']
         self.port_names_expected = ['incond', 'outflow']
-        # Units
-        unit.kg = unit.kilo*unit.gram
-        unit.meter = 1.0
-        unit.cm = unit.centi*unit.meter
-        unit.second = 1.0
-        unit.pascal = 1.0
-        unit.joule = 1.0
-        unit.kj = unit.kilo*unit.joule
-        unit.kelvin = 1.0
-        unit.watt = 1.0
 
         # General attributes
         self.initial_time = 0.0*unit.second
