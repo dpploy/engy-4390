@@ -67,6 +67,11 @@ class Steamer(Module):
         # Configuration parameters
 
         # Initialization
+        self.NTU = 3.76
+        self.effectiveness = 0.949
+        self.c_min = 1110.5 #kJ/K
+        self.c_hot = 3729.7 #kJ/K
+        
 
         self.primary_inflow_pressure = 0.0
         self.primary_inflow_temp = 0.0
@@ -236,72 +241,43 @@ class Steamer(Module):
 
     def __step(self, time=0.0):
 
-        '''
-        p_out_sg = params['pressure_sg_exit']
-        t_in_sg = params['t_sg_entrance']
-        m_dot_1 = params['coolant_mass_flowrate']
-        m_dot_2 = params['mdot_secondary']
-        eta_sg = params['sg_efficiency']
-        p_primary = params['primary_pressure']
-        u_overall = params['heat_transfer_coefficient_garbage']
-
-        #If steady state
-        if primary_inflow_temp > 321 + 273.15:
-            primary_outflow_temp = 265 + 273.15
-            t_exit_sg = 307 + 273.15
-            return primary_outflow_temp, t_exit_sg, p_out_sg
-
-        q_pls = u_overall * (primary_inflow_temp - t_in_sg
-                             )  #Garbage overall U approximation
-
-        cp_primary = steam_table._Region1((primary_inflow_temp),
-                                          p_primary)["cp"]  #Approximated Cp
-
-        primary_outflow_temp = primary_inflow_temp - (
-            q_pls /
-            (m_dot_1 * cp_primary))  #Temp from Garbage equ. and approxiamted Cp
-
-        cp_primary = steam_table._Region1(
-            (primary_outflow_temp + primary_inflow_temp) / 2,
-            p_primary)["cp"]  #better Cp
-
-        q_primary = m_dot_1 * (primary_inflow_temp -
-                               primary_outflow_temp) * cp_primary  #Better Q
-
-        h_1_sg = steam_table._Region1(148.89 + 273.15, 3.5190841)['h']
-        h_2_sg = (eta_sg * q_primary / m_dot_2) + h_1_sg  #Enthalpy balance
-
-        ### Calculations pertaining to SG exiting conditions ###
-
-        bubl = steam_table._Region4(p_out_sg, 0)
-        dew = steam_table._Region4(p_out_sg, 1)
-        bubl_entropy = bubl['s']
-        dew_entropy = dew['s']
-        bubl_enthalpy = bubl['h']
-        dew_enthalpy = dew['h']
-
-        #if fluid exiting sg is subcooled
-        if h_2_sg < bubl_enthalpy:
-
-            t_exit_sg = steam_table._Backward1_T_Ph(p_out_sg, h_2_sg)
-            return primary_outflow_temp, t_exit_sg, p_out_sg
-
-        # if fluid exiting sg is superheated
-        if h_2_sg > dew_enthalpy:
-
-            t_exit_sg = steam_table._Backward2_T_Ph(p_out_sg, h_2_sg)
-
-            return primary_outflow_temp, t_exit_sg, p_out_sg
-        # else fluid is two phase
-        t_exit_sg = steam_table._TSat_P(p_out_sg)
-
-        #return primary_outflow_temp, t_exit_sg, p_out_sg
-        '''
+        m_dot_1 = self.primary_inflow_mass_flowrate
+        m_dot_2 = self.secondary_inflow_mass_flowrate
+        t_h_i = self.primary_inflow_temp
+        t_c_i = self.secondary_inflow_temp
+        c_min = self.c_min
+        NTU = self.NTU
+        eta = self.effectiveness
+        c_hot = self.c_h
+        
+        #Calculations
+        
+        q = eta*c_min*(t_h_i-t_c_i)
+        
+        t_h_o = t_h_i - (q/c_hot)
+        t_c_o = t_c_i + (q/c_min)
+        
+        q_s = c_min*(t_c_o - t_c_i) 
+        
+        #if less than heating + latent heat
+        
+        #if part of latent heat
+        
+        #else complete vaporization
+        
+            
+            
+        
+        #Finish rest
+        
+       
+        
 
         # temporary to get ports tested
 
         primary_outflow = self.primary_outflow_phase.get_row(time)
-
+        secondary_outflow = self.secondary_outflow_phase.get_row(time)
+        
         time += self.time_step
 
         self.primary_outflow_phase.add_row(time, primary_outflow)
