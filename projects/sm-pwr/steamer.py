@@ -65,30 +65,31 @@ class Steamer(Module):
         # Domain attributes
 
         # Configuration parameters
-
-        # Initialization
-        self.NTU = 3.76
+        #self.ntu = 3.76
         self.effectiveness = 0.949
         self.c_min = 1110.5 #kJ/K
         self.c_hot = 3729.7 #kJ/K
         self.real_cp_secondary =   4.2980 #kJ/kg-K
+        self.t_sat = 516 #K
+        self.q_vap = 145350.6 #kj
+        self.mw_water = 18.02 #g/mol
         
+        # Initialization
+        self.primary_inflow_pressure = 12.8*unit.mega*unit.pascal
+        self.primary_inflow_temp = 30+273.15
+        self.primary_inflow_mass_flowrate = 666
 
-        self.primary_inflow_pressure = 12.8
-        self.primary_inflow_temp = 0.0
-        self.primary_inflow_mass_flowrate = 0.0
-
-        self.secondary_inflow_pressure = 3.4
-        self.secondary_inflow_temp = 0.0
-        self.secondary_inflow_mass_flowrate = 0.0
+        self.secondary_inflow_pressure = 3.4*unit.mega*unit.pascal
+        self.secondary_inflow_temp = 20+273.15
+        self.secondary_inflow_mass_flowrate = 67
 
         self.primary_outflow_temp = 20 + 273.15
-        self.primary_outflow_mass_flowrate = 0.0
-        self.primary_outflow_pressure = 12.8
+        self.primary_outflow_mass_flowrate = 67
+        self.primary_outflow_pressure = 12.8*unit.mega*unit.pascal
 
-        self.secondary_outflow_mass_flowrate = 0.0
+        self.secondary_outflow_mass_flowrate = 67
         self.secondary_outflow_temp = 20 + 273.15
-        self.secondary_outflow_pressure = 3.4
+        self.secondary_outflow_pressure = 3.4*unit.mega*unit.pascal
 
         # Primary outflow phase history
         quantities = list()
@@ -124,9 +125,9 @@ class Steamer(Module):
         quantities.append(temp)
 
         press = Quantity(name='pressure',
-                         formal_name='P_2', unit='Pa',
+                         formal_name='p_out', unit='Pa',
                          value=self.secondary_outflow_pressure,
-                         latex_name=r'$P_2$',
+                         latex_name=r'$p_out$',
                          info='Secondary Outflow Pressure')
 
         quantities.append(press)
@@ -175,9 +176,9 @@ class Steamer(Module):
 
         # Interactions in the primary-outflow port
         #-----------------------------------------
-        # one way "to" primary-outflow
+        # One way "to" primary-outflow
 
-        # send to
+        # Send to
         if self.get_port('primary-outflow').connected_port:
 
             msg_time = self.recv('primary-outflow')
@@ -191,9 +192,9 @@ class Steamer(Module):
 
         # Interactions in the secondary-outflow port
         #-----------------------------------------
-        # one way "to" secondary-outflow
+        # One way "to" secondary-outflow
 
-        # send to
+        # Send to
         if self.get_port('secondary-outflow').connected_port:
 
             msg_time = self.recv('secondary-outflow')
@@ -210,9 +211,9 @@ class Steamer(Module):
 
         # Interactions in the primary-inflow port
         #----------------------------------------
-        # one way "from" primary-inflow
+        # One way "from" primary-inflow
 
-        # receive from
+        # Receive from
         if self.get_port('primary-inflow').connected_port:
 
             self.send(time, 'primary-inflow')
@@ -226,9 +227,9 @@ class Steamer(Module):
 
         # Interactions in the secondary-inflow port
         #----------------------------------------
-        # one way "from" secondary-inflow
+        # One way "from" secondary-inflow
 
-        # receive from
+        # Receive from
         if self.get_port('secondary-inflow').connected_port:
 
             self.send(time, 'secondary-inflow')
@@ -242,67 +243,50 @@ class Steamer(Module):
 
     def __step(self, time=0.0):
        
-        p_1 = self.primary_inflow_pressure
-        p_2 = self.secondary_outflow_pressure
-        m_dot_1 = self.primary_inflow_mass_flowrate
-        m_dot_2 = self.secondary_inflow_mass_flowrate
+        p_in = self.primary_inflow_pressure
+        p_out = self.secondary_outflow_pressure
         t_h_i = self.primary_inflow_temp
         t_c_i = self.secondary_inflow_temp
         c_min = self.c_min
-        NTU = self.NTU
-        eta = self.effectiveness
         c_hot = self.c_h
-        cp_2 = self.real_cp_secondary
-        #Calculations
+        cp_out = self.real_cp_secondary
+        # Calculations
         
-        q = eta*c_min*(t_h_i-t_c_i)
+        q = self.effectiveness*c_min*(t_h_i-t_c_i)
         
         t_h_o = t_h_i - (q/c_hot)
         t_c_o = t_c_i + (q/c_min)
         
         q_s = c_min*(t_c_o - t_c_i) 
+        q_req = cp_out*(self.t_sat-t_c_i)
         
-        
-        #if no vaporization
-        if q_s < 27068.8:
+        # If no vaporization
+        if q_s < q_req: #kW
             
-            t_exit = q_s/(cp_2*m_dot_2) + t_c_i
+            t_exit = q_s/(cp_out*self.secondary_inflow_mass_flowrate) + t_c_i
         
-        #if some vaporization
-        elif q_s < 145350.6:
+        # If some vaporization
+        elif q_s < self.q_vap:
             
-            t_exit = 516
+            t_exit = self.t_sat
         
-        #if complete vaporization - calculate gas tenperautre with cp function
+        # If complete vaporization - calculate gas tenperautre with cp function
         else:
             
-            q_heat_steam = q_s - 145350.6
-            delta_h = q_heat_steam/m_dot_2
+            q_heat_steam = q_s - self.q_vap
+            delta_h = q_heat_steam/self.secondary_inflow_mass_flowrate
             
             a = 3.470
             b =  1.45*10e-3
-            c = (delta_h*18.02/8.314) + a*516 + b*(516**2)
+            c = (delta_h*self.mw_water/unit.R) + a*self.t_sat + b*(self.t_sat**2)
             coeff = [b,a,-c]
             roots = np.roots(coeff)
             
-            if roots[0] > 0:
-                
-                t_exit = roots[0]
-                
-            else:
-                
-                t_exit = roots[1]
-                
-           
-            
-            
-       
-        
-       
-        
-
-        # temporary to get ports tested
-
+            if roots[0] > 0:                
+                t_exit = roots[0]                
+            else:               
+                t_exit = roots[1]                
+                                                 
         primary_outflow = self.primary_outflow_phase.get_row(time)
         secondary_outflow = self.secondary_outflow_phase.get_row(time)
         
@@ -310,16 +294,12 @@ class Steamer(Module):
 
         self.primary_outflow_phase.add_row(time, primary_outflow)
         self.primary_outflow_phase.set_value('temp', t_h_o)
-        self.primary_outflow_phase.set_value('flowrate', m_dot_1)
-        elf.primary_outflow_phase.set_value('pressure', p_1)
-        
-        
-        
+        self.primary_outflow_phase.set_value('flowrate',self.primary_inflow_mass_flowrate)
+        self.primary_outflow_phase.set_value('pressure', p_in)
+                        
         self.secondary_outflow_phase.add_row(time, secondary_outflow)
         self.secondary_outflow_phase.set_value('temp', t_exit)
-        self.secondary_outflow_phase.set_value('flowrate', m_dot_2)
-        self.secondary_outflow_phase.set_value('pressure', p_2)
-        
-        
-
+        self.secondary_outflow_phase.set_value('flowrate', self.secondary_inflow_mass_flowrate)
+        self.secondary_outflow_phase.set_value('pressure', p_out)
+                
         return time

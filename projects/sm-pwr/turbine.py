@@ -50,17 +50,17 @@ class Turbine(Module):
         # Domain attributes
 
         # Configuration parameters
-
-        # Initialization
         self.turbine_efficiency = 0.7784
+        self.vent_pressure = 0.008066866*unit.mega*unit.pascal
+        
+        # Initialization   
 
         self.inflow_pressure = 1.0*unit.bar
-        self.inflow_temp = 20+273.15
-        self.inflow_mass_flowrate = 0.0*unit.kg/unit.second
+        self.inflow_temp = 20+273.15 #K
+        self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
-        self.outflow_temp = 20+272.15
-        self.outflow_mass_flowrate = 0.0
-        self.outflow_pressure = 0.008066866*unit.mega*unit.pascal
+        self.outflow_temp = 20+272.15 #K
+        self.outflow_mass_flowrate = 67*unit.kg/unit.second
         self.outflow_quality = 0.0
 
         # Outflow phase history
@@ -82,9 +82,9 @@ class Turbine(Module):
 
         quantities.append(temp)
 
-        temp = Quantity(name='pressure',
+        pressure = Quantity(name='pressure',
                         formal_name='P', unit='Pa',
-                        value=self.outflow_pressure,
+                        value=self.vent_pressure,
                         latex_name=r'$P$',
                         info='Turbine Outflow Pressure')
 
@@ -113,7 +113,7 @@ class Turbine(Module):
         quantities.append(power)
 
         self.state_phase = Phase(time_stamp=self.initial_time,
-                                             time_unit='s', quantities=quantities)
+                                 time_unit='s', quantities=quantities)
 
     def run(self, *args):
 
@@ -149,16 +149,15 @@ class Turbine(Module):
 
             # Evolve one time step
             #---------------------
-
             time = self.__step(time)
 
     def __call_ports(self, time):
 
         # Interactions in the outflow port
         #-----------------------------------------
-        # one way "to" outflow
+        # One way "to" outflow
 
-        # send to
+        # Send to 
         if self.get_port('outflow').connected_port:
 
             msg_time = self.recv('outflow')
@@ -174,9 +173,9 @@ class Turbine(Module):
 
         # Interactions in the inflow port
         #----------------------------------------
-        # one way "from" inflow
+        # One way "from" inflow
 
-        # receive from
+        # Receive from
         if self.get_port('inflow').connected_port:
 
             self.send(time, 'inflow')
@@ -191,7 +190,6 @@ class Turbine(Module):
     def __step(self, time=0.0):
 
         # Check for valid intervals
-
         p_in_min = 6.1121e-4*unit.mega*unit.pascal
         p_in_max = 22.064*unit.mega*unit.pascal
         assert p_in_min <= self.inflow_pressure <= p_in_max
@@ -200,21 +198,17 @@ class Turbine(Module):
 
         # Get state values
         p_in_MPa = self.inflow_pressure/unit.mega/unit.pascal
-        temp_in = self.inflow_temp
-        p_out_MPa = self.outflow_pressure/unit.mega/unit.pascal
-        m_dot_2 = self.inflow_mass_flowrate
+        p_out_MPa = self.vent_pressure/unit.mega/unit.pascal
 
-        #############################################
-
-        #if entering stream is not steam (valve closed scenario)
-        if temp_in < steam_table._TSat_P(p_in_MPa):
-            t_runoff = steam_table._TSat_P(p_in_MPa)
+        # If entering stream is not steam (valve closed scenario)        
+        if self.inflow_temp < steam_table._TSat_P(p_in_MPa):
+            t_runoff = self.inflow_temp
             power = 0
-            quality = 0
+            quality = 0            
 
         else:
-            s_2_prime = steam_table._Region2(temp_in, p_in_MPa)['s']
-            h_1 = steam_table._Region2(temp_in, p_in_MPa)['h']
+            s_out_prime = steam_table._Region2(self.inflow_temp, p_in_MPa)['s']
+            h_in = steam_table._Region2(self.inflow_temp, p_in_MPa)['h']
             bubl = steam_table._Region4(p_out_MPa, 0)
             dew = steam_table._Region4(p_out_MPa, 1)
             bubl_entropy = bubl['s']
@@ -222,63 +216,50 @@ class Turbine(Module):
             bubl_enthalpy = bubl['h']
             dew_enthalpy = dew['h']
 
-            #if the ideal runoff is two-phase mixture:
-            if bubl_entropy < s_2_prime < dew_entropy:
+            # If the ideal runoff is two-phase mixture:
+            if bubl_entropy < s_out_prime < dew_entropy:
+                quality = (s_out_prime - bubl_entropy) / (dew_entropy - bubl_entropy)
+                h_out_prime = bubl_enthalpy + quality * (dew_enthalpy - bubl_enthalpy)
 
-                quality = (s_2_prime - bubl_entropy) / (dew_entropy - bubl_entropy)
-
-                h_2_prime = bubl_enthalpy + quality * (dew_enthalpy - bubl_enthalpy)
-
-            #if ideal run off is superheated
-            elif s_2_prime > dew_entropy:
-
-                t_ideal = steam_table._Backward2_T_Ps(p_out_MPa, s_2_prime)
-
-                h_2_prime = steam_table._Region2(t_ideal, p_out_MPa)['h']
-
+            # If ideal run off is superheated
+            elif s_out_prime > dew_entropy:
+                t_ideal = steam_table._Backward2_T_Ps(p_out_MPa, s_out_prime)
+                h_out_prime = steam_table._Region2(t_ideal, p_out_MPa)['h']
                 quality = 1
 
-            #else ideal run off is subcooled
+            # Else ideal run off is subcooled
             else:
-                t_ideal = steam_table._Backward1_T_Ps(p_out_MPa, s_2_prime)
-
-                h_2_prime = steam_table._Region1(t_ideal, p_out_MPa)['h']
-
+                t_ideal = steam_table._Backward1_T_Ps(p_out_MPa, s_out_prime)
+                h_out_prime = steam_table._Region1(t_ideal, p_out_MPa)['h']
                 quality = 0
 
-
-            #calculate the real runoff enthalpy
-            w_ideal = h_1 - h_2_prime  #on a per mass basis
+            # Calculate the real runoff enthalpy
+            w_ideal = h_in - h_out_prime  #on a per mass basis
             assert w_ideal > 0
             w_real = w_ideal * self.turbine_efficiency
-            h_real = h_1 - w_ideal
-            assert h_real > 0
+            h_out_real = h_in - w_ideal
+            assert h_out_real > 0
             if w_real < 0:
                 w_real = 0
 
-            #if run off is actually subcooled
-            if h_real < bubl_enthalpy:
-
-                t_runoff = steam_table._Backward1_T_Ph(p_out_MPa, h_real)
-
+            # If run off is actually subcooled
+            if h_out_real < bubl_enthalpy:
+                t_runoff = steam_table._Backward1_T_Ph(p_out_MPa, h_out_real)
                 quality = 0  # subcooled liquid
 
-            #if run off is actually superheated
-            elif h_real > dew_enthalpy:
-
-                t_runoff = steam_table._Backward2_T_Ph(p_out_MPa, h_real)
-
+            # If run off is actually superheated
+            elif h_out_real > dew_enthalpy:
+                t_runoff = steam_table._Backward2_T_Ph(p_out_MPa, h_out_real)
                 quality = 1 # superheated steam
-            #else run off is actually in two phase region
+                
+            # Else run off is actually in two phase region
             else:
-
-                quality = (h_real - bubl_enthalpy)/(dew_enthalpy - bubl_enthalpy)
-
+                quality = (h_out_real - bubl_enthalpy)/(dew_enthalpy - bubl_enthalpy)
                 t_runoff = steam_table._Region4(p_out_MPa, quality)['T']
 
-            power = m_dot_2 * w_real
+            power = self.inflow_mass_flowrate * w_real
 
-        #update state variables
+        # Update state variables
         turbine_outflow = self.outflow_phase.get_row(time)
         turbine = self.state_phase.get_row(time)
 
@@ -287,7 +268,7 @@ class Turbine(Module):
         self.outflow_phase.add_row(time, turbine_outflow)
 
         self.outflow_phase.set_value('temp', t_runoff, time)
-        self.outflow_phase.set_value('flowrate', m_dot_2, time)
+        self.outflow_phase.set_value('flowrate', self.inflow_mass_flowrate, time)
         self.outflow_phase.set_value('quality', quality, time)
 
         self.state_phase.add_row(time, turbine)
