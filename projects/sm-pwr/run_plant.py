@@ -5,17 +5,22 @@
 """Cortix Run File"""
 
 import scipy.constants as unit
+import matplotlib.pyplot as plt
 
 from cortix import Cortix
 from cortix import Network
 
 from reactor import SMPWR
 from steamer import Steamer
+from turbine import Turbine
 
 def main():
 
-    end_time = 1 * unit.hour
+    # Units
     unit.second = 1.0
+
+    # Preamble
+    end_time = 1 * unit.hour
     time_step = 30.0 * unit.second
     show_time = (True, 5*unit.minute)
 
@@ -46,10 +51,23 @@ def main():
 
     plant_net.module(steamer)  # Add steamer module to network
 
+    # Turbine
+
+    turbine = Turbine()  # Create reactor module
+
+    turbine.name = 'Turbine'
+    turbine.save = True
+    turbine.time_step = time_step
+    turbine.end_time = end_time
+    turbine.show_time = show_time
+
+    plant_net.module(turbine)  # Add steamer module to network
+
     # Balance of Plant Network Connectivity
 
     plant_net.connect([reactor, 'coolant-outflow'], [steamer, 'primary-inflow'])
     plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
+    plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
 
     plant_net.draw()
 
@@ -57,21 +75,60 @@ def main():
 
     plant.run()  # Run network dynamics simulation
 
+
+    # Plots
+
+    if plant.use_multiprocessing or plant.rank == 0:
+
+        # Reactor plots
+        reactor = plant_net.modules[0]
+
+        (quant, time_unit) = reactor.neutron_phase.get_quantity_history('neutron-dens')
+        quant.plot(x_scaling=1/unit.minute, y_scaling=1/max(quant.value),
+                   x_label='Time [m]', y_label=quant.latex_name+' ['+quant.unit+']')
+
+        plt.grid()
+        plt.savefig('neutron-dens.png', dpi=300)
+
+        (quant, time_unit) = reactor.neutron_phase.get_quantity_history('delayed-neutrons-cc')
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+
+        plt.grid()
+        plt.savefig('delayed-neutrons-cc.png', dpi=300)
+
+        (quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('temp')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+
+        plt.grid()
+        plt.savefig('coolant-outflow-temp.png', dpi=300)
+
+        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('fuel-temp')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('fuel-temp.png', dpi=300)
+
+        # Steamer plots
+        steamer = plant_net.modules[1]
+
+
+        # Turbine plots
+        turbine = plant_net.modules[2]
+
+        (quant, time_unit) = turbine.state_phase.get_quantity_history('power')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('turbine-power.png', dpi=300)
+
+
+
     plant.close()  # Properly shutdow plant
-
-    #reactor = plant_net.modules[0]
-
-    #(quant, time_unit) = reactor.neutron_phase.get_quantity_history('neutron-dens')
-    #quant.plot(x_scaling=1/unit.minute, y_scaling=1/max(quant.value), x_label='Time [m]', y_label=quant.formal_name+' ['+quant.unit+']')
-
-    #(quant, time_unit) = reactor.neutron_phase.get_quantity_history('delayed-neutrons-cc')
-    #quant.plot(x_scaling=1/unit.minute, x_label='Time [m]', y_label=quant.formal_name+' ['+quant.unit+']')
-
-    #(quant, time_unit) = reactor.reactor_phase.get_quantity_history('fuel-temp')
-    #quant.plot(x_scaling=1/unit.minute, x_label='Time [m]', y_label=quant.formal_name+' ['+quant.unit+']')
-
-    #(quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('temp')
-    #quant.plot(x_scaling=1/unit.minute, x_label='Time [m]', y_label=quant.formal_name+' ['+quant.unit+']')
 
 if __name__ == '__main__':
     main()

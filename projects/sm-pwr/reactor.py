@@ -167,7 +167,7 @@ class SMPWR(Module):
                                       formal_name='c_i', unit='1/m^3 ',
                                       value=c_vec_0,
                                       latex_name=r'$c_i$',
-                                      info='Delayed Neutron Precursors')
+                                      info='Reactor Delayed Neutron Precursors')
 
         quantities.append(delayed_neutron_cc)
 
