@@ -6,7 +6,7 @@
 
 import logging
 
-import scipy.constants as unit
+import unit
 
 import iapws.iapws97 as steam_table
 
@@ -35,20 +35,8 @@ class Steamer(Module):
 
         super().__init__()
 
-        #self.port_names_expected = ['primary-inflow', 'primary-outflow',
-        #                            'secondary-inflow', 'secondary-outflow']
         self.port_names_expected = ['primary-inflow', 'primary-outflow',
-                                    'secondary-outflow']
-        # Units
-        unit.kg = unit.kilo*unit.gram
-        unit.meter = 1.0
-        unit.cm = unit.centi*unit.meter
-        unit.second = 1.0
-        unit.pascal = 1.0
-        unit.joule = 1.0
-        unit.kj = unit.kilo*unit.joule
-        unit.kelvin = 1.0
-        unit.watt = 1.0
+                                    'secondary-inflow', 'secondary-outflow']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -66,21 +54,21 @@ class Steamer(Module):
 
         # Initialization
 
-        self.primary_inflow_pressure = 12.8
+        self.primary_inflow_pressure = 1.0*unit.bar
         self.primary_inflow_temp = 20 + 273.15
-        self.primary_inflow_mass_flowrate = 666
+        self.primary_inflow_mass_flowrate = 0.0
 
-        self.secondary_inflow_pressure = 3.5
+        self.secondary_inflow_pressure = 1.0*unit.bar
         self.secondary_inflow_temp = 20 + 273.15
         self.secondary_inflow_mass_flowrate = 0.0
 
+        self.primary_outflow_pressure = 1.0*unit.bar
         self.primary_outflow_temp = 20 + 273.15
-        self.primary_outflow_mass_flowrate = 666
-        self.primary_outflow_pressure = 12.8
+        self.primary_outflow_mass_flowrate = 0.0
 
-        self.secondary_outflow_mass_flowrate = 67
+        self.secondary_outflow_pressure = 1.0*unit.bar
         self.secondary_outflow_temp = 20 + 273.15
-        self.secondary_outflow_pressure = 3.4
+        self.secondary_outflow_mass_flowrate = 0.0
 
         # Primary outflow phase history
         quantities = list()
@@ -205,16 +193,16 @@ class Steamer(Module):
         # one way "from" primary-inflow
 
         # receive from
-#        if self.get_port('primary-inflow').connected_port:
-#
-#            self.send(time, 'primary-inflow')
-#
-#            (check_time, primary_inflow) = self.recv('primary-inflow')
-#            assert abs(check_time-time) <= 1e-6
-#
-#            self.primary_inflow_temp = primary_inflow['temperature']
-#            self.primary_inflow_pressure = primary_inflow['pressure']
-#            self.primary_inflow_mass_flowrate = primary_inflow['mass_flowrate']
+        if self.get_port('primary-inflow').connected_port:
+
+            self.send(time, 'primary-inflow')
+
+            (check_time, primary_inflow) = self.recv('primary-inflow')
+            assert abs(check_time-time) <= 1e-6
+
+            primary_inflow['temperature'] = self.primary_inflow_temp
+            primary_inflow['pressure'] = self.primary_inflow_pressure
+            primary_inflow['mass_flowrate'] = self.primary_inflow_mass_flowrate
 
         # Interactions in the secondary-inflow port
         #----------------------------------------
@@ -299,10 +287,11 @@ class Steamer(Module):
         # temporary to get ports tested
 
         primary_outflow = self.primary_outflow_phase.get_row(time)
+        secondary_outflow = self.secondary_outflow_phase.get_row(time)
 
         time += self.time_step
 
         self.primary_outflow_phase.add_row(time, primary_outflow)
-
+        self.secondary_outflow_phase.add_row(time, secondary_outflow)
 
         return time
