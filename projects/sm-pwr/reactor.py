@@ -8,8 +8,9 @@ import logging
 
 import math
 from scipy.integrate import odeint
-import scipy.constants as unit
 import numpy as np
+
+import unit
 
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
@@ -38,18 +39,6 @@ class SMPWR(Module):
 
         self.port_names_expected = ['coolant-inflow', 'coolant-outflow',
                                     'signal-out', 'signal-in']
-
-        # Units
-        unit.kg = unit.kilo*unit.gram
-        unit.meter = 1.0
-        unit.cm = unit.centi*unit.meter
-        unit.second = 1.0
-        unit.pascal = 1.0
-        unit.joule = 1.0
-        unit.kj = unit.kilo*unit.joule
-        unit.kelvin = 1.0
-        unit.watt = 1.0
-        unit.barn = 1.0e-28 * unit.meter**2
 
         # General attributes
         self.initial_time = 0.0*unit.second
