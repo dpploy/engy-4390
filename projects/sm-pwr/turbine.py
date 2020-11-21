@@ -66,49 +66,64 @@ class Turbine(Module):
         self.turbine_efficiency = 0.7784
 
         self.inflow_pressure = 1.0*unit.bar
-        self.inflow_temp = 0.0
-        self.inflow_mass_flowrate = 0.0
+        self.inflow_temp = 20+273.15
+        self.inflow_mass_flowrate = 0.0*unit.kg/unit.second
 
-        self.outflow_temp = 0
+        self.outflow_temp = 20+272.15
         self.outflow_mass_flowrate = 0.0
-        self.outflow_pressure = 0.008066866 #MPa
+        self.outflow_pressure = 0.008066866*unit.mega*unit.pascal
+        self.outflow_quality = 0.0
 
         # Outflow phase history
         quantities = list()
 
         flowrate = Quantity(name='flowrate',
-                            formal_name='q_2', unit='kg/s',
+                            formal_name='q', unit='kg/s',
                             value=self.outflow_mass_flowrate,
-                            latex_name=r'$q_2$',
+                            latex_name=r'$q$',
                             info='Turbine Outflow Mass Flowrate')
 
         quantities.append(flowrate)
 
         temp = Quantity(name='temp',
-                        formal_name='T_2', unit='K',
+                        formal_name='T', unit='K',
                         value=self.outflow_temp,
-                        latex_name=r'$T_2$',
+                        latex_name=r'$T$',
                         info='Turbine Outflow Temperature')
 
         quantities.append(temp)
 
+        temp = Quantity(name='pressure',
+                        formal_name='P', unit='Pa',
+                        value=self.outflow_pressure,
+                        latex_name=r'$P$',
+                        info='Turbine Outflow Pressure')
+
+        quantities.append(temp)
+
         quality = Quantity(name='quality',
-                         formal_name='X', unit=' ',
-                         value=self.outflow_pressure,
+                         formal_name='X', unit='',
+                         value=self.outflow_quality,
                          latex_name=r'$X$',
                          info='Turbine Exit Steam Quality')
 
         quantities.append(quality)
 
+        self.outflow_phase = Phase(time_stamp=self.initial_time,
+                                   time_unit='s', quantities=quantities)
+
+        # Turbine phase history
+        quantities = list()
+
         power = Quantity(name='power',
-                         formal_name='W_s', unit='MW_e',
-                         value=self.outflow_pressure,
+                         formal_name='W_s', unit='W_e',
+                         value=0.0,
                          latex_name=r'$W_s$',
                          info='Turbine Power')
 
         quantities.append(power)
 
-        self.outflow_phase = Phase(time_stamp=self.initial_time,
+        self.turbine_phase = Phase(time_stamp=self.initial_time,
                                              time_unit='s', quantities=quantities)
 
     def run(self, *args):
@@ -276,13 +291,18 @@ class Turbine(Module):
 
         #update state variables
         turbine_outflow = self.outflow_phase.get_row(time)
+        turbine = self.turbine_phase.get_row(time)
 
         time += self.time_step
 
         self.outflow_phase.add_row(time, turbine_outflow)
+
         self.outflow_phase.set_value('temp', t_runoff, time)
         self.outflow_phase.set_value('flowrate', m_dot_2, time)
         self.outflow_phase.set_value('quality', quality, time)
-        self.outflow_phase.set_value('power', power, time)
+
+        self.turbine_phase.add_row(time, turbine)
+
+        self.turbine_phase.set_value('power', power, time)
 
         return time

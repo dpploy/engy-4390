@@ -79,7 +79,7 @@ class Condenser(Module):
                             formal_name='q_2', unit='kg/s',
                             value=self.outflow_mass_flowrate,
                             latex_name=r'$q_2$',
-                            info='Outflow Mass Flowrate')
+                            info='Condenser Outflow Mass Flowrate')
 
         quantities.append(flowrate)
 
@@ -87,7 +87,7 @@ class Condenser(Module):
                         formal_name='T_2', unit='K',
                         value=self.outflow_temp,
                         latex_name=r'$T_2$',
-                        info='Outflow Temperature')
+                        info='Condenser Outflow Temperature')
 
         quantities.append(temp)
 
@@ -95,7 +95,7 @@ class Condenser(Module):
                          formal_name='P_2', unit='MPa',
                          value=self.outflow_pressure,
                          latex_name=r'$P_2$',
-                         info='Outflow Pressure')
+                         info='Condenser Outflow Pressure')
 
         quantities.append(press)
 
