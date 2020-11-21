@@ -214,12 +214,12 @@ class SMPWR(Module):
             time = self.__step(time)
 
     def __call_ports(self, time):
-        
+
         # Interactions in the coolant-outflow port
         #-----------------------------------------
-        # one way "to" coolant-outflow
+        # One way "to" coolant-outflow
 
-        # send to
+        # Send to
         if self.get_port('coolant-outflow').connected_port:
 
             msg_time = self.recv('coolant-outflow')
@@ -231,12 +231,12 @@ class SMPWR(Module):
             coolant_outflow['pressure'] = self.coolant_pressure
             coolant_outflow['mass_flowrate'] = self.coolant_mass_flowrate
             self.send((msg_time, coolant_outflow), 'coolant-outflow')
-        
+
         # Interactions in the coolant-inflow port
         #----------------------------------------
-        # one way "from" coolant-inflow
+        # One way "from" coolant-inflow
 
-        # receive from
+        # Receive from
         if self.get_port('coolant-inflow').connected_port:
 
             self.send(time, 'coolant-inflow')
@@ -247,7 +247,7 @@ class SMPWR(Module):
             self.inflow_cool_temp = inflow_coolant['temperature']
             self.coolant_mass_flowrate = inflow_coolant['flowrate']
             self.coolant_pressure = inflow_coolant['pressure']
-            
+
     def __step(self, time=0.0):
         r"""ODE IVP problem.
         Given the initial data at :math:`t=0`,
