@@ -8,8 +8,9 @@ import logging
 
 import math
 from scipy.integrate import odeint
-import scipy.constants as unit
 import numpy as np
+
+import unit
 
 import iapws.iapws97 as steam_table
 
@@ -41,17 +42,6 @@ class Steamer(Module):
         self.port_names_expected = ['primary-inflow', 'primary-outflow',
                                     'secondary-inflow', 'secondary-outflow']
 
-        # Units
-        unit.kg = unit.kilo*unit.gram
-        unit.meter = 1.0
-        unit.cm = unit.centi*unit.meter
-        unit.second = 1.0
-        unit.pascal = 1.0
-        unit.joule = 1.0
-        unit.kj = unit.kilo*unit.joule
-        unit.kelvin = 1.0
-        unit.watt = 1.0
-
         # General attributes
         self.initial_time = 0.0*unit.second
         self.end_time = 1.0*unit.hour
@@ -73,7 +63,7 @@ class Steamer(Module):
         self.t_sat = 516 #K
         self.q_vap = 145350.6 #kj
         self.mw_water = 18.02 #g/mol
-        
+
         # Initialization
         self.primary_inflow_pressure = 12.8*unit.mega*unit.pascal
         self.primary_inflow_temp = 30+273.15
@@ -98,7 +88,7 @@ class Steamer(Module):
                         formal_name='T_1', unit='K',
                         value=self.primary_outflow_temp,
                         latex_name=r'$T_1$',
-                        info='Primary Outflow Temperature')
+                        info='Steamer Primary Outflow Temperature')
 
         quantities.append(temp)
 
@@ -112,7 +102,7 @@ class Steamer(Module):
                             formal_name='q_2', unit='kg/s',
                             value=self.secondary_outflow_mass_flowrate,
                             latex_name=r'$q_2$',
-                            info='Secondary Outflow Mass Flowrate')
+                            info='Steamer Secondary Outflow Mass Flowrate')
 
         quantities.append(flowrate)
 
@@ -120,7 +110,7 @@ class Steamer(Module):
                         formal_name='T_2', unit='K',
                         value=self.secondary_outflow_temp,
                         latex_name=r'$T_2$',
-                        info='Secondary Outflow Temperature')
+                        info='Steamer Secondary Outflow Temperature')
 
         quantities.append(temp)
 
@@ -128,7 +118,7 @@ class Steamer(Module):
                          formal_name='p_out', unit='Pa',
                          value=self.secondary_outflow_pressure,
                          latex_name=r'$p_out$',
-                         info='Secondary Outflow Pressure')
+                         info='Steamer Secondary Outflow Pressure')
 
         quantities.append(press)
 
@@ -286,17 +276,18 @@ class Steamer(Module):
             else:
                 t_exit = roots[1]
 
+        # Update phases
         primary_outflow = self.primary_outflow_phase.get_row(time)
         secondary_outflow = self.secondary_outflow_phase.get_row(time)
 
         time += self.time_step
 
         self.primary_outflow_phase.add_row(time, primary_outflow)
-        self.primary_outflow_phase.set_value('temp', t_h_o)
+        self.primary_outflow_phase.set_value('temp', t_h_o, time)
 
         self.secondary_outflow_phase.add_row(time, secondary_outflow)
-        self.secondary_outflow_phase.set_value('temp', t_exit)
-        self.secondary_outflow_phase.set_value('flowrate', self.secondary_inflow_mass_flowrate)
-        self.secondary_outflow_phase.set_value('pressure', p_out)
+        self.secondary_outflow_phase.set_value('temp', t_exit, time)
+        self.secondary_outflow_phase.set_value('flowrate', self.secondary_inflow_mass_flowrate, time)
+        self.secondary_outflow_phase.set_value('pressure', p_out, time)
 
         return time
