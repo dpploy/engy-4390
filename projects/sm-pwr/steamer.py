@@ -248,13 +248,12 @@ class Steamer(Module):
         t_h_i = self.primary_inflow_temp
         t_c_i = self.secondary_inflow_temp
         c_min = self.c_min
-        c_hot = self.c_h
         cp_out = self.real_cp_secondary
         # Calculations
 
         q = self.effectiveness*c_min*(t_h_i-t_c_i)
 
-        t_h_o = t_h_i - (q/c_hot)
+        t_h_o = t_h_i - (q/self.c_hot)
         t_c_o = t_c_i + (q/c_min)
 
         q_s = c_min*(t_c_o - t_c_i)
@@ -294,8 +293,6 @@ class Steamer(Module):
 
         self.primary_outflow_phase.add_row(time, primary_outflow)
         self.primary_outflow_phase.set_value('temp', t_h_o)
-        self.primary_outflow_phase.set_value('flowrate',self.primary_inflow_mass_flowrate)
-        self.primary_outflow_phase.set_value('pressure', p_in)
 
         self.secondary_outflow_phase.add_row(time, secondary_outflow)
         self.secondary_outflow_phase.set_value('temp', t_exit)
