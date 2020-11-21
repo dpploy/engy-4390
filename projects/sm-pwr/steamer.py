@@ -71,23 +71,24 @@ class Steamer(Module):
         self.effectiveness = 0.949
         self.c_min = 1110.5 #kJ/K
         self.c_hot = 3729.7 #kJ/K
+        self.real_cp_secondary =   4.2980 #kJ/kg-K
         
 
-        self.primary_inflow_pressure = 0.0
+        self.primary_inflow_pressure = 12.8
         self.primary_inflow_temp = 0.0
         self.primary_inflow_mass_flowrate = 0.0
 
-        self.secondary_inflow_pressure = 0.0
+        self.secondary_inflow_pressure = 3.4
         self.secondary_inflow_temp = 0.0
         self.secondary_inflow_mass_flowrate = 0.0
 
         self.primary_outflow_temp = 20 + 273.15
         self.primary_outflow_mass_flowrate = 0.0
-        self.primary_outflow_pressure = 0.0
+        self.primary_outflow_pressure = 12.8
 
         self.secondary_outflow_mass_flowrate = 0.0
         self.secondary_outflow_temp = 20 + 273.15
-        self.secondary_outflow_pressure = 0.0
+        self.secondary_outflow_pressure = 3.4
 
         # Primary outflow phase history
         quantities = list()
@@ -240,7 +241,9 @@ class Steamer(Module):
             self.secondary_inflow_mass_flowrate = secondary_inflow['temperature']
 
     def __step(self, time=0.0):
-
+       
+        p_1 = self.primary_inflow_pressure
+        p_2 = self.secondary_outflow_pressure
         m_dot_1 = self.primary_inflow_mass_flowrate
         m_dot_2 = self.secondary_inflow_mass_flowrate
         t_h_i = self.primary_inflow_temp
@@ -249,7 +252,7 @@ class Steamer(Module):
         NTU = self.NTU
         eta = self.effectiveness
         c_hot = self.c_h
-        
+        cp_2 = self.real_cp_secondary
         #Calculations
         
         q = eta*c_min*(t_h_i-t_c_i)
@@ -259,16 +262,41 @@ class Steamer(Module):
         
         q_s = c_min*(t_c_o - t_c_i) 
         
-        #if less than heating + latent heat
         
-        #if part of latent heat
+        #if no vaporization
+        if q_s < 27068.8:
+            
+            t_exit = q_s/(cp_2*m_dot_2) + t_c_i
         
-        #else complete vaporization
+        #if some vaporization
+        elif q_s < 145350.6:
+            
+            t_exit = 516
         
+        #if complete vaporization - calculate gas tenperautre with cp function
+        else:
+            
+            q_heat_steam = q_s - 145350.6
+            delta_h = q_heat_steam/m_dot_2
+            
+            a = 3.470
+            b =  1.45*10e-3
+            c = (delta_h*18.02/8.314) + a*516 + b*(516**2)
+            coeff = [b,a,-c]
+            roots = np.roots(coeff)
+            
+            if roots[0] > 0:
+                
+                t_exit = roots[0]
+                
+            else:
+                
+                t_exit = roots[1]
+                
+           
             
             
-        
-        #Finish rest
+       
         
        
         
@@ -281,6 +309,17 @@ class Steamer(Module):
         time += self.time_step
 
         self.primary_outflow_phase.add_row(time, primary_outflow)
-
+        self.primary_outflow_phase.set_value('temp', t_h_o)
+        self.primary_outflow_phase.set_value('flowrate', m_dot_1)
+        elf.primary_outflow_phase.set_value('pressure', p_1)
+        
+        
+        
+        self.secondary_outflow_phase.add_row(time, secondary_outflow)
+        self.secondary_outflow_phase.set_value('temp', t_exit)
+        self.secondary_outflow_phase.set_value('flowrate', m_dot_2)
+        self.secondary_outflow_phase.set_value('pressure', p_2)
+        
+        
 
         return time
