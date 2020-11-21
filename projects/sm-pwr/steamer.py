@@ -65,21 +65,21 @@ class Steamer(Module):
 
         # Initialization
 
-        self.primary_inflow_pressure = 0.0
-        self.primary_inflow_temp = 0.0
+        self.primary_inflow_pressure = 1.0*unit.bar
+        self.primary_inflow_temp = 20 + 273.15
         self.primary_inflow_mass_flowrate = 0.0
 
-        self.secondary_inflow_pressure = 0.0
-        self.secondary_inflow_temp = 0.0
+        self.secondary_inflow_pressure = 1.0*unit.bar
+        self.secondary_inflow_temp = 20 + 273.15
         self.secondary_inflow_mass_flowrate = 0.0
 
+        self.primary_outflow_pressure = 1.0*unit.bar
         self.primary_outflow_temp = 20 + 273.15
         self.primary_outflow_mass_flowrate = 0.0
-        self.primary_outflow_pressure = 0.0
 
-        self.secondary_outflow_mass_flowrate = 0.0
+        self.secondary_outflow_pressure = 1.0*unit.bar
         self.secondary_outflow_temp = 20 + 273.15
-        self.secondary_outflow_pressure = 0.0
+        self.secondary_outflow_mass_flowrate = 0.0
 
         # Primary outflow phase history
         quantities = list()
@@ -298,10 +298,11 @@ class Steamer(Module):
         # temporary to get ports tested
 
         primary_outflow = self.primary_outflow_phase.get_row(time)
+        secondary_outflow = self.secondary_outflow_phase.get_row(time)
 
         time += self.time_step
 
         self.primary_outflow_phase.add_row(time, primary_outflow)
-
+        self.secondary_outflow_phase.add_row(time, secondary_outflow)
 
         return time

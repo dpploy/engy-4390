@@ -65,7 +65,7 @@ class Turbine(Module):
         # Initialization
         self.turbine_efficiency = 0.7784
 
-        self.inflow_pressure = 0.0
+        self.inflow_pressure = 1.0*unit.bar
         self.inflow_temp = 0.0
         self.inflow_mass_flowrate = 0.0
 
@@ -188,29 +188,31 @@ class Turbine(Module):
 
         # Check for valid intervals
 
-        assert 1.0*unit.pascal <= self.inflow_pressure <= 100*unit.mega*unit.pascal
+        p_in_min = 6.1121e-4*unit.mega*unit.pascal
+        p_in_max = 22.064*unit.mega*unit.pascal
+        assert p_in_min <= self.inflow_pressure <= p_in_max
+
         assert 20+273.15 <= self.inflow_temp <= 800+273.15
 
         # Get state values
-        p_in = self.inflow_pressure
+        p_in_MPa = self.inflow_pressure/unit.mega/unit.pascal
         temp_in = self.inflow_temp
-        p_out = self.outflow_pressure
+        p_out_MPa = self.outflow_pressure/unit.mega/unit.pascal
         m_dot_2 = self.inflow_mass_flowrate
 
         #############################################
 
         #if entering stream is not steam (valve closed scenario)
-        print( p_in )
-        if temp_in < steam_table._TSat_P(p_in):
-            t_runoff = steam_table._TSat_P(p_in)
+        if temp_in < steam_table._TSat_P(p_in_MPa):
+            t_runoff = steam_table._TSat_P(p_in_MPa)
             power = 0
             quality = 0
 
         else:
-            s_2_prime = steam_table._Region2(temp_in, p_in)['s']
-            h_1 = steam_table._Region2(temp_in, p_in)['h']
-            bubl = steam_table._Region4(p_out, 0)
-            dew = steam_table._Region4(p_out, 1)
+            s_2_prime = steam_table._Region2(temp_in, p_in_MPa)['s']
+            h_1 = steam_table._Region2(temp_in, p_in_MPa)['h']
+            bubl = steam_table._Region4(p_out_MPa, 0)
+            dew = steam_table._Region4(p_out_MPa, 1)
             bubl_entropy = bubl['s']
             dew_entropy = dew['s']
             bubl_enthalpy = bubl['h']
@@ -226,17 +228,17 @@ class Turbine(Module):
             #if ideal run off is superheated
             elif s_2_prime > dew_entropy:
 
-                t_ideal = steam_table._Backward2_T_Ps(p_out, s_2_prime)
+                t_ideal = steam_table._Backward2_T_Ps(p_out_MPa, s_2_prime)
 
-                h_2_prime = steam_table._Region2(t_ideal, p_out)['h']
+                h_2_prime = steam_table._Region2(t_ideal, p_out_MPa)['h']
 
                 quality = 1
 
             #else ideal run off is subcooled
             else:
-                t_ideal = steam_table._Backward1_T_Ps(p_out, s_2_prime)
+                t_ideal = steam_table._Backward1_T_Ps(p_out_MPa, s_2_prime)
 
-                h_2_prime = steam_table._Region1(t_ideal, p_out)['h']
+                h_2_prime = steam_table._Region1(t_ideal, p_out_MPa)['h']
 
                 quality = 0
 
@@ -253,14 +255,14 @@ class Turbine(Module):
             #if run off is actually subcooled
             if h_real < bubl_enthalpy:
 
-                t_runoff = steam_table._Backward1_T_Ph(p_out, h_real)
+                t_runoff = steam_table._Backward1_T_Ph(p_out_MPa, h_real)
 
                 quality = 0  # subcooled liquid
 
             #if run off is actually superheated
             elif h_real > dew_enthalpy:
 
-                t_runoff = steam_table._Backward2_T_Ph(p_out, h_real)
+                t_runoff = steam_table._Backward2_T_Ph(p_out_MPa, h_real)
 
                 quality = 1 # superheated steam
             #else run off is actually in two phase region
@@ -268,7 +270,7 @@ class Turbine(Module):
 
                 quality = (h_real - bubl_enthalpy)/(dew_enthalpy - bubl_enthalpy)
 
-                t_runoff = steam_table._Region4(p_out, quality)['T']
+                t_runoff = steam_table._Region4(p_out_MPa, quality)['T']
 
             power = m_dot_2 * w_real
 
