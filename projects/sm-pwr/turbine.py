@@ -35,8 +35,8 @@ class Turbine(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['inflow', 'outflow']
-
+#       self.port_names_expected = ['inflow', 'outflow']
+        self.port_names_expected = ['inflow']
         # Units
         unit.kg = unit.kilo*unit.gram
         unit.meter = 1.0
@@ -155,18 +155,18 @@ class Turbine(Module):
         # one way "to" outflow
 
         # send to
-        if self.get_port('outflow').connected_port:
+#        if self.get_port('outflow').connected_port:
+#
+#            msg_time = self.recv('outflow')
+#
+#            temp = self.outflow_phase.get_value('temp', msg_time)
+#            pressure = self.outflow_phase.get_value('pressure', msg_time)
+#            outflow = dict()
+#            outflow['temperature'] = temp
+#            outflow['pressure'] = pressure
+#            outflow['flowrate'] = self.outflow_mass_flowrate
 
-            msg_time = self.recv('outflow')
-
-            temp = self.outflow_phase.get_value('temp', msg_time)
-            pressure = self.outflow_phase.get_value('pressure', msg_time)
-            outflow = dict()
-            outflow['temperature'] = temp
-            outflow['pressure'] = pressure
-            outflow['flowrate'] = self.outflow_mass_flowrate
-
-            self.send((msg_time, outflow), 'outflow')
+#            self.send((msg_time, outflow), 'outflow')
 
         # Interactions in the inflow port
         #----------------------------------------

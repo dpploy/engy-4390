@@ -35,9 +35,10 @@ class Steamer(Module):
 
         super().__init__()
 
+        #self.port_names_expected = ['primary-inflow', 'primary-outflow',
+        #                            'secondary-inflow', 'secondary-outflow']
         self.port_names_expected = ['primary-inflow', 'primary-outflow',
-                                    'secondary-inflow', 'secondary-outflow']
-
+                                    'secondary-outflow']
         # Units
         unit.kg = unit.kilo*unit.gram
         unit.meter = 1.0
@@ -204,16 +205,16 @@ class Steamer(Module):
         # one way "from" primary-inflow
 
         # receive from
-        if self.get_port('primary-inflow').connected_port:
-
-            self.send(time, 'primary-inflow')
-
-            (check_time, primary_inflow) = self.recv('primary-inflow')
-            assert abs(check_time-time) <= 1e-6
-
-            self.primary_inflow_temp = primary_inflow['temperature']
-            self.primary_inflow_pressure = primary_inflow['pressure']
-            self.primary_inflow_mass_flowrate = primary_inflow['mass_flowrate']
+#        if self.get_port('primary-inflow').connected_port:
+#
+#            self.send(time, 'primary-inflow')
+#
+#            (check_time, primary_inflow) = self.recv('primary-inflow')
+#            assert abs(check_time-time) <= 1e-6
+#
+#            self.primary_inflow_temp = primary_inflow['temperature']
+#            self.primary_inflow_pressure = primary_inflow['pressure']
+#            self.primary_inflow_mass_flowrate = primary_inflow['mass_flowrate']
 
         # Interactions in the secondary-inflow port
         #----------------------------------------
