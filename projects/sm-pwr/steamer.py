@@ -174,6 +174,38 @@ class Steamer(Module):
 
     def __call_ports(self, time):
 
+        # Interactions in the primary-inflow port
+        #----------------------------------------
+        # One way "from" primary-inflow
+
+        # Receive from
+        if self.get_port('primary-inflow').connected_port:
+
+            self.send(time, 'primary-inflow')
+
+            (check_time, primary_inflow) = self.recv('primary-inflow')
+            assert abs(check_time-time) <= 1e-6
+
+            primary_inflow['temperature'] = self.primary_inflow_temp
+            primary_inflow['pressure'] = self.primary_inflow_pressure
+            primary_inflow['mass_flowrate'] = self.primary_inflow_mass_flowrate
+
+        # Interactions in the secondary-inflow port
+        #----------------------------------------
+        # One way "from" secondary-inflow
+
+        # Receive from
+        if self.get_port('secondary-inflow').connected_port:
+
+            self.send(time, 'secondary-inflow')
+
+            (check_time, secondary_inflow) = self.recv('secondary-inflow')
+            assert abs(check_time-time) <= 1e-6
+
+            self.secondary_inflow_temp = secondary_inflow['temperature']
+            self.secondary_inflow_pressure = secondary_inflow['pressure']
+            self.secondary_inflow_mass_flowrate = secondary_inflow['temperature']
+
         # Interactions in the primary-outflow port
         #-----------------------------------------
         # One way "to" primary-outflow
@@ -209,40 +241,8 @@ class Steamer(Module):
 
             self.send((msg_time, secondary_outflow), 'secondary-outflow')
 
-        # Interactions in the primary-inflow port
-        #----------------------------------------
-        # One way "from" primary-inflow
-
-        # Receive from
-        if self.get_port('primary-inflow').connected_port:
-
-            self.send(time, 'primary-inflow')
-
-            (check_time, primary_inflow) = self.recv('primary-inflow')
-            assert abs(check_time-time) <= 1e-6
-
-            primary_inflow['temperature'] = self.primary_inflow_temp
-            primary_inflow['pressure'] = self.primary_inflow_pressure
-            primary_inflow['mass_flowrate'] = self.primary_inflow_mass_flowrate
-
-        # Interactions in the secondary-inflow port
-        #----------------------------------------
-        # One way "from" secondary-inflow
-
-        # Receive from
-        if self.get_port('secondary-inflow').connected_port:
-
-            self.send(time, 'secondary-inflow')
-
-            (check_time, secondary_inflow) = self.recv('secondary-inflow')
-            assert abs(check_time-time) <= 1e-6
-
-            self.secondary_inflow_temp = secondary_inflow['temperature']
-            self.secondary_inflow_pressure = secondary_inflow['pressure']
-            self.secondary_inflow_mass_flowrate = secondary_inflow['temperature']
-
     def __step(self, time=0.0):
-       
+
         p_in = self.primary_inflow_pressure
         p_out = self.secondary_outflow_pressure
         t_h_i = self.primary_inflow_temp
@@ -251,55 +251,55 @@ class Steamer(Module):
         c_hot = self.c_h
         cp_out = self.real_cp_secondary
         # Calculations
-        
+
         q = self.effectiveness*c_min*(t_h_i-t_c_i)
-        
+
         t_h_o = t_h_i - (q/c_hot)
         t_c_o = t_c_i + (q/c_min)
-        
-        q_s = c_min*(t_c_o - t_c_i) 
+
+        q_s = c_min*(t_c_o - t_c_i)
         q_req = cp_out*(self.t_sat-t_c_i)
-        
+
         # If no vaporization
         if q_s < q_req: #kW
-            
+
             t_exit = q_s/(cp_out*self.secondary_inflow_mass_flowrate) + t_c_i
-        
+
         # If some vaporization
         elif q_s < self.q_vap:
-            
+
             t_exit = self.t_sat
-        
+
         # If complete vaporization - calculate gas tenperautre with cp function
         else:
-            
+
             q_heat_steam = q_s - self.q_vap
             delta_h = q_heat_steam/self.secondary_inflow_mass_flowrate
-            
+
             a = 3.470
             b =  1.45*10e-3
             c = (delta_h*self.mw_water/unit.R) + a*self.t_sat + b*(self.t_sat**2)
             coeff = [b,a,-c]
             roots = np.roots(coeff)
-            
-            if roots[0] > 0:                
-                t_exit = roots[0]                
-            else:               
-                t_exit = roots[1]                
-                                                 
+
+            if roots[0] > 0:
+                t_exit = roots[0]
+            else:
+                t_exit = roots[1]
+
         primary_outflow = self.primary_outflow_phase.get_row(time)
         secondary_outflow = self.secondary_outflow_phase.get_row(time)
-        
+
         time += self.time_step
 
         self.primary_outflow_phase.add_row(time, primary_outflow)
         self.primary_outflow_phase.set_value('temp', t_h_o)
         self.primary_outflow_phase.set_value('flowrate',self.primary_inflow_mass_flowrate)
         self.primary_outflow_phase.set_value('pressure', p_in)
-                        
+
         self.secondary_outflow_phase.add_row(time, secondary_outflow)
         self.secondary_outflow_phase.set_value('temp', t_exit)
         self.secondary_outflow_phase.set_value('flowrate', self.secondary_inflow_mass_flowrate)
         self.secondary_outflow_phase.set_value('pressure', p_out)
-                
+
         return time
