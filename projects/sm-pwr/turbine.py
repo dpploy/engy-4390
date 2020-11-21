@@ -123,7 +123,7 @@ class Turbine(Module):
 
         quantities.append(power)
 
-        self.turbine_phase = Phase(time_stamp=self.initial_time,
+        self.state_phase = Phase(time_stamp=self.initial_time,
                                              time_unit='s', quantities=quantities)
 
     def run(self, *args):
@@ -291,7 +291,7 @@ class Turbine(Module):
 
         #update state variables
         turbine_outflow = self.outflow_phase.get_row(time)
-        turbine = self.turbine_phase.get_row(time)
+        turbine = self.state_phase.get_row(time)
 
         time += self.time_step
 
@@ -301,8 +301,8 @@ class Turbine(Module):
         self.outflow_phase.set_value('flowrate', m_dot_2, time)
         self.outflow_phase.set_value('quality', quality, time)
 
-        self.turbine_phase.add_row(time, turbine)
+        self.state_phase.add_row(time, turbine)
 
-        self.turbine_phase.set_value('power', power, time)
+        self.state_phase.set_value('power', power, time)
 
         return time
