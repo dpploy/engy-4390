@@ -35,7 +35,7 @@ class Condenser(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['inflow', 'outflow']
+        self.port_names_expected = ['condenser-inflow', 'condenser-outflow']
 
         # Units
 
@@ -137,9 +137,9 @@ class Condenser(Module):
         # one way "to" feedwater
 
         # send to
-        if self.get_port('outflow').connected_port:
+        if self.get_port('condenser-outflow').connected_port:
 
-            msg_time = self.recv('outflow')
+            msg_time = self.recv('condenser-outflow')
             assert msg_time <= time
 
             temp = self.outflow_phase.get_value('temp', msg_time)
@@ -148,18 +148,18 @@ class Condenser(Module):
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
             outflow['flowrate'] = self.outflow_mass_flowrate
-            self.send((msg_time, outflow), 'outflow')
+            self.send((msg_time, outflow), 'condenser-outflow')
 
         # Interactions in the inflow port
         #----------------------------------------
         # one way "from" turbine
 
         # receive from
-        if self.get_port('inflow').connected_port:
+        if self.get_port('condenser-inflow').connected_port:
 
-            self.send(time, 'inflow')
+            self.send(time, 'condenser-inflow')
 
-            (check_time, inflow) = self.recv('inflow')
+            (check_time, inflow) = self.recv('condenser-inflow')
             assert abs(check_time-time) <= 1e-6
 
             self.inflow_temp = inflow['temperature']
