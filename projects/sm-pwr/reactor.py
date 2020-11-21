@@ -37,8 +37,7 @@ class SMPWR(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['coolant-inflow', 'coolant-outflow',
-                                    'signal-out', 'signal-in']
+        self.port_names_expected = ['coolant-inflow', 'coolant-outflow']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -215,21 +214,7 @@ class SMPWR(Module):
             time = self.__step(time)
 
     def __call_ports(self, time):
-
-        # Interactions in the coolant-inflow port
-        #----------------------------------------
-        # one way "from" coolant-inflow
-
-        # receive from
-        if self.get_port('coolant-inflow').connected_port:
-
-            self.send(time, 'coolant-inflow')
-
-            (check_time, inflow_coolant) = self.recv('coolant-inflow')
-            assert abs(check_time-time) <= 1e-6
-
-            self.inflow_cool_temp = inflow_coolant['temperature']
-
+        
         # Interactions in the coolant-outflow port
         #-----------------------------------------
         # one way "to" coolant-outflow
@@ -246,8 +231,23 @@ class SMPWR(Module):
             coolant_outflow['pressure'] = self.coolant_pressure
             coolant_outflow['mass_flowrate'] = self.coolant_mass_flowrate
             self.send((msg_time, coolant_outflow), 'coolant-outflow')
+        
+        # Interactions in the coolant-inflow port
+        #----------------------------------------
+        # one way "from" coolant-inflow
 
+        # receive from
+        if self.get_port('coolant-inflow').connected_port:
 
+            self.send(time, 'coolant-inflow')
+
+            (check_time, inflow_coolant) = self.recv('coolant-inflow')
+            assert abs(check_time-time) <= 1e-6
+
+            self.inflow_cool_temp = inflow_coolant['temperature']
+            self.coolant_mass_flowrate = inflow_coolant['flowrate']
+            self.coolant_pressure = inflow_coolant['pressure']
+            
     def __step(self, time=0.0):
         r"""ODE IVP problem.
         Given the initial data at :math:`t=0`,
