@@ -57,8 +57,8 @@ class Steamer(Module):
         # Configuration parameters
         #self.ntu = 3.76
         self.effectiveness = 0.949
-        self.c_min = 1110.5 #kJ/K
-        self.c_hot = 3729.7 #kJ/K
+        self.c_min = 1110.5 #kW/K
+        self.c_hot = 3729.7 #kW/K
         self.real_cp_secondary =   4.2980 #kJ/kg-K
         self.t_sat = 516 #K
         self.q_vap = 145350.6 #kj
@@ -175,10 +175,10 @@ class Steamer(Module):
 
             (check_time, primary_inflow) = self.recv('primary-inflow')
             assert abs(check_time-time) <= 1e-6
-
-            primary_inflow['temperature'] = self.primary_inflow_temp
-            primary_inflow['pressure'] = self.primary_inflow_pressure
-            primary_inflow['mass_flowrate'] = self.primary_inflow_mass_flowrate
+            
+            self.primary_inflow_temp = primary_inflow['temperature']
+            self.primary_inflow_pressure = primary_inflow['pressure']
+            self.primary_inflow_mass_flowrate = primary_inflow['mass_flowrate']
 
         # Interactions in the secondary-inflow port
         #----------------------------------------
