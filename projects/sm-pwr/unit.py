@@ -14,4 +14,6 @@ watt = 1.0
 kelvin = 1.0
 
 cm = centi*meter
+cc = (centi*meter)**3
+kj = kilo*joule
 barn = 1.0e-28 * meter**2

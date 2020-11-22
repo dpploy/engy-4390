@@ -20,8 +20,8 @@ def main():
     unit.second = 1.0
 
     # Preamble
-    end_time = 1 * unit.hour
-    time_step = 30.0 * unit.second
+    end_time = 1*unit.hour
+    time_step = 30*unit.second
     show_time = (True, 5*unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
@@ -120,19 +120,27 @@ def main():
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('steamer-outflow-temp.png', dpi=300)
+        plt.savefig('steamer-primary-outflow-temp.png', dpi=300)
 
-
-        # Turbine plots
-        turbine = plant_net.modules[2]
-
-        (quant, time_unit) = turbine.state_phase.get_quantity_history('power')
+        (quant, time_unit) = steamer.secondary_outflow_phase.get_quantity_history('temp')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('turbine-power.png', dpi=300)
+        plt.savefig('steamer-secondary-outflow-temp.png', dpi=300)
 
+
+        #steamer.secondary_outflow_phase.plot()
+
+        # Turbine plots
+        #turbine = plant_net.modules[2]
+
+        #(quant, time_unit) = turbine.state_phase.get_quantity_history('power')
+
+        #quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+        #           y_label=quant.latex_name+' ['+quant.unit+']')
+        #plt.grid()
+        #plt.savefig('turbine-power.png', dpi=300)
 
 
     plant.close()  # Properly shutdow plant

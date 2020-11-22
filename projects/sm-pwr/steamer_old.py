@@ -55,34 +55,30 @@ class Steamer(Module):
         # Domain attributes
 
         # Configuration parameters
-
-        self.primary_volume = 15*unit.meter**3
-        self.secondary_volume = 25*unit.meter**3
-        self.ht_coeff = 250000*unit.watt/unit.kelvin
+        #self.ntu = 3.76
+        self.effectiveness = 0.949
+        self.c_min = 1110.5 #kW/K
+        self.c_hot = 3729.7 #kW/K
+        self.real_cp_secondary =   4.2980 #kJ/kg-K
+        self.t_sat = 516 #K
+        self.q_vap = 145350.6 #kj
+        self.mw_water = 18.02 #g/mol
 
         # Initialization
-        self.primary_mass_dens = 1*unit.gram/unit.cc
-        self.primary_cp = 4.298 * unit.kj/unit.kg/unit.kelvin
-        self.tau_primary = 1*unit.minute
-
         self.primary_inflow_pressure = 12.8*unit.mega*unit.pascal
-        self.primary_inflow_temp = (30+273.15)*unit.kelvin
+        self.primary_inflow_temp = 30+273.15
         self.primary_inflow_mass_flowrate = 666
 
-        self.secondary_mass_dens = 1*unit.gram/unit.cc
-        self.secondary_cp = 4.298 * unit.kj/unit.kg/unit.kelvin
-        self.tau_secondary = 1*unit.minute
-
         self.secondary_inflow_pressure = 3.4*unit.mega*unit.pascal
-        self.secondary_inflow_temp = (20+273.15)*unit.kelvin
+        self.secondary_inflow_temp = 20+273.15
         self.secondary_inflow_mass_flowrate = 67
 
-        self.primary_outflow_temp = (20 + 273.15)*unit.kelvin
+        self.primary_outflow_temp = 20 + 273.15
         self.primary_outflow_mass_flowrate = 67
         self.primary_outflow_pressure = 12.8*unit.mega*unit.pascal
 
         self.secondary_outflow_mass_flowrate = 67
-        self.secondary_outflow_temp = (20 + 273.15)*unit.kelvin
+        self.secondary_outflow_temp = 20 + 273.15
         self.secondary_outflow_pressure = 3.4*unit.mega*unit.pascal
 
         # Primary outflow phase history
@@ -179,7 +175,7 @@ class Steamer(Module):
 
             (check_time, primary_inflow) = self.recv('primary-inflow')
             assert abs(check_time-time) <= 1e-6
-
+            
             self.primary_inflow_temp = primary_inflow['temperature']
             self.primary_inflow_pressure = primary_inflow['pressure']
             self.primary_inflow_mass_flowrate = primary_inflow['mass_flowrate']
@@ -236,28 +232,49 @@ class Steamer(Module):
             self.send((msg_time, secondary_outflow), 'secondary-outflow')
 
     def __step(self, time=0.0):
-        """ODE IVP problem.
-        """
 
-        # Get state values
-        u_0 = self.__get_state_vector(time)
+        p_in = self.primary_inflow_pressure
+        p_out = self.secondary_outflow_pressure
+        t_h_i = self.primary_inflow_temp
+        t_c_i = self.secondary_inflow_temp
+        c_min = self.c_min
+        cp_out = self.real_cp_secondary
+        # Calculations
 
-        t_interval_sec = np.linspace(time, time+self.time_step, num=2)
+        q = self.effectiveness*c_min*(t_h_i-t_c_i)
 
-        max_n_steps_per_time_step = 1000 # max number of nonlinear algebraic solver
-                                         # iterations per time step
+        t_h_o = t_h_i - (q/self.c_hot)
+        t_c_o = t_c_i + (q/c_min)
 
-        (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
-                                         rtol=1e-4, atol=1e-8,
-                                         mxstep=max_n_steps_per_time_step,
-                                         full_output=True, tfirst=False)
+        q_s = c_min*(t_c_o - t_c_i)
+        q_req = cp_out*(self.t_sat-t_c_i)
 
-        assert info_dict['message'] == 'Integration successful.', info_dict['message']
+        # If no vaporization
+        if q_s < q_req: #kW
 
-        u_vec = u_vec_hist[1, :]  # solution vector at final time step
+            t_exit = q_s/(cp_out*self.secondary_inflow_mass_flowrate) + t_c_i
 
-        temp_p = u_vec[0] # primary outflow temp
-        temp_s = u_vec[1] # secondary outflow temp
+        # If some vaporization
+        elif q_s < self.q_vap:
+
+            t_exit = self.t_sat
+
+        # If complete vaporization - calculate gas tenperautre with cp function
+        else:
+
+            q_heat_steam = q_s - self.q_vap
+            delta_h = q_heat_steam/self.secondary_inflow_mass_flowrate
+
+            a = 3.470
+            b =  1.45*10e-3
+            c = (delta_h*self.mw_water/unit.R) + a*self.t_sat + b*(self.t_sat**2)
+            coeff = [b,a,-c]
+            roots = np.roots(coeff)
+
+            if roots[0] > 0:
+                t_exit = roots[0]
+            else:
+                t_exit = roots[1]
 
         # Update phases
         primary_outflow = self.primary_outflow_phase.get_row(time)
@@ -266,81 +283,11 @@ class Steamer(Module):
         time += self.time_step
 
         self.primary_outflow_phase.add_row(time, primary_outflow)
-        self.primary_outflow_phase.set_value('temp', temp_p, time)
+        self.primary_outflow_phase.set_value('temp', t_h_o, time)
 
         self.secondary_outflow_phase.add_row(time, secondary_outflow)
-        self.secondary_outflow_phase.set_value('temp', temp_s, time)
-        self.secondary_outflow_phase.set_value('flowrate',
-                                               self.secondary_inflow_mass_flowrate,
-                                               time)
-        self.secondary_outflow_phase.set_value('pressure',
-                                               self.secondary_outflow_pressure,
-                                               time)
+        self.secondary_outflow_phase.set_value('temp', t_exit, time)
+        self.secondary_outflow_phase.set_value('flowrate', self.secondary_inflow_mass_flowrate, time)
+        self.secondary_outflow_phase.set_value('pressure', p_out, time)
 
         return time
-
-    def __get_state_vector(self, time):
-        """Return a numpy array of all unknowns ordered as shown.
-           Neutron density, delayed neutron emmiter concentrations,
-           termperature of fuel, and temperature of coolant.
-        """
-
-        u_vec = np.empty(0, dtype=np.float64)
-
-        temp_p = self.primary_outflow_phase.get_value('temp', time)
-        u_vec = np.append(u_vec, temp_p)
-
-        temp_s = self.secondary_outflow_phase.get_value('temp', time)
-        u_vec = np.append(u_vec, temp_s)
-
-        return u_vec
-
-    def __f_vec(self, u_vec, time):
-
-        temp_p = u_vec[0] # get temperature of primary outflow
-
-        temp_s = u_vec[1] # get temperature of secondary outflow
-
-        # initialize f_vec to zero
-        f_tmp = np.zeros(2, dtype=np.float64) # vector for f_vec return
-
-        #-----------------------
-        # primary energy balance
-        #-----------------------
-        rho_p = self.primary_mass_dens
-        cp_p = self.primary_cp
-        vol_p = self.primary_volume
-
-        temp_p_in = self.primary_inflow_temp
-
-        tau_p = self.tau_primary
-
-        heat_sink = self.__heat_sink_rate(temp_p, temp_s)
-
-        f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) + 1./rho_p/cp_p/vol_p * heat_sink
-
-        #-----------------------
-        # secondary energy balance
-        #-----------------------
-        rho_s = self.secondary_mass_dens
-        cp_s = self.secondary_cp
-        vol_s = self.secondary_volume
-
-        temp_s_in = self.secondary_inflow_temp
-
-        tau_s = self.tau_secondary
-
-        heat_source = - heat_sink
-
-        f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + 1./rho_s/cp_s/vol_s * heat_source
-
-        return f_tmp
-
-    def __heat_sink_rate(self, temp_p, temp_s):
-        """Cooling rate of primary."""
-
-        ht_coeff = self.ht_coeff
-
-        q_p = - ht_coeff * (temp_p - temp_s)
-
-        return q_p
