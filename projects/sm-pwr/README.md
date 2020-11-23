@@ -1,7 +1,7 @@
 # NuScale 720 SMR BoP Simulation
 
-UMass Lowell Fall 2020
-Dept. of Chemical Engineering, Nuclear Program
+UMass Lowell Fall 2020 <br>
+Dept. of Chemical Engineering, Nuclear Program <br>
 Engy-4390: Nuclear Systems Design and Analysis
 
 View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/sm-pwr/project-report.ipynb)
