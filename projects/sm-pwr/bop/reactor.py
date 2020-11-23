@@ -89,7 +89,7 @@ class SMPWR(Module):
         self.coolant_volume = 2.8*unit.meter**3
         self.coolant_pressure = 12.8 #MPa
 
-        self.ht_coeff = 466459.62*unit.watt/unit.kelvin
+        self.ht_coeff = 300000*unit.watt/unit.kelvin
 
         self.tau = 2.8*unit.second # coolant flow residence time
 
