@@ -4,7 +4,7 @@
 # https://cortix.org
 """Cortix Run File"""
 
-import scipy.constants as unit
+import unit
 import matplotlib.pyplot as plt
 
 from cortix import Cortix
@@ -15,9 +15,6 @@ from steamer import Steamer
 from turbine import Turbine
 
 def main():
-
-    # Units
-    unit.second = 1.0
 
     # Preamble
     end_time = 1*unit.hour
