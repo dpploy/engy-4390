@@ -1,11 +1,11 @@
-# Engy-4390: Nuclear System Design and Analysis
+# NuScale 720 SMR BoP Simulation
 
-UMass Lowell Fall 2020
-Dept. of Chemical Engineering, Nuclear Program
+UMass Lowell Fall 2020 <br>
+Dept. of Chemical Engineering, Nuclear Program <br>
+Engy-4390: Nuclear Systems Design and Analysis
 
-View the poster on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/sm-pwr/project-report.ipynb)
+View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/sm-pwr/project-report.ipynb)
 
-[**NuScale 720 SMR BoP Simulation**](https://www.scipy2020.scipy.org/virtual-poster-session)
 
  >[Jack Kennedy](https://github.com/xxxx), [Nik Kemper](https://github.com/xxxx) and [Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
  >[Dept. of Chemical Engineering (Nuclear Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
