@@ -4,7 +4,7 @@
 # https://cortix.org
 """Cortix Run File"""
 
-import scipy.constants as unit
+import unit
 import matplotlib.pyplot as plt
 
 from cortix import Cortix
@@ -15,9 +15,6 @@ from steamer import Steamer
 from turbine import Turbine
 
 def main():
-
-    # Units
-    unit.second = 1.0
 
     # Preamble
     end_time = 1*unit.hour
@@ -53,21 +50,21 @@ def main():
 
     # Turbine
 
-#    turbine = Turbine()  # Create reactor module
+    turbine = Turbine()  # Create reactor module
 
-#    turbine.name = 'Turbine'
-#    turbine.save = True
-#    turbine.time_step = time_step
-#    turbine.end_time = end_time
-#    turbine.show_time = show_time
+    turbine.name = 'Turbine'
+    turbine.save = True
+    turbine.time_step = time_step
+    turbine.end_time = end_time
+    turbine.show_time = show_time
 
-#    plant_net.module(turbine)  # Add steamer module to network
+    plant_net.module(turbine)  # Add steamer module to network
 
     # Balance of Plant Network Connectivity
 
     plant_net.connect([reactor, 'coolant-outflow'], [steamer, 'primary-inflow'])
     plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
-#    plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
+    plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
 
     plant_net.draw()
 
@@ -133,14 +130,14 @@ def main():
         #steamer.secondary_outflow_phase.plot()
 
         # Turbine plots
-        #turbine = plant_net.modules[2]
+        turbine = plant_net.modules[2]
 
-        #(quant, time_unit) = turbine.state_phase.get_quantity_history('power')
+        (quant, time_unit) = turbine.state_phase.get_quantity_history('power')
 
-        #quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-        #           y_label=quant.latex_name+' ['+quant.unit+']')
-        #plt.grid()
-        #plt.savefig('turbine-power.png', dpi=300)
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('turbine-power.png', dpi=300)
 
 
     plant.close()  # Properly shutdow plant

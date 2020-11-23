@@ -187,8 +187,6 @@ class WaterHeater(Module):
             #self.inturb_temp = inturb['temperature']
             #self.inturb_pressure = inturb['pressure']
             #self.inturb_mass_flowrate = inturb['mass_flowrate']
-            
-       
 
     def __step(self, time=0.0):
 
