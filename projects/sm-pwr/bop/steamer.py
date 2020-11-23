@@ -58,7 +58,7 @@ class Steamer(Module):
 
         self.primary_volume = 15*unit.meter**3
         self.secondary_volume = 25*unit.meter**3
-        self.ht_coeff = 250000*unit.watt/unit.kelvin
+        self.ht_coeff = 4416194*unit.watt/unit.kelvin
 
         # Initialization
         self.primary_mass_dens = 1*unit.gram/unit.cc
@@ -307,10 +307,11 @@ class Steamer(Module):
         #-----------------------
         # primary energy balance
         #-----------------------
-        rho_p = self.primary_mass_dens
-        cp_p = self.primary_cp
+        rho_p = 1/(steam_table._Region1((self.primary_inflow_temp),self.primary_inflow_pressure/unit.mega)["v"])
+        cp_p = steam_table._Region1((self.primary_inflow_temp),self.primary_inflow_pressure/unit.mega)["cp"]
         vol_p = self.primary_volume
-
+        
+        
         temp_p_in = self.primary_inflow_temp
 
         tau_p = self.tau_primary
@@ -322,8 +323,8 @@ class Steamer(Module):
         #-----------------------
         # secondary energy balance
         #-----------------------
-        rho_s = self.secondary_mass_dens
-        cp_s = self.secondary_cp
+        rho_s = 1/(steam_table._Region1((self.secondary_inflow_temp),self.secondary_inflow_pressure/unit.mega)["v"])
+        cp_s = steam_table._Region1((self.secondary_inflow_temp),self.secondary_inflow_pressure/unit.mega)["cp"]
         vol_s = self.secondary_volume
 
         temp_s_in = self.secondary_inflow_temp
