@@ -58,12 +58,14 @@ class Steamer(Module):
 
         self.primary_volume = 15*unit.meter**3
         self.secondary_volume = 25*unit.meter**3
-        self.ht_coeff = 4416194*unit.watt/unit.kelvin
+        #self.ht_coeff = 4416194*unit.watt/unit.kelvin
+        self.ht_coeff = 41720000.29*unit.watt/unit.kelvin
 
         # Initialization
         self.primary_mass_dens = 1*unit.gram/unit.cc
         self.primary_cp = 4.298 * unit.kj/unit.kg/unit.kelvin
         self.tau_primary = 1*unit.minute
+        self.t_sat = 516 #K
 
         self.primary_inflow_pressure = 12.8*unit.mega*unit.pascal
         self.primary_inflow_temp = (30+273.15)*unit.kelvin
@@ -74,7 +76,7 @@ class Steamer(Module):
         self.tau_secondary = 1*unit.minute
 
         self.secondary_inflow_pressure = 3.4*unit.mega*unit.pascal
-        self.secondary_inflow_temp = (20+273.15)*unit.kelvin
+        self.secondary_inflow_temp = (110+273.15)*unit.kelvin
         self.secondary_inflow_mass_flowrate = 67
 
         self.primary_outflow_temp = (20 + 273.15)*unit.kelvin
@@ -307,18 +309,14 @@ class Steamer(Module):
         #-----------------------
         # primary energy balance
         #-----------------------
-        rho_p = 1/(steam_table._Region1((self.primary_inflow_temp),self.primary_inflow_pressure/unit.mega)["v"])
-        cp_p = steam_table._Region1((self.primary_inflow_temp),self.primary_inflow_pressure/unit.mega)["cp"]
+        rho_p = 1/(steam_table._Region1(self.primary_inflow_temp,self.primary_inflow_pressure/unit.mega)["v"])
+        cp_p = steam_table._Region1(self.primary_inflow_temp,self.primary_inflow_pressure/unit.mega)["cp"]
         vol_p = self.primary_volume
         
         
         temp_p_in = self.primary_inflow_temp
 
         tau_p = self.tau_primary
-
-        heat_sink = self.__heat_sink_rate(temp_p, temp_s)
-
-        f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) + 1./rho_p/cp_p/vol_p * heat_sink
 
         #-----------------------
         # secondary energy balance
@@ -330,18 +328,53 @@ class Steamer(Module):
         temp_s_in = self.secondary_inflow_temp
 
         tau_s = self.tau_secondary
+        
+        #-----------------------
+        # calculations
+        #-----------------------
+        heat_sink = self.__heat_sink_rate(temp_p_in, temp_s_in, cp_p, cp_s)
+
+        f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) + 1./rho_p/cp_p/vol_p * heat_sink
+        
+
 
         heat_source = - heat_sink
+        
+        temp_s_out = - 1/tau_s * (temp_s - temp_s_in) + 1./rho_s/cp_s/vol_s * heat_source
 
-        f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + 1./rho_s/cp_s/vol_s * heat_source
+        q_total = (temp_s_out-temp_s_in)*cp_s
+        q_heat = (self.t_sat - temp_s_in)*cp_s
+       
+        if q_total < q_heat:
+            f_tmp[1] = temp_s_out
+            
+        else:
+            h_v = steam_table._Region4(self.secondary_inflow_pressure,1)['h']
+            h_l = steam_table._Region4(self.secondary_inflow_pressure,0)['h']
+            h_vap = h_v-h_l
+            
+            quality = (h_vap - (q_total - q_heat))/h_vap
+            f_tmp[1] = steam_table._Region4(self.secondary_inflow_pressure,quality)['T']
+        
+        
+        
+        #f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + 1./rho_s/cp_s/vol_s * heat_source
 
         return f_tmp
 
-    def __heat_sink_rate(self, temp_p, temp_s):
+    def __heat_sink_rate(self, temp_p, temp_s, cp_p, cp_s):
         """Cooling rate of primary."""
 
-        ht_coeff = self.ht_coeff
-
-        q_p = - ht_coeff * (temp_p - temp_s)
+        c_min = cp_s*self.secondary_inflow_mass_flowrate
+        
+        #ntu = self.ht_coeff/(c_min)
+        ntu = 4.5
+        
+        c_r = (c_min)/(cp_p*self.primary_inflow_mass_flowrate)
+        
+        eta = (1-np.exp(-ntu*(1-c_r)))/(1-c_r*np.exp(-ntu*(1-c_r)))
+        
+       
+        q_p = - eta*c_min*(temp_p - temp_s)
 
         return q_p
