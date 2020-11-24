@@ -101,10 +101,10 @@ def main():
     plant_net.connect([water_heater, 'outflow'], [steamer, 'secondary-inflow'])
 
     plant_net.draw(engine='circo', node_shape='folder')
-
+    plant.run()
     # Run
-    if run:
-        plant.run()  # Run network dynamics simulation
+    #if run:
+        #plant.run()  # Run network dynamics simulation
 
     # Plots
 
