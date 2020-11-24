@@ -71,7 +71,7 @@ class SMPWR(Module):
         #Data pertaining to two-temperature heat balances
         self.fis_energy = 180 * 1.602e-13 *unit.joule # J/fission
         self.sigma_f_o = 586.2 * 100 * 1e-30 * unit.meter**2
-        self.temp_o = 30 + 273.15 # K
+        self.temp_o = 20 + 273.15 # K
         self.temp_c_ss_operation = 265 + 273.15# K desired ss operation temp of coolant
         self.thermal_neutron_velo = 2200*unit.meter/unit.second
 

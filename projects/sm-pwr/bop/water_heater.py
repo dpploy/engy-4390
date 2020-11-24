@@ -7,9 +7,9 @@
 import logging
 
 import unit
-
+from scipy.integrate import odeint
 import iapws.iapws97 as steam_table
-
+import numpy as np
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
@@ -50,7 +50,8 @@ class WaterHeater(Module):
         # Domain attributes
 
         # Configuration parameters
-
+        self.primary_volume = 100
+        self.secondary_volume = 100
         # Initialization
 
       
@@ -83,12 +84,12 @@ class WaterHeater(Module):
                         value=self.heating_outflow_temp,
                         latex_name=r'$T_1$',
                         info='Heating Fluid Outflow Temperature')
-
+        print(temp)
         quantities.append(temp)
 
         self.heating_outflow_phase = Phase(time_stamp=self.initial_time,
                                            time_unit='s', quantities=quantities)
-        
+         
         # Outflow phase history
         quantities = list()
 
@@ -198,7 +199,7 @@ class WaterHeater(Module):
         
         # Get state values
         u_0 = self.__get_state_vector(time)
-
+        print(u_0)
         t_interval_sec = np.linspace(time, time+self.time_step, num=2)
 
         max_n_steps_per_time_step = 1000 # max number of nonlinear algebraic solver
@@ -212,7 +213,6 @@ class WaterHeater(Module):
         assert info_dict['message'] == 'Integration successful.', info_dict['message']
 
         u_vec = u_vec_hist[1, :]  # solution vector at final time step
-
         temp_p = u_vec[0] # primary outflow temp
         temp_s = u_vec[1] # secondary outflow temp
 
@@ -242,18 +242,19 @@ class WaterHeater(Module):
         u_vec = np.empty(0, dtype=np.float64)
 
         temp_p = self.heating_outflow_phase.get_value('temp', time)
+        print(temp_p,'temp_p')
         u_vec = np.append(u_vec, temp_p)
 
         temp_s = self.outflow_phase.get_value('temp', time)
         u_vec = np.append(u_vec, temp_s)
         
+        return u_vec
     
     def __f_vec(self, u_vec, time):
 
         temp_p = u_vec[0] # get temperature of primary outflow
-
         temp_s = u_vec[1] # get temperature of secondary outflow
-
+        print(u_vec)
         # initialize f_vec to zero
         f_tmp = np.zeros(2, dtype=np.float64) # vector for f_vec return
 
@@ -272,8 +273,8 @@ class WaterHeater(Module):
         #-----------------------
         # secondary energy balance
         #-----------------------
-        rho_s = 1/(steam_table._Region4((self.secondary_inflow_temp),self.secondary_inflow_pressure/unit.mega)["v"])
-        cp_s = steam_table._Region4((self.secondary_inflow_temp),self.secondary_inflow_pressure/unit.mega)["cp"]
+        rho_s = 1/(steam_table._Region1((self.inflow_temp),self.inflow_pressure/unit.mega)["v"])
+        cp_s = steam_table._Region1((self.inflow_temp),self.inflow_pressure/unit.mega)["cp"]
         vol_s = self.secondary_volume
 
         temp_s_in = self.inflow_temp
@@ -311,7 +312,7 @@ class WaterHeater(Module):
         ntu = self.ht_coeff/(c_min)
      
         
-        c_r = (c_min)/(cp_p*self.heating_inflow_mass_flowrate)
+        c_r = (c_min)/(cp_p*self.heating_mass_flowrate)
         
                 
         eta = (1-np.exp(-ntu*(1-c_r)))/(1-c_r*np.exp(-ntu*(1-c_r)))

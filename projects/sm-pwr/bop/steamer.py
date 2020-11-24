@@ -68,7 +68,7 @@ class Steamer(Module):
         self.t_sat = 516 #K
 
         self.primary_inflow_pressure = 12.8*unit.mega*unit.pascal
-        self.primary_inflow_temp = (30+273.15)*unit.kelvin
+        self.primary_inflow_temp = (20+273.15)*unit.kelvin
         self.primary_inflow_mass_flowrate = 666
 
         self.secondary_mass_dens = 1*unit.gram/unit.cc

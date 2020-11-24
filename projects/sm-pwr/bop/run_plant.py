@@ -14,7 +14,7 @@ from reactor import SMPWR
 from steamer import Steamer
 from turbine import Turbine
 from condenser import Condenser
-from water_heater import WaterHeater
+from FWHS import FWHS as WaterHeater
 
 def main():
 
@@ -97,7 +97,7 @@ def main():
     plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
     plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
     plant_net.connect([turbine, 'outflow'], [condenser, 'inflow'])
-    plant_net.connect([condenser, 'outflow'], [water_heater, 'inflow'])
+    plant_net.connect([condenser, 'outflow'], [water_heater, 'incond'])
     plant_net.connect([water_heater, 'outflow'], [steamer, 'secondary-inflow'])
 
     plant_net.draw(engine='circo', node_shape='folder')
