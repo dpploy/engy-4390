@@ -35,7 +35,6 @@ class WaterHeater(Module):
 
         super().__init__()
 
-        #self.port_names_expected = ['inturb','incond', 'outflow']
         self.port_names_expected = ['inflow', 'outflow']
 
         # General attributes
@@ -58,9 +57,9 @@ class WaterHeater(Module):
         #self.inturb_temp = 0.0
         #self.inturb_mass_flowrate = 0.0
         
-        self.incond_pressure = 3.4
-        self.incond_temp = 100+273
-        self.incond_mass_flowrate = 67
+        self.inflow_pressure = 3.4
+        self.inflow_temp = 100+273
+        self.inflow_mass_flowrate = 67
 
         self.outflow_temp = 20 + 273.15
         self.outflow_temp_ss = 422 #k
@@ -156,7 +155,7 @@ class WaterHeater(Module):
             outflow['flowrate'] = self.outflow_mass_flowrate
             self.send((msg_time, outflow), 'outflow')
 
-        # Interactions in the incond port
+        # Interactions in the inflow port
         #----------------------------------------
         # one way "from" condenser
 
@@ -168,9 +167,9 @@ class WaterHeater(Module):
             (check_time, inflow) = self.recv('inflow')
             assert abs(check_time-time) <= 1e-6
 
-            self.incond_temp = inflow['temperature']
-            self.incond_pressure = inflow['pressure']
-            self.incond_mass_flowrate = inflow['mass_flowrate']
+            self.inflow_temp = inflow['temperature']
+            self.inflow_pressure = inflow['pressure']
+            self.inflow_mass_flowrate = inflow['mass_flowrate']
             
          # Interactions in the inturb port
         #----------------------------------------
@@ -192,9 +191,9 @@ class WaterHeater(Module):
 
         # Get state values
         #flowturb = self.inturb_mass_flowrate
-        flowcond = self.incond_mass_flowrate
+        flowcond = self.inflow_mass_flowrate
        # hturb_in = steam_table._Region1(self.inturb_temp,self.inturb_pressure)['h']
-        hcond_in = steam_table._Region1(self.incond_temp,self.incond_pressure)['h']
+        hcond_in = steam_table._Region1(self.inflow_temp,self.inflow_pressure)['h']
         t_exit = self.outflow_temp_ss
         p_out = self.outflow_pressure_ss
         #flow_out = flowturb+flowcond
