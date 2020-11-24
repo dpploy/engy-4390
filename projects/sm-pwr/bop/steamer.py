@@ -59,7 +59,8 @@ class Steamer(Module):
         self.primary_volume = 15*unit.meter**3
         self.secondary_volume = 25*unit.meter**3
         self.ht_coeff = 4416194*unit.watt/unit.kelvin
-
+        self.tb = 516
+        
         # Initialization
         self.primary_mass_dens = 1*unit.gram/unit.cc
         self.primary_cp = 4.298 * unit.kj/unit.kg/unit.kelvin
@@ -342,6 +343,6 @@ class Steamer(Module):
 
         ht_coeff = self.ht_coeff
 
-        q_p = - ht_coeff * (temp_p - temp_s)
+        q_p = - ht_coeff * (temp_p - self.tb)
 
         return q_p

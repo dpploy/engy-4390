@@ -88,7 +88,7 @@ class Turbine(Module):
                         latex_name=r'$P$',
                         info='Turbine Outflow Pressure')
 
-        quantities.append(temp)
+        quantities.append(pressure)
 
         quality = Quantity(name='quality',
                          formal_name='X', unit='',
