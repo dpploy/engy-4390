@@ -147,7 +147,7 @@ class Condenser(Module):
             outflow = dict()
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
-            outflow['flowrate'] = self.outflow_mass_flowrate
+            outflow['mass_flowrate'] = self.outflow_mass_flowrate
             self.send((msg_time, outflow), 'outflow')
 
         # Interactions in the inflow port
