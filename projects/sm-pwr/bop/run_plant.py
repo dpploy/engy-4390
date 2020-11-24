@@ -13,8 +13,15 @@ from cortix import Network
 from reactor import SMPWR
 from steamer import Steamer
 from turbine import Turbine
+from condenser import Condenser
+from water_heater import WaterHeater
 
 def main():
+
+    # Debugging
+
+    make_plots = False
+    run        = False
 
     # Preamble
     end_time = 1*unit.hour
@@ -60,22 +67,48 @@ def main():
 
     plant_net.module(turbine)  # Add steamer module to network
 
+    '''Condenser'''
+
+    condenser = Condenser()  # Create condenser module
+
+    condenser.name = 'Condenser'
+    condenser.save = True
+    condenser.time_step = time_step
+    condenser.end_time = end_time
+    condenser.show_time = show_time
+
+    plant_net.module(condenser)  # Add condenser module to network`
+
+    '''Feedwater Heating system'''
+
+    water_heater = WaterHeater()  # Create water_heater module
+
+    water_heater.name = 'Water Heater'
+    water_heater.save = True
+    water_heater.time_step = time_step
+    water_heater.end_time = end_time
+    water_heater.show_time = show_time
+
+    plant_net.module(water_heater)  # Add water_heater module to network
+
     # Balance of Plant Network Connectivity
 
     plant_net.connect([reactor, 'coolant-outflow'], [steamer, 'primary-inflow'])
     plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
     plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
+    plant_net.connect([turbine, 'outflow'], [condenser, 'inflow'])
+    plant_net.connect([condenser, 'outflow'], [water_heater, 'inflow'])
+    plant_net.connect([water_heater, 'outflow'], [steamer, 'secondary-inflow'])
 
-    plant_net.draw()
-
+    plant_net.draw(engine='circo', node_shape='folder')
+    plant.run()
     # Run
-
-    plant.run()  # Run network dynamics simulation
-
+    #if run:
+        #plant.run()  # Run network dynamics simulation
 
     # Plots
 
-    if plant.use_multiprocessing or plant.rank == 0:
+    if make_plots and plant.use_multiprocessing or plant.rank == 0:
 
         # Reactor plots
         reactor = plant_net.modules[0]

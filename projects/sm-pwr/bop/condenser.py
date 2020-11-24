@@ -35,7 +35,7 @@ class Condenser(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['condenser-inflow', 'condenser-outflow']
+        self.port_names_expected = ['inflow', 'outflow']
 
         # Units
 
@@ -56,7 +56,7 @@ class Condenser(Module):
         # Initialization
 
         self.inflow_pressure = 3.4
-        self.inflow_temp = 200+273
+        self.inflow_temp = 20+273
         self.inflow_mass_flowrate = 67
 
         self.outflow_temp = 20 + 273.15
@@ -131,15 +131,32 @@ class Condenser(Module):
             time = self.__step(time)
 
     def __call_ports(self, time):
+        
+        
+        # Interactions in the inflow port
+        #----------------------------------------
+        # one way "from" turbine
+
+        # receive from
+        if self.get_port('inflow').connected_port:
+
+            self.send(time, 'inflow')
+
+            (check_time, inflow) = self.recv('inflow')
+            assert abs(check_time-time) <= 1e-6
+
+            self.inflow_temp = inflow['temperature']
+            self.inflow_pressure = inflow['pressure']
+            self.inflow_mass_flowrate = inflow['mass_flowrate']
 
         # Interactions in the feed water inflow port
         #-----------------------------------------
         # one way "to" feedwater
 
         # send to
-        if self.get_port('condenser-outflow').connected_port:
+        if self.get_port('outflow').connected_port:
 
-            msg_time = self.recv('condenser-outflow')
+            msg_time = self.recv('outflow')
             assert msg_time <= time
 
             temp = self.outflow_phase.get_value('temp', msg_time)
@@ -147,30 +164,16 @@ class Condenser(Module):
             outflow = dict()
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
-            outflow['flowrate'] = self.outflow_mass_flowrate
-            self.send((msg_time, outflow), 'condenser-outflow')
+            outflow['mass_flowrate'] = self.outflow_mass_flowrate
+            self.send((msg_time, outflow), 'outflow')
 
-        # Interactions in the inflow port
-        #----------------------------------------
-        # one way "from" turbine
 
-        # receive from
-        if self.get_port('condenser-inflow').connected_port:
-
-            self.send(time, 'condenser-inflow')
-
-            (check_time, inflow) = self.recv('condenser-inflow')
-            assert abs(check_time-time) <= 1e-6
-
-            self.inflow_temp = inflow['temperature']
-            self.inflow_pressure = inflow['pressure']
-            self.inflow_mass_flowrate = inflow['mass_flowrate']
 
     def __step(self, time=0.0):
 
         # Get state values
         t_exit = self.inflow_temp
-        p_out = steam_table._PSat_T(t_exit)
+        p_out = steam_table._PSat_T(self.inflow_temp)
         flow_out = self.inflow_mass_flowrate
         h_exit = steam_table._Region4(p_in, 0)['h']
         #q_removed = flow_rate*(h_exit-h_in)
