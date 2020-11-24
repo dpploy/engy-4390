@@ -371,8 +371,8 @@ class Steamer(Module):
 
         c_min = cp_s*self.secondary_inflow_mass_flowrate
         
-        #ntu = self.ht_coeff/(c_min)
-        ntu = 4.5
+        ntu = self.ht_coeff/(c_min)
+   
         
         c_r = (c_min)/(cp_p*self.primary_inflow_mass_flowrate)
         
