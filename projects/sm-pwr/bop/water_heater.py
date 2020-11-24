@@ -36,7 +36,7 @@ class WaterHeater(Module):
         super().__init__()
 
         #self.port_names_expected = ['inturb','incond', 'outflow']
-        self.port_names_expected = ['incond', 'outflow']
+        self.port_names_expected = ['inflow', 'outflow']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -161,16 +161,16 @@ class WaterHeater(Module):
         # one way "from" condenser
 
         # receive from
-        if self.get_port('incond').connected_port:
+        if self.get_port('inflow').connected_port:
 
-            self.send(time, 'incond')
+            self.send(time, 'inflow')
 
-            (check_time, incond) = self.recv('incond')
+            (check_time, inflow) = self.recv('inflow')
             assert abs(check_time-time) <= 1e-6
 
-            self.incond_temp = incond['temperature']
-            self.incond_pressure = incond['pressure']
-            self.incond_mass_flowrate = incond['mass_flowrate']
+            self.incond_temp = inflow['temperature']
+            self.incond_pressure = inflow['pressure']
+            self.incond_mass_flowrate = inflow['mass_flowrate']
             
          # Interactions in the inturb port
         #----------------------------------------
