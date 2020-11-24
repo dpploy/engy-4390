@@ -206,8 +206,8 @@ class FWHS(Module):
        # hturb_in = steam_table._Region1(self.inturb_temp,self.inturb_pressure)['h']
         hcond_in = steam_table._Region1(self.incond_temp,self.incond_pressure)['h']
         
-        if time < 1500:
-            t_exit = 293.15+(self.outflow_temp_ss-293.15)*(1-np.exp(-time/300))
+        if time < 3000:
+            t_exit = 293.15+(self.outflow_temp_ss-293.15)*(1-np.exp(-time/700))
         else:
             t_exit = self.outflow_temp_ss
                 
@@ -219,7 +219,6 @@ class FWHS(Module):
         q_removed = flow_out*h_exit-flowcond*hcond_in
         #update state variables
         condenser_outflow = self.outflow_phase.get_row(time)
-        print(time)
         time += self.time_step
 
         self.outflow_phase.add_row(time, condenser_outflow)
