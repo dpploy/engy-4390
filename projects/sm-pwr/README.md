@@ -9,7 +9,7 @@ View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/j
 
 Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/tree/main/projects/sm-pwr)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/main)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD)
 
 
  >[Jack Kennedy](https://github.com/xxxx), [Nik Kemper](https://github.com/xxxx) and [Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
