@@ -7,7 +7,7 @@ Engy-4390: Nuclear Systems Design and Analysis
 View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/sm-pwr/project-report.ipynb)
 
 
-Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/tree/main/projects/sm-pwr/HEAD)
+Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/tree/main/projects/sm-pwr)
 
 
  >[Jack Kennedy](https://github.com/xxxx), [Nik Kemper](https://github.com/xxxx) and [Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
