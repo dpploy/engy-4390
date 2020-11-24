@@ -260,7 +260,7 @@ class Turbine(Module):
                 t_runoff = steam_table._Region4(p_out_MPa, quality)['T']
 
             power = self.inflow_mass_flowrate * w_real
-
+            
         # Update state variables
         turbine_outflow = self.outflow_phase.get_row(time)
         turbine = self.state_phase.get_row(time)
@@ -272,7 +272,7 @@ class Turbine(Module):
         self.outflow_phase.set_value('temp', t_runoff, time)
         self.outflow_phase.set_value('flowrate', self.inflow_mass_flowrate, time)
         self.outflow_phase.set_value('quality', quality, time)
-        self.outflow_phase.set_value('pressure', self.vent_pressure, time)
+        self.outflow_phase.set_value('pressure', p_out_MPa, time)
 
         self.state_phase.add_row(time, turbine)
 
