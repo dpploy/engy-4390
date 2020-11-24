@@ -8,6 +8,10 @@ import logging
 
 import unit
 
+import math
+from scipy.integrate import odeint
+import numpy as np
+
 import iapws.iapws97 as steam_table
 
 from cortix import Module
@@ -52,15 +56,16 @@ class WaterHeater(Module):
         # Configuration parameters
 
         # Initialization
-
+        self.primary_volume = 5
+        self.secondary_volume = 10
       
         self.heating_inflow_temp = 190 + 273.15
-        self.heating_inflow_pressure = 0.1 #MPa
+        self.heating_inflow_pressure= 0.1*unit.mega*unit.pascal
         self.heating_mass_flowrate = 40 #kg/s
         
         self.heating_outflow_temp = 180 + 273.15
         
-        self.inflow_pressure = 3.4
+        self.inflow_pressure = 2
         self.inflow_temp = 20+273
         self.inflow_mass_flowrate = 67
         
@@ -73,7 +78,7 @@ class WaterHeater(Module):
         self.outflow_temp = 20 + 273.15
         self.outflow_temp_ss = 422 #k
         self.outflow_mass_flowrate = 67
-        self.outflow_pressure = 3.4
+        self.outflow_pressure = 3.4*unit.mega*unit.pascal
         
         # Heating outflow phase history
         quantities = list()
@@ -247,8 +252,12 @@ class WaterHeater(Module):
         temp_s = self.outflow_phase.get_value('temp', time)
         u_vec = np.append(u_vec, temp_s)
         
+        return  u_vec
+        
     
     def __f_vec(self, u_vec, time):
+        
+        print('heatwater', self.inflow_pressure)
 
         temp_p = u_vec[0] # get temperature of primary outflow
 
@@ -260,8 +269,8 @@ class WaterHeater(Module):
         #-----------------------
         # primary energy balance
         #-----------------------
-        rho_p = 1/(steam_table._Region2(self.heating_inflow_temp,self.heating_inflow_pressure/unit.mega)["v"])
-        cp_p = steam_table._Region2(self.heating_inflow_temp,self.heating_inflow_pressure/unit.mega)["cp"]
+        rho_p = 1/(steam_table._Region2(self.heating_inflow_temp,self.heating_inflow_pressure)["v"])
+        cp_p = steam_table._Region2(self.heating_inflow_temp,self.heating_inflow_pressure)["cp"]
         vol_p = self.primary_volume
         
         
@@ -272,8 +281,9 @@ class WaterHeater(Module):
         #-----------------------
         # secondary energy balance
         #-----------------------
-        rho_s = 1/(steam_table._Region4((self.secondary_inflow_temp),self.secondary_inflow_pressure/unit.mega)["v"])
-        cp_s = steam_table._Region4((self.secondary_inflow_temp),self.secondary_inflow_pressure/unit.mega)["cp"]
+        rho_s = 1/(steam_table._Region1(self.inflow_pressure,0)["v"])
+        print('pressssssssssssssssure!!!!!!!!!!!!!!!!!!!!' , self.inflow_pressure)
+        cp_s = steam_table._Region1(self.inflow_pressure,0)["cp"]
         vol_s = self.secondary_volume
 
         temp_s_in = self.inflow_temp
@@ -297,6 +307,7 @@ class WaterHeater(Module):
 
     def __heat_sink_rate(self, temp_p_in, temp_s_in, cp_p, cp_s):
         """Cooling rate of primary."""
+        print(cp_s,self.inflow_mass_flowrate)
 
         c_cold = cp_s*self.inflow_mass_flowrate
         c_hot = cp_p*self.heating_mass_flowrate
