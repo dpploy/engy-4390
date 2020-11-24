@@ -207,7 +207,7 @@ class FWHS(Module):
         hcond_in = steam_table._Region1(self.incond_temp,self.incond_pressure)['h']
         
         if time < 3000:
-            t_exit = 293.15+(self.outflow_temp_ss-293.15)*(1-np.exp(-time/700))
+            t_exit = 293.15+(self.outflow_temp_ss-293.15)*(1-np.exp(-time/600))
         else:
             t_exit = self.outflow_temp_ss
                 

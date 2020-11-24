@@ -55,7 +55,7 @@ class SMPWR(Module):
 
         # Data pertaining to one-group energy neutron balance
         self.gen_time = 1.0e-4*unit.second
-        self.beta = 6.5e-3
+        self.beta = 5.9e-3
         self.diff_coeff = 0.84*unit.cm
         self.k_infty = 1.49826
         self.buckling = 1.538e-4
@@ -89,14 +89,14 @@ class SMPWR(Module):
         self.coolant_volume = 2.8*unit.meter**3
         self.coolant_pressure = 12.8 #MPa
 
-        self.ht_coeff = 300000*unit.watt/unit.kelvin
+        self.ht_coeff = 1200000*unit.watt/unit.kelvin
 
         self.tau = 2.8*unit.second # coolant flow residence time
 
         # Initialization
         self.n_dens_ref = 1.0
         self.q_0 = 1./self.gen_time # pulse neutron source
-        rho_0_over_beta = 0.25 # $
+        rho_0_over_beta = 1 # $
 
         self.n_0 = 0.0 # neutronless steady state before start up
         self.rho_0 = rho_0_over_beta * self.beta # neutron source

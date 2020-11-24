@@ -80,7 +80,7 @@ class Steamer(Module):
         self.secondary_inflow_mass_flowrate = 67
 
         self.primary_outflow_temp = (20 + 273.15)*unit.kelvin
-        self.primary_outflow_mass_flowrate = 67
+        self.primary_outflow_mass_flowrate = 666
         self.primary_outflow_pressure = 12.8*unit.mega*unit.pascal
 
         self.secondary_outflow_mass_flowrate = 67
