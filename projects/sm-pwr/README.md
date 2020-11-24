@@ -6,11 +6,7 @@ Engy-4390: Nuclear Systems Design and Analysis
 
 View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/sm-pwr/project-report.ipynb)
 
-
-Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/tree/main/projects/sm-pwr)
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD)
-
+Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?urlpath=https%3A%2F%2Fgithub.com%2Fdpploy%2Fengy-4390%2Fblob%2Fmain%2Fprojects%2Fsm-pwr%2Fproject-report.ipynb)
 
  >[Jack Kennedy](https://github.com/xxxx), [Nik Kemper](https://github.com/xxxx) and [Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
  >[Dept. of Chemical Engineering (Nuclear Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
