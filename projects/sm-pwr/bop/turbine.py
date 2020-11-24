@@ -152,25 +152,8 @@ class Turbine(Module):
             time = self.__step(time)
 
     def __call_ports(self, time):
-
-        # Interactions in the outflow port
-        #-----------------------------------------
-        # One way "to" outflow
-
-        # Send to 
-        if self.get_port('outflow').connected_port:
-
-            msg_time = self.recv('outflow')
-
-            temp = self.outflow_phase.get_value('temp', msg_time)
-            pressure = self.outflow_phase.get_value('pressure', msg_time)
-            outflow = dict()
-            outflow['temperature'] = temp
-            outflow['pressure'] = pressure
-            outflow['flowrate'] = self.outflow_mass_flowrate
-
-            self.send((msg_time, outflow), 'outflow')
-
+        
+        
         # Interactions in the inflow port
         #----------------------------------------
         # One way "from" inflow
@@ -186,6 +169,25 @@ class Turbine(Module):
             self.inflow_temp = inflow['temperature']
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
+
+        # Interactions in the outflow port
+        #-----------------------------------------
+        # One way "to" outflow
+
+        # Send to 
+        if self.get_port('outflow').connected_port:
+
+            msg_time = self.recv('outflow')
+
+            temp = self.outflow_phase.get_value('temp', msg_time)
+            outflow = dict()
+            outflow['temperature'] = temp
+            outflow['pressure'] = self.vent_pressure
+            outflow['mass_flowrate'] = self.outflow_mass_flowrate
+
+            self.send((msg_time, outflow), 'outflow')
+
+
 
     def __step(self, time=0.0):
 
@@ -270,6 +272,7 @@ class Turbine(Module):
         self.outflow_phase.set_value('temp', t_runoff, time)
         self.outflow_phase.set_value('flowrate', self.inflow_mass_flowrate, time)
         self.outflow_phase.set_value('quality', quality, time)
+        self.outflow_phase.set_value('pressure', self.vent_pressure, time)
 
         self.state_phase.add_row(time, turbine)
 
