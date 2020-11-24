@@ -66,12 +66,10 @@ def main():
     plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
     plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
 
-    plant_net.draw()
+    plant_net.draw(engine='circo', node_shape='folder')
 
     # Run
-
     plant.run()  # Run network dynamics simulation
-
 
     # Plots
 
