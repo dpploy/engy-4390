@@ -3,7 +3,6 @@
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
 """Cortix module"""
-
 import logging
 
 import math
@@ -11,6 +10,7 @@ from scipy.integrate import odeint
 import numpy as np
 
 import unit
+
 
 import iapws.iapws97 as steam_table
 
@@ -76,7 +76,7 @@ class Steamer(Module):
         self.tau_secondary = 1*unit.minute
 
         self.secondary_inflow_pressure = 3.4*unit.mega*unit.pascal
-        self.secondary_inflow_temp = (110+273.15)*unit.kelvin
+        self.secondary_inflow_temp = (20+273.15)*unit.kelvin
         self.secondary_inflow_mass_flowrate = 67
 
         self.primary_outflow_temp = (20 + 273.15)*unit.kelvin
@@ -277,6 +277,8 @@ class Steamer(Module):
                                                time)
         self.secondary_outflow_phase.set_value('pressure',
                                                self.secondary_outflow_pressure,
+                                               
+
                                                time)
 
         return time
@@ -336,6 +338,8 @@ class Steamer(Module):
 
         f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) + 1./rho_p/cp_p/vol_p * heat_sink
         
+        
+        
 
 
         heat_source = - heat_sink
@@ -357,7 +361,7 @@ class Steamer(Module):
             f_tmp[1] = steam_table._Region4(self.secondary_inflow_pressure,quality)['T']
         
         
-        
+        #print(temp_p_in,f_tmp[0], f_tmp[1])
         #f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + 1./rho_s/cp_s/vol_s * heat_source
 
         return f_tmp
@@ -372,9 +376,14 @@ class Steamer(Module):
         
         c_r = (c_min)/(cp_p*self.primary_inflow_mass_flowrate)
         
+        
+        
         eta = (1-np.exp(-ntu*(1-c_r)))/(1-c_r*np.exp(-ntu*(1-c_r)))
         
        
         q_p = - eta*c_min*(temp_p - temp_s)
+        
+        
+
 
         return q_p
