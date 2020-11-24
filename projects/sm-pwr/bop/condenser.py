@@ -55,13 +55,13 @@ class Condenser(Module):
 
         # Initialization
 
-        self.inflow_pressure = 3.4
+        self.inflow_pressure = 0.008066866
         self.inflow_temp = 20+273
         self.inflow_mass_flowrate = 67
 
         self.outflow_temp = 20 + 273.15
         self.outflow_mass_flowrate = 67
-        self.outflow_pressure = 3.4
+        self.outflow_pressure = 2
 
         # Outflow phase history
         quantities = list()
