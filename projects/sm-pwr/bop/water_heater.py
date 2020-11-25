@@ -54,23 +54,23 @@ class WaterHeater(Module):
         # Domain attributes
 
         # Configuration parameters
-        
+
         self.tau = 1.5
         self.volume = 5
-        
+
         # Initialization
 
         self.inflow_pressure = 2
         self.inflow_temp = 20+273
-        self.inflow_mass_flowrate = 67   
+        self.inflow_mass_flowrate = 67
 
         self.outflow_temp = 20 + 273.15
         #self.outflow_temp_ss = 422 #k
         self.outflow_mass_flowrate = 67
         self.outflow_pressure = 3.4*unit.mega*unit.pascal
-        
+
         self.heat_source_rate = 0 #W
-        
+
         # Outflow phase history
         quantities = list()
 
@@ -165,7 +165,7 @@ class WaterHeater(Module):
             self.inflow_temp = inflow['temperature']
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
-            
+
         # Interactions in the heat port
         #----------------------------------------
         # one way "from" heat
@@ -181,7 +181,7 @@ class WaterHeater(Module):
             self.heat_source_rate = heat
             print(self.heat_source_rate)
     def __step(self, time=0.0):
-        
+
         # Get state values
         u_0 = self.__get_state_vector(time)
 
@@ -208,22 +208,22 @@ class WaterHeater(Module):
 
         self.outflow_phase.add_row(time, outflow)
         self.outflow_phase.set_value('temp', temp, time)
-        self.outflow_phase.set_value('pressure', self.outflow_pressure, time)     
+        self.outflow_phase.set_value('pressure', self.outflow_pressure, time)
 
         return time
-    
+
     def __get_state_vector(self, time):
         """Return a numpy array of all unknowns ordered as shown.
-           
+
         """
 
         u_vec = np.empty(0, dtype=np.float64)
 
         temp = self.outflow_phase.get_value('temp', time)
         u_vec = np.append(u_vec, temp)
-        
-        return  u_vec       
-    
+
+        return  u_vec
+
     def __f_vec(self, u_vec, time):
 
         temp = u_vec[0]
@@ -236,8 +236,8 @@ class WaterHeater(Module):
         #-----------------------
         rho = 1/(steam_table._Region2(self.inflow_temp,self.inflow_pressure)["v"])
         cp = steam_table._Region2(self.inflow_temp,self.inflow_pressure)["cp"]
-        vol = self.volume       
-        
+        vol = self.volume
+
         temp_in = self.inflow_temp
 
         tau = self.tau
@@ -247,6 +247,6 @@ class WaterHeater(Module):
         #-----------------------
         heat_source = self.heat_source_rate
 
-        f_tmp[0] = - 1/tau * (temp - temp_in) + 1./rho/cp/vol * heat_source     
+        f_tmp[0] = - 1/tau * (temp - temp_in) + 1./rho/cp/vol * heat_source
 
         return f_tmp
