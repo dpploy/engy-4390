@@ -67,7 +67,7 @@ class FWHS(Module):
         #self.inturb_mass_flowrate = 0.0
         
         self.incond_pressure = 3.4
-        self.incond_temp = 100+273
+        self.incond_temp = 20+273
         self.incond_mass_flowrate = 67
 
         self.outflow_temp = 20 + 273.15
@@ -205,9 +205,9 @@ class FWHS(Module):
         flowcond = self.incond_mass_flowrate
        # hturb_in = steam_table._Region1(self.inturb_temp,self.inturb_pressure)['h']
         hcond_in = steam_table._Region1(self.incond_temp,self.incond_pressure)['h']
-        
+
         if time < 3000:
-            t_exit = 293.15+(self.outflow_temp_ss-293.15)*(1-np.exp(-time/600))
+            t_exit = 293.15+(self.outflow_temp_ss-293.15)*(1-np.exp(-(time)/600))
         else:
             t_exit = self.outflow_temp_ss
                 

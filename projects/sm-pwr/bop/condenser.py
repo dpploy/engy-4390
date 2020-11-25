@@ -143,6 +143,7 @@ class Condenser(Module):
             self.send(time, 'inflow')
 
             (check_time, inflow) = self.recv('inflow')
+            print(check_time,time)
             assert abs(check_time-time) <= 1e-6
 
             self.inflow_temp = inflow['temperature']
@@ -166,8 +167,6 @@ class Condenser(Module):
             outflow['pressure'] = pressure
             outflow['mass_flowrate'] = self.outflow_mass_flowrate
             self.send((msg_time, outflow), 'outflow')
-
-
 
     def __step(self, time=0.0):
 
