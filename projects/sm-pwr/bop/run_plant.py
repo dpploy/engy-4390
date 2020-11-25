@@ -19,9 +19,8 @@ from water_heater import WaterHeater
 def main():
 
     # Debugging
-
     make_plots = True
-    run        = True
+    make_run   = True
 
     # Preamble
     end_time = 1*unit.hour
@@ -100,15 +99,14 @@ def main():
     #plant_net.connect([turbine, 'process-heat'], [water_heater, 'heat'])
     plant_net.connect([condenser, 'outflow'], [water_heater, 'inflow'])
     plant_net.connect([water_heater, 'outflow'], [steamer, 'secondary-inflow'])
-    
+
     plant_net.draw(engine='circo', node_shape='folder')
-    plant.run()
+
     # Run
-    #if run:
-        #plant.run()  # Run network dynamics simulation
+    if run:
+        plant.run()  # Run network dynamics simulation
 
     # Plots
-
     if make_plots and plant.use_multiprocessing or plant.rank == 0:
 
         # Reactor plots
