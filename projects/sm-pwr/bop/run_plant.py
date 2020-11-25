@@ -20,8 +20,8 @@ def main():
 
     # Debugging
 
-    make_plots = False
-    run        = False
+    make_plots = True
+    run        = True
 
     # Preamble
     end_time = 1*unit.hour
@@ -97,9 +97,10 @@ def main():
     plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
     plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
     plant_net.connect([turbine, 'outflow'], [condenser, 'inflow'])
+    #plant_net.connect([turbine, 'process-heat'], [water_heater, 'heat'])
     plant_net.connect([condenser, 'outflow'], [water_heater, 'inflow'])
     plant_net.connect([water_heater, 'outflow'], [steamer, 'secondary-inflow'])
-
+    
     plant_net.draw(engine='circo', node_shape='folder')
     plant.run()
     # Run

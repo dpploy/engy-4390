@@ -39,7 +39,7 @@ class WaterHeater(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['inflow', 'outflow']
+        self.port_names_expected = ['inflow', 'outflow', 'heat']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -54,75 +54,44 @@ class WaterHeater(Module):
         # Domain attributes
 
         # Configuration parameters
-
+        
+        self.tau = 1.5
+        self.volume = 5
+        
         # Initialization
-        self.primary_volume = 5
-        self.secondary_volume = 10
-      
-        self.heating_inflow_temp = 190 + 273.15
-        self.heating_inflow_pressure= 0.1*unit.mega*unit.pascal
-        self.heating_mass_flowrate = 40 #kg/s
-        
-        self.heating_outflow_temp = 180 + 273.15
-        
+
         self.inflow_pressure = 2
         self.inflow_temp = 20+273
-        self.inflow_mass_flowrate = 67
-        
-        self.tau_heating = 1.5
-        self.tau_secondary = 2
-        self.ht_coeff = 27042.9 #W/K
-        
-        
+        self.inflow_mass_flowrate = 67   
 
         self.outflow_temp = 20 + 273.15
-        self.outflow_temp_ss = 422 #k
+        #self.outflow_temp_ss = 422 #k
         self.outflow_mass_flowrate = 67
         self.outflow_pressure = 3.4*unit.mega*unit.pascal
         
-        # Heating outflow phase history
-        quantities = list()
-
-        temp = Quantity(name='temp',
-                        formal_name='T_1', unit='K',
-                        value=self.heating_outflow_temp,
-                        latex_name=r'$T_1$',
-                        info='Heating Fluid Outflow Temperature')
-
-        quantities.append(temp)
-
-        self.heating_outflow_phase = Phase(time_stamp=self.initial_time,
-                                           time_unit='s', quantities=quantities)
+        self.heat_source_rate = 0 #W
         
         # Outflow phase history
         quantities = list()
 
-        flowrate = Quantity(name='flowrate',
-                            formal_name='q_2', unit='kg/s',
-                            value=self.outflow_mass_flowrate,
-                            latex_name=r'$q_2$',
-                            info='Outflow Mass Flowrate')
-
-        quantities.append(flowrate)
-
         temp = Quantity(name='temp',
-                        formal_name='T_2', unit='K',
+                        formal_name='T', unit='K',
                         value=self.outflow_temp,
-                        latex_name=r'$T_2$',
+                        latex_name=r'$T$',
                         info='Outflow Temperature')
 
         quantities.append(temp)
 
         press = Quantity(name='pressure',
-                         formal_name='P_2', unit='MPa',
+                         formal_name='P', unit='Pa',
                          value=self.outflow_pressure,
-                         latex_name=r'$P_2$',
+                         latex_name=r'$P$',
                          info='Outflow Pressure')
 
         quantities.append(press)
 
         self.outflow_phase = Phase(time_stamp=self.initial_time,
-                                             time_unit='s', quantities=quantities)
+                                   time_unit='s', quantities=quantities)
 
     def run(self, *args):
 
@@ -178,12 +147,12 @@ class WaterHeater(Module):
             outflow = dict()
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
-            outflow['flowrate'] = self.outflow_mass_flowrate
+            outflow['mass_flowrate'] = self.outflow_mass_flowrate
             self.send((msg_time, outflow), 'outflow')
 
         # Interactions in the inflow port
         #----------------------------------------
-        # one way "from" condenser
+        # one way "from" inflow
 
         # receive from
         if self.get_port('inflow').connected_port:
@@ -197,8 +166,20 @@ class WaterHeater(Module):
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
             
-  
+        # Interactions in the heat port
+        #----------------------------------------
+        # one way "from" heat
 
+        # receive from
+        if self.get_port('heat').connected_port:
+
+            self.send(time, 'heat')
+
+            (check_time, heat) = self.recv('heat')
+            assert abs(check_time-time) <= 1e-6
+
+            self.heat_source_rate = heat
+            print(self.heat_source_rate)
     def __step(self, time=0.0):
         
         # Get state values
@@ -218,24 +199,16 @@ class WaterHeater(Module):
 
         u_vec = u_vec_hist[1, :]  # solution vector at final time step
 
-        temp_p = u_vec[0] # primary outflow temp
-        temp_s = u_vec[1] # secondary outflow temp
+        temp = u_vec[0] # primary outflow temp
 
-    
         #update state variables
-        feed = self.outflow_phase.get_row(time)
-        heating_outflow = self.heating_outflow_phase.get_row(time)
+        outflow = self.outflow_phase.get_row(time)
 
         time += self.time_step
 
-        self.outflow_phase.add_row(time, feed)
-        self.outflow_phase.set_value('temp', temp_s, time)
-        self.outflow_phase.set_value('flowrate', self.inflow_mass_flowrate, time)
-        self.outflow_phase.set_value('pressure', self.outflow_pressure, time)
-        
-        self.heating_outflow_phase.add_row(time,heating_outflow)
-        self.heating_outflow_phase.set_value('temp', temp_p, time)  
-        
+        self.outflow_phase.add_row(time, outflow)
+        self.outflow_phase.set_value('temp', temp, time)
+        self.outflow_phase.set_value('pressure', self.outflow_pressure, time)     
 
         return time
     
@@ -246,92 +219,34 @@ class WaterHeater(Module):
 
         u_vec = np.empty(0, dtype=np.float64)
 
-        temp_p = self.heating_outflow_phase.get_value('temp', time)
-        u_vec = np.append(u_vec, temp_p)
-
-        temp_s = self.outflow_phase.get_value('temp', time)
-        u_vec = np.append(u_vec, temp_s)
+        temp = self.outflow_phase.get_value('temp', time)
+        u_vec = np.append(u_vec, temp)
         
-        return  u_vec
-        
+        return  u_vec       
     
     def __f_vec(self, u_vec, time):
-        
-        print('heatwater', self.inflow_pressure)
 
-        temp_p = u_vec[0] # get temperature of primary outflow
-
-        temp_s = u_vec[1] # get temperature of secondary outflow
+        temp = u_vec[0]
 
         # initialize f_vec to zero
-        f_tmp = np.zeros(2, dtype=np.float64) # vector for f_vec return
+        f_tmp = np.zeros(1, dtype=np.float64) # vector for f_vec return
 
         #-----------------------
         # primary energy balance
         #-----------------------
-        rho_p = 1/(steam_table._Region2(self.heating_inflow_temp,self.heating_inflow_pressure)["v"])
-        cp_p = steam_table._Region2(self.heating_inflow_temp,self.heating_inflow_pressure)["cp"]
-        vol_p = self.primary_volume
+        rho = 1/(steam_table._Region2(self.inflow_temp,self.inflow_pressure)["v"])
+        cp = steam_table._Region2(self.inflow_temp,self.inflow_pressure)["cp"]
+        vol = self.volume       
         
-        
-        temp_p_in = self.heating_inflow_temp
+        temp_in = self.inflow_temp
 
-        tau_p = self.tau_heating
+        tau = self.tau
 
-        #-----------------------
-        # secondary energy balance
-        #-----------------------
-        rho_s = 1/(steam_table._Region1(self.inflow_pressure,0)["v"])
-        print('pressssssssssssssssure!!!!!!!!!!!!!!!!!!!!' , self.inflow_pressure)
-        cp_s = steam_table._Region1(self.inflow_pressure,0)["cp"]
-        vol_s = self.secondary_volume
-
-        temp_s_in = self.inflow_temp
-
-        tau_s = self.tau_secondary
-        
         #-----------------------
         # calculations
         #-----------------------
-        heat_sink = self.__heat_sink_rate(temp_p_in, temp_s_in, cp_p, cp_s)
+        heat_source = self.heat_source_rate
 
-        f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) + 1./rho_p/cp_p/vol_p * heat_sink
-        
-
-        heat_source = - heat_sink
-        
-
-        f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + 1./rho_s/cp_s/vol_s * heat_source
+        f_tmp[0] = - 1/tau * (temp - temp_in) + 1./rho/cp/vol * heat_source     
 
         return f_tmp
-
-    def __heat_sink_rate(self, temp_p_in, temp_s_in, cp_p, cp_s):
-        """Cooling rate of primary."""
-        print(cp_s,self.inflow_mass_flowrate)
-
-        c_cold = cp_s*self.inflow_mass_flowrate
-        c_hot = cp_p*self.heating_mass_flowrate
-        
-        if c_cold < c_hot:
-            c_min = c_cold
-            
-        else:
-            c_min = c_hot
-            
-           
-        ntu = self.ht_coeff/(c_min)
-     
-        
-        c_r = (c_min)/(cp_p*self.heating_inflow_mass_flowrate)
-        
-                
-        eta = (1-np.exp(-ntu*(1-c_r)))/(1-c_r*np.exp(-ntu*(1-c_r)))
-        
-       
-        q_p = - eta*c_min*(temp_p_in - temp_s_in)
-        
-        
-
-
-        return q_p
-

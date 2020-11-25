@@ -35,7 +35,7 @@ class Turbine(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['inflow', 'outflow']
+        self.port_names_expected = ['inflow', 'outflow', 'process-heat']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -50,8 +50,10 @@ class Turbine(Module):
         # Domain attributes
 
         # Configuration parameters
+        
         self.turbine_efficiency = 0.7784
         self.vent_pressure = 0.008066866*unit.mega*unit.pascal
+        self.process_heat_fraction = .01 #1%
         
         # Initialization   
 
@@ -88,7 +90,7 @@ class Turbine(Module):
                         latex_name=r'$P$',
                         info='Turbine Outflow Pressure')
 
-        quantities.append(temp)
+        quantities.append(pressure)
 
         quality = Quantity(name='quality',
                          formal_name='X', unit='',
@@ -112,6 +114,14 @@ class Turbine(Module):
 
         quantities.append(power)
 
+        process_heat = Quantity(name='process-heat',
+                         formal_name='W_s', unit='W_e',
+                         value=0.0,
+                         latex_name=r'$W_s$',
+                         info='Turbine Process Heat Power')
+
+        quantities.append(process_heat)
+        
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
 
@@ -187,7 +197,22 @@ class Turbine(Module):
 
             self.send((msg_time, outflow), 'outflow')
 
+        # Interactions in the process-heat port
+        #-----------------------------------------
+        # One way "to" process-heat
 
+        # Send to 
+        if self.get_port('process-heat').connected_port:
+
+            msg_time = self.recv('process-heat')
+
+            temp = self.outflow_phase.get_value('temp', msg_time)
+            outflow = dict()
+            outflow['temperature'] = temp
+            outflow['pressure'] = self.vent_pressure
+            outflow['mass_flowrate'] = self.outflow_mass_flowrate
+
+            self.send((msg_time, outflow), 'outflow')
 
     def __step(self, time=0.0):
 
@@ -258,8 +283,11 @@ class Turbine(Module):
             else:
                 quality = (h_out_real - bubl_enthalpy)/(dew_enthalpy - bubl_enthalpy)
                 t_runoff = steam_table._Region4(p_out_MPa, quality)['T']
-
+            
             power = self.inflow_mass_flowrate * w_real
+            
+        process_heat = power*self.process_heat_fraction
+        power *= 1-self.process_heat_fraction
             
         # Update state variables
         turbine_outflow = self.outflow_phase.get_row(time)
@@ -272,10 +300,11 @@ class Turbine(Module):
         self.outflow_phase.set_value('temp', t_runoff, time)
         self.outflow_phase.set_value('flowrate', self.inflow_mass_flowrate, time)
         self.outflow_phase.set_value('quality', quality, time)
-        self.outflow_phase.set_value('pressure', p_out_MPa, time)
+        self.outflow_phase.set_value('pressure', self.vent_pressure, time)
 
         self.state_phase.add_row(time, turbine)
 
         self.state_phase.set_value('power', power, time)
+        self.state_phase.set_value('process-heat', process_heat, time)
 
         return time
