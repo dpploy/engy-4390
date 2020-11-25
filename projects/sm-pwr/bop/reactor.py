@@ -96,7 +96,7 @@ class SMPWR(Module):
         # Initialization
         self.n_dens_ref = 1.0
         self.q_0 = 1./self.gen_time # pulse neutron source
-        rho_0_over_beta = 1 # $
+        rho_0_over_beta = 0.35# $
 
         self.n_0 = 0.0 # neutronless steady state before start up
         self.rho_0 = rho_0_over_beta * self.beta # neutron source

@@ -55,18 +55,20 @@ class Steamer(Module):
         # Domain attributes
 
         # Configuration parameters
-        
+
         self.ntu = 12
         self.primary_volume = 1*16.35*unit.meter**3
-        self.secondary_volume = 1*17.2*unit.meter**3        
+        self.secondary_volume = 1*17.2*unit.meter**3
         #self.ht_coeff = 4416194*unit.watt/unit.kelvin
         self.ht_coeff = 41720000.29*unit.watt/unit.kelvin
+
+        self.primary_temp_sat = 602.8 #K
+        self.secondary_temp_sat = 516 #K
 
         # Initialization
         self.primary_mass_dens = 1*unit.gram/unit.cc
         self.primary_cp = 4.298 * unit.kj/unit.kg/unit.kelvin
-        
-        self.t_sat = 516 #K
+
 
         self.primary_inflow_pressure = 12.8*unit.mega*unit.pascal
         self.primary_inflow_temp = (30+273.15)*unit.kelvin
@@ -316,30 +318,40 @@ class Steamer(Module):
         # primary energy balance
         #-----------------------
 
-        rho_p = 1/(steam_table._Region1((self.primary_inflow_temp+temp_p)/2,self.primary_inflow_pressure/unit.mega)["v"])
-        cp_p = steam_table._Region1((self.primary_inflow_temp+temp_p)/2,self.primary_inflow_pressure/unit.mega)["cp"]
+        t_avg = (self.primary_inflow_temp + temp_p)/2
+        print('made here tavg',t_avg)
+        print('made here tp',temp_p)
+        print('made here ts',temp_s)
+        assert  20+273.15 <= t_avg <= self.primary_temp_sat
+
+        print('made here',self.primary_inflow_pressure)
+        print('made here',type(self.primary_inflow_pressure))
+
+        rho_p = 1/(steam_table._Region1(t_avg, self.primary_inflow_pressure/unit.mega)['v'])
+        cp_p = steam_table._Region1((self.primary_inflow_temp+temp_p)/2,
+                                    self.primary_inflow_pressure/unit.mega)['cp']
         vol_p = self.primary_volume
         tau_p = vol_p/(self.primary_inflow_mass_flowrate/rho_p)
-        
+
         temp_p_in = self.primary_inflow_temp
 
         #-----------------------
         # secondary energy balance
         #-----------------------
-        
-        if temp_s > self.t_sat:
+
+        if temp_s > self.secondary_temp_sat:
             rho_s_l = 1/steam_table._Region1(self.secondary_inflow_temp,self.secondary_inflow_pressure/unit.mega)["v"]
             rho_s_v = 1/steam_table._Region4(self.secondary_inflow_pressure/unit.mega,1)["v"]
             rho_s = rho_s_l*(1-self.secondary_outflow_quality) + self.secondary_outflow_quality*rho_s_v
-            
+
             cp_s_l = steam_table._Region1(self.secondary_inflow_temp,self.secondary_inflow_pressure/unit.mega)["cp"]
             cp_s_v = steam_table._Region2(temp_s,self.secondary_inflow_pressure/unit.mega)["cp"]
             cp_s =  (1-self.secondary_outflow_quality)*cp_s_l + self.secondary_outflow_quality*cp_s_v
-            
+
         else:
             rho_s = 1/steam_table._Region1((self.secondary_inflow_temp+temp_s)/2,self.secondary_inflow_pressure/unit.mega)["v"]
             cp_s = steam_table._Region1((self.secondary_inflow_temp+temp_s)/2,self.secondary_inflow_pressure/unit.mega)["cp"]
-       
+
         vol_s = self.secondary_volume
 
         temp_s_in = self.secondary_inflow_temp
@@ -347,32 +359,42 @@ class Steamer(Module):
         tau_s = vol_s/(self.secondary_inflow_mass_flowrate/rho_s)
 
         # Boiling test
-        q_total = (temp_s-temp_s_in)*cp_s
-        q_heat = (self.t_sat - temp_s_in)*cp_s
-        h_v = steam_table._Region4(self.secondary_inflow_pressure,1)['h']
-        h_l = steam_table._Region4(self.secondary_inflow_pressure,0)['h']
+        spf_energy_heat_s = (temp_s-temp_s_in)*cp_s         # kJ/kg
+
+        cp_s_in = steam_table._Region1(self.secondary_inflow_temp,
+                                       self.secondary_inflow_pressure/unit.mega)['cp']
+        spf_energy_boil_s = (self.secondary_temp_sat - temp_s_in)*cp_s_in # kJ/kg
+
+        h_v = steam_table._Region4(self.secondary_inflow_pressure/unit.mega, 1)['h']
+        h_l = steam_table._Region4(self.secondary_inflow_pressure/unit.mega, 0)['h']
         q_vap = (h_v-h_l)*self.secondary_inflow_mass_flowrate
-        if q_total < q_heat: # subcooled
-            self.secondary_outflow_quality = 0
-        elif q_total > (q_vap+q_heat): #superheated
-            self.secondary_outflow_quality = 1   
-        else: #mixed
-            self.secondary_outflow_quality = (h_vap - (q_total - q_heat))/h_vap
-        
-        q_evap = self.secondary_outflow_quality*q_vap*self.secondary_inflow_mass_flowrate
-            
+        h_vap = h_v-h_l
+
+        if spf_energy_heat_s < spf_energy_boil_s: # subcooled
+            self.secondary_outflow_quality = 0.0
+        elif spf_energy_heat_s < spf_energy_boil_s + h_vap: # mixed
+            self.secondary_outflow_quality = 1 - \
+                    (h_vap - (spf_energy_heat_s - spf_energy_boil_s))/h_vap
+        else:
+            self.secondary_outflow_quality = 1.0
+
+        q_evap = (spf_energy_heat_s - q_vap * self.secondary_outflow_quality)*self.secondary_inflow_mass_flowrate
+
+        print('quality',self.secondary_outflow_quality)
+
         #-----------------------
         # calculations
         #-----------------------
         heat_sink = self.__heat_sink_rate(temp_p_in, temp_s_in, cp_p, cp_s)
+
         heat_sink -= q_evap
-        
+
         f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) + 1./rho_p/cp_p/vol_p * heat_sink
-        
+
         heat_source = - heat_sink
-        
+
         f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + 1./rho_s/cp_s/vol_s * heat_source
-        
+
         temp_s_out = f_tmp[1]
 
         return f_tmp
@@ -381,14 +403,12 @@ class Steamer(Module):
         """Cooling rate of primary."""
 
         c_min = cp_s*self.secondary_inflow_mass_flowrate
-      
-        c_r = (c_min)/(cp_p*self.primary_inflow_mass_flowrate)   
-        
+
+        c_r = (c_min)/(cp_p*self.primary_inflow_mass_flowrate)
+
         eta = (1-np.exp(-self.ntu*(1-c_r)))/(1-c_r*np.exp(-self.ntu*(1-c_r)))
-        
+
         q_p = - eta*c_min*(temp_p - temp_s)
-        print(q_p)
-        
 
 
         return q_p
