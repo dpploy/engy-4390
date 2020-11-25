@@ -3,7 +3,6 @@
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
 """Cortix module"""
-
 import logging
 
 import math
@@ -11,6 +10,7 @@ from scipy.integrate import odeint
 import numpy as np
 
 import unit
+
 
 import iapws.iapws97 as steam_table
 
@@ -55,15 +55,18 @@ class Steamer(Module):
         # Domain attributes
 
         # Configuration parameters
-
-        self.primary_volume = 15*unit.meter**3
-        self.secondary_volume = 25*unit.meter**3
-        self.ht_coeff = 250000*unit.watt/unit.kelvin
+        
+        self.ntu = 12
+        self.primary_volume = 1*16.35*unit.meter**3
+        self.secondary_volume = 1*17.2*unit.meter**3        
+        #self.ht_coeff = 4416194*unit.watt/unit.kelvin
+        self.ht_coeff = 41720000.29*unit.watt/unit.kelvin
 
         # Initialization
         self.primary_mass_dens = 1*unit.gram/unit.cc
         self.primary_cp = 4.298 * unit.kj/unit.kg/unit.kelvin
-        self.tau_primary = 1*unit.minute
+        
+        self.t_sat = 516 #K
 
         self.primary_inflow_pressure = 12.8*unit.mega*unit.pascal
         self.primary_inflow_temp = (30+273.15)*unit.kelvin
@@ -84,6 +87,7 @@ class Steamer(Module):
         self.secondary_outflow_mass_flowrate = 67
         self.secondary_outflow_temp = (20 + 273.15)*unit.kelvin
         self.secondary_outflow_pressure = 3.4*unit.mega*unit.pascal
+        self.secondary_outflow_quality = 0
 
         # Primary outflow phase history
         quantities = list()
@@ -125,6 +129,14 @@ class Steamer(Module):
                          info='Steamer Secondary Outflow Pressure')
 
         quantities.append(press)
+        
+        quality = Quantity(name='quality',
+                         formal_name='X', unit=' ',
+                         value=self.secondary_outflow_quality,
+                         latex_name=r'$X_sg$',
+                         info='Steamer Outlet Quality')
+
+        quantities.append(quality)
 
         self.secondary_outflow_phase = Phase(time_stamp=self.initial_time,
                                              time_unit='s', quantities=quantities)
@@ -198,7 +210,7 @@ class Steamer(Module):
 
             self.secondary_inflow_temp = secondary_inflow['temperature']
             self.secondary_inflow_pressure = secondary_inflow['pressure']
-            self.secondary_inflow_mass_flowrate = secondary_inflow['temperature']
+            self.secondary_inflow_mass_flowrate = secondary_inflow['mass_flowrate']
 
         # Interactions in the primary-outflow port
         #-----------------------------------------
@@ -213,7 +225,7 @@ class Steamer(Module):
             primary_outflow = dict()
             primary_outflow['temperature'] = temp
             primary_outflow['pressure'] = self.primary_outflow_pressure
-            primary_outflow['flowrate'] = self.primary_outflow_mass_flowrate
+            primary_outflow['mass_flowrate'] = self.primary_outflow_mass_flowrate
             self.send((msg_time, primary_outflow), 'primary-outflow')
 
         # Interactions in the secondary-outflow port
@@ -270,12 +282,8 @@ class Steamer(Module):
 
         self.secondary_outflow_phase.add_row(time, secondary_outflow)
         self.secondary_outflow_phase.set_value('temp', temp_s, time)
-        self.secondary_outflow_phase.set_value('flowrate',
-                                               self.secondary_inflow_mass_flowrate,
-                                               time)
-        self.secondary_outflow_phase.set_value('pressure',
-                                               self.secondary_outflow_pressure,
-                                               time)
+        self.secondary_outflow_phase.set_value('flowrate', self.secondary_inflow_mass_flowrate, time)
+        self.secondary_outflow_phase.set_value('pressure', self.secondary_outflow_pressure, time)
 
         return time
 
@@ -307,40 +315,80 @@ class Steamer(Module):
         #-----------------------
         # primary energy balance
         #-----------------------
-        rho_p = self.primary_mass_dens
-        cp_p = self.primary_cp
+
+        rho_p = 1/(steam_table._Region1((self.primary_inflow_temp+temp_p)/2,self.primary_inflow_pressure/unit.mega)["v"])
+        cp_p = steam_table._Region1((self.primary_inflow_temp+temp_p)/2,self.primary_inflow_pressure/unit.mega)["cp"]
         vol_p = self.primary_volume
-
+        tau_p = vol_p/(self.primary_inflow_mass_flowrate/rho_p)
+        
         temp_p_in = self.primary_inflow_temp
-
-        tau_p = self.tau_primary
-
-        heat_sink = self.__heat_sink_rate(temp_p, temp_s)
-
-        f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) + 1./rho_p/cp_p/vol_p * heat_sink
 
         #-----------------------
         # secondary energy balance
         #-----------------------
-        rho_s = self.secondary_mass_dens
-        cp_s = self.secondary_cp
+        
+        if temp_s > self.t_sat:
+            rho_s_l = 1/steam_table._Region1(self.secondary_inflow_temp,self.secondary_inflow_pressure/unit.mega)["v"]
+            rho_s_v = 1/steam_table._Region4(self.secondary_inflow_pressure/unit.mega,1)["v"]
+            rho_s = rho_s_l*(1-self.secondary_outflow_quality) + self.secondary_outflow_quality*rho_s_v
+            
+            cp_s_l = steam_table._Region1(self.secondary_inflow_temp,self.secondary_inflow_pressure/unit.mega)["cp"]
+            cp_s_v = steam_table._Region2(temp_s,self.secondary_inflow_pressure/unit.mega)["cp"]
+            cp_s =  (1-self.secondary_outflow_quality)*cp_s_l + self.secondary_outflow_quality*cp_s_v
+            
+        else:
+            rho_s = 1/steam_table._Region1((self.secondary_inflow_temp+temp_s)/2,self.secondary_inflow_pressure/unit.mega)["v"]
+            cp_s = steam_table._Region1((self.secondary_inflow_temp+temp_s)/2,self.secondary_inflow_pressure/unit.mega)["cp"]
+       
         vol_s = self.secondary_volume
 
         temp_s_in = self.secondary_inflow_temp
 
-        tau_s = self.tau_secondary
+        tau_s = vol_s/(self.secondary_inflow_mass_flowrate/rho_s)
 
+        # Boiling test
+        q_total = (temp_s-temp_s_in)*cp_s
+        q_heat = (self.t_sat - temp_s_in)*cp_s
+        h_v = steam_table._Region4(self.secondary_inflow_pressure,1)['h']
+        h_l = steam_table._Region4(self.secondary_inflow_pressure,0)['h']
+        q_vap = (h_v-h_l)*self.secondary_inflow_mass_flowrate
+        if q_total < q_heat: # subcooled
+            self.secondary_outflow_quality = 0
+        elif q_total > (q_vap+q_heat): #superheated
+            self.secondary_outflow_quality = 1   
+        else: #mixed
+            self.secondary_outflow_quality = (h_vap - (q_total - q_heat))/h_vap
+        
+        q_evap = self.secondary_outflow_quality*q_vap*self.secondary_inflow_mass_flowrate
+            
+        #-----------------------
+        # calculations
+        #-----------------------
+        heat_sink = self.__heat_sink_rate(temp_p_in, temp_s_in, cp_p, cp_s)
+        heat_sink -= q_evap
+        
+        f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) + 1./rho_p/cp_p/vol_p * heat_sink
+        
         heat_source = - heat_sink
-
+        
         f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + 1./rho_s/cp_s/vol_s * heat_source
+        
+        temp_s_out = f_tmp[1]
 
         return f_tmp
 
-    def __heat_sink_rate(self, temp_p, temp_s):
+    def __heat_sink_rate(self, temp_p, temp_s, cp_p, cp_s):
         """Cooling rate of primary."""
 
-        ht_coeff = self.ht_coeff
+        c_min = cp_s*self.secondary_inflow_mass_flowrate
+      
+        c_r = (c_min)/(cp_p*self.primary_inflow_mass_flowrate)   
+        
+        eta = (1-np.exp(-self.ntu*(1-c_r)))/(1-c_r*np.exp(-self.ntu*(1-c_r)))
+        
+        q_p = - eta*c_min*(temp_p - temp_s)
+        print(q_p)
+        
 
-        q_p = - ht_coeff * (temp_p - temp_s)
 
         return q_p

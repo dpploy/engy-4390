@@ -55,8 +55,8 @@ class SMPWR(Module):
 
         # Data pertaining to one-group energy neutron balance
         self.gen_time = 1.0e-4*unit.second
-        self.beta = 6.5e-3
-        self.diff_coeff = 0.84*unit.cm
+        self.beta = 5.9e-3
+        self.diff_coeff = 0.2939*unit.cm
         self.k_infty = 1.49826
         self.buckling = 1.538e-4
 
@@ -71,7 +71,7 @@ class SMPWR(Module):
         #Data pertaining to two-temperature heat balances
         self.fis_energy = 180 * 1.602e-13 *unit.joule # J/fission
         self.sigma_f_o = 586.2 * 100 * 1e-30 * unit.meter**2
-        self.temp_o = 30 + 273.15 # K
+        self.temp_o = 20 + 273.15 # K
         self.temp_c_ss_operation = 265 + 273.15# K desired ss operation temp of coolant
         self.thermal_neutron_velo = 2200*unit.meter/unit.second
 
@@ -89,14 +89,14 @@ class SMPWR(Module):
         self.coolant_volume = 2.8*unit.meter**3
         self.coolant_pressure = 12.8 #MPa
 
-        self.ht_coeff = 466459.62*unit.watt/unit.kelvin
+        self.ht_coeff = 1300000*unit.watt/unit.kelvin
 
         self.tau = 2.8*unit.second # coolant flow residence time
 
         # Initialization
         self.n_dens_ref = 1.0
         self.q_0 = 1./self.gen_time # pulse neutron source
-        rho_0_over_beta = 0.25 # $
+        rho_0_over_beta = 1 # $
 
         self.n_0 = 0.0 # neutronless steady state before start up
         self.rho_0 = rho_0_over_beta * self.beta # neutron source
@@ -170,11 +170,18 @@ class SMPWR(Module):
                              value=self.temp_f_0,
                              latex_name=r'$T_f$',
                              info='Nuclear Fuel Temperature')
-
         quantities.append(fuel_temp)
+        
+        inlet_temp = Quantity(name='inlet-temp',
+                             formal_name='T_in', unit='K',
+                             value=self.inflow_cool_temp,
+                             latex_name=r'$T_{in}$',
+                             info='Inflow Coolant Temperature')
+        quantities.append(inlet_temp)
 
         self.reactor_phase = Phase(time_stamp=self.initial_time, time_unit='s',
                                    quantities=quantities)
+
 
     def run(self, *args):
 
@@ -245,7 +252,7 @@ class SMPWR(Module):
             assert abs(check_time-time) <= 1e-6
 
             self.inflow_cool_temp = inflow_coolant['temperature']
-            self.coolant_mass_flowrate = inflow_coolant['flowrate']
+            self.coolant_mass_flowrate = inflow_coolant['mass_flowrate']
             self.coolant_pressure = inflow_coolant['pressure']
 
     def __step(self, time=0.0):
@@ -302,7 +309,7 @@ class SMPWR(Module):
         self.neutron_phase.set_value('neutron-dens', n_dens, time)
         self.neutron_phase.set_value('delayed-neutrons-cc', c_vec, time)
         self.reactor_phase.set_value('fuel-temp', fuel_temp, time)
-
+        self.reactor_phase.set_value('inlet-temp', self.inflow_cool_temp, time)
         return time
 
     def __get_state_vector(self, time):
@@ -334,7 +341,7 @@ class SMPWR(Module):
         B2 = self.buckling
         D = self.diff_coeff
         k_infty = self.k_infty
-        Ea = .9822  #/cm
+        Ea = .022  #/cm
         To = self.temp_o
 
         alpha_tn = -1.0 / 2.0 * B2 * D / (k_infty * Ea * math.sqrt(To * temp))

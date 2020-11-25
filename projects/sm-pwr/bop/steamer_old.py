@@ -55,7 +55,7 @@ class Steamer(Module):
         # Domain attributes
 
         # Configuration parameters
-        #self.ntu = 3.76
+        self.ntu = 3.76
         self.effectiveness = 0.949
         self.c_min = 1110.5 #kW/K
         self.c_hot = 3729.7 #kW/K
@@ -237,44 +237,23 @@ class Steamer(Module):
         p_out = self.secondary_outflow_pressure
         t_h_i = self.primary_inflow_temp
         t_c_i = self.secondary_inflow_temp
-        c_min = self.c_min
-        cp_out = self.real_cp_secondary
-        # Calculations
-
-        q = self.effectiveness*c_min*(t_h_i-t_c_i)
-
-        t_h_o = t_h_i - (q/self.c_hot)
-        t_c_o = t_c_i + (q/c_min)
-
-        q_s = c_min*(t_c_o - t_c_i)
-        q_req = cp_out*(self.t_sat-t_c_i)
-
-        # If no vaporization
-        if q_s < q_req: #kW
-
-            t_exit = q_s/(cp_out*self.secondary_inflow_mass_flowrate) + t_c_i
-
-        # If some vaporization
-        elif q_s < self.q_vap:
-
-            t_exit = self.t_sat
-
-        # If complete vaporization - calculate gas tenperautre with cp function
-        else:
-
-            q_heat_steam = q_s - self.q_vap
-            delta_h = q_heat_steam/self.secondary_inflow_mass_flowrate
-
-            a = 3.470
-            b =  1.45*10e-3
-            c = (delta_h*self.mw_water/unit.R) + a*self.t_sat + b*(self.t_sat**2)
-            coeff = [b,a,-c]
-            roots = np.roots(coeff)
-
-            if roots[0] > 0:
-                t_exit = roots[0]
-            else:
-                t_exit = roots[1]
+        mp = self.primary_inflow_mass_flowrate
+        ms = self.secondary_inflow_mass_flowrate
+        tb = steam_table._Region4(p_in,0)
+        hv = steam_table._Region2(tb,p_in)['h']
+        hl = steam_table._Region1(tb,p_in)['h']
+        cpp = steam_table._Region1(t_h_i,p_in)['cp']
+        cps = steam_table._Region1(t_c_i,p_in)['cp']
+        q_rem = ms*((hv-hl)+cps(tb-t_c_i)) #kw
+        c_min = ms*cps
+        c_max = mp*cpp
+        cr = c_min/c_max
+        ntu = self.ntu
+        e = (1-np.exp(-ntu*(1+cr)))/(1+cr)
+        q_ex = e*c_min*(t_h_i-tb)
+        t_h_o = -(q_ex+q_rem)/mp/cpp+t_h_i
+        t_exit = q_ex/ms/cps+tb
+        
 
         # Update phases
         primary_outflow = self.primary_outflow_phase.get_row(time)

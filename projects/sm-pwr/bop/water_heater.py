@@ -8,6 +8,10 @@ import logging
 
 import unit
 
+import math
+from scipy.integrate import odeint
+import numpy as np
+
 import iapws.iapws97 as steam_table
 
 from cortix import Module
@@ -35,7 +39,7 @@ class WaterHeater(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['inflow', 'outflow']
+        self.port_names_expected = ['inflow', 'outflow', 'heat']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -50,53 +54,44 @@ class WaterHeater(Module):
         # Domain attributes
 
         # Configuration parameters
-
+        
+        self.tau = 1.5
+        self.volume = 5
+        
         # Initialization
 
-        #self.inturb_pressure = 0.0
-        #self.inturb_temp = 0.0
-        #self.inturb_mass_flowrate = 0.0
-        
-        self.inflow_pressure = 3.4
-        self.inflow_temp = 100+273
-        self.inflow_mass_flowrate = 67
+        self.inflow_pressure = 2
+        self.inflow_temp = 20+273
+        self.inflow_mass_flowrate = 67   
 
         self.outflow_temp = 20 + 273.15
-        self.outflow_temp_ss = 422 #k
+        #self.outflow_temp_ss = 422 #k
         self.outflow_mass_flowrate = 67
-        self.outflow_pressure = 3.4
-        self.outflow_pressure_ss = 3.44738 #MPa
-        self.outflow_h = steam_table._Region4(self.outflow_pressure_ss, 0)
+        self.outflow_pressure = 3.4*unit.mega*unit.pascal
+        
+        self.heat_source_rate = 0 #W
         
         # Outflow phase history
         quantities = list()
 
-        flowrate = Quantity(name='flowrate',
-                            formal_name='q_2', unit='kg/s',
-                            value=self.outflow_mass_flowrate,
-                            latex_name=r'$q_2$',
-                            info='Outflow Mass Flowrate')
-
-        quantities.append(flowrate)
-
         temp = Quantity(name='temp',
-                        formal_name='T_2', unit='K',
+                        formal_name='T', unit='K',
                         value=self.outflow_temp,
-                        latex_name=r'$T_2$',
+                        latex_name=r'$T$',
                         info='Outflow Temperature')
 
         quantities.append(temp)
 
         press = Quantity(name='pressure',
-                         formal_name='P_2', unit='MPa',
+                         formal_name='P', unit='Pa',
                          value=self.outflow_pressure,
-                         latex_name=r'$P_2$',
+                         latex_name=r'$P$',
                          info='Outflow Pressure')
 
         quantities.append(press)
 
         self.outflow_phase = Phase(time_stamp=self.initial_time,
-                                             time_unit='s', quantities=quantities)
+                                   time_unit='s', quantities=quantities)
 
     def run(self, *args):
 
@@ -137,7 +132,7 @@ class WaterHeater(Module):
 
     def __call_ports(self, time):
 
-        # Interactions in the feed water inflow port
+        # Interactions in the feed water outflow port
         #-----------------------------------------
         # one way "to" steam geneator
 
@@ -152,12 +147,12 @@ class WaterHeater(Module):
             outflow = dict()
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
-            outflow['flowrate'] = self.outflow_mass_flowrate
+            outflow['mass_flowrate'] = self.outflow_mass_flowrate
             self.send((msg_time, outflow), 'outflow')
 
         # Interactions in the inflow port
         #----------------------------------------
-        # one way "from" condenser
+        # one way "from" inflow
 
         # receive from
         if self.get_port('inflow').connected_port:
@@ -171,44 +166,87 @@ class WaterHeater(Module):
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
             
-         # Interactions in the inturb port
+        # Interactions in the heat port
         #----------------------------------------
-        # one way "from" turbine
+        # one way "from" heat
 
         # receive from
-        #if self.get_port('inturb').connected_port:
+        if self.get_port('heat').connected_port:
 
-         #   self.send(time, 'inturb')
+            self.send(time, 'heat')
 
-          #  (check_time, inturb) = self.recv('inturb')
-           # assert abs(check_time-time) <= 1e-6
+            (check_time, heat) = self.recv('heat')
+            assert abs(check_time-time) <= 1e-6
 
-            #self.inturb_temp = inturb['temperature']
-            #self.inturb_pressure = inturb['pressure']
-            #self.inturb_mass_flowrate = inturb['mass_flowrate']
-
+            self.heat_source_rate = heat
+            print(self.heat_source_rate)
     def __step(self, time=0.0):
-
+        
         # Get state values
-        #flowturb = self.inturb_mass_flowrate
-        flowcond = self.inflow_mass_flowrate
-       # hturb_in = steam_table._Region1(self.inturb_temp,self.inturb_pressure)['h']
-        hcond_in = steam_table._Region1(self.inflow_temp,self.inflow_pressure)['h']
-        t_exit = self.outflow_temp_ss
-        p_out = self.outflow_pressure_ss
-        #flow_out = flowturb+flowcond
-        flow_out = flowcond
-        h_exit = steam_table._Region1(t_out,p_out)['h']
-        #q_removed = flow_out*h_exit-flowturb*hturbin-flowcond*hcondin
-        q_removed = flow_out*h_exit-flowcond*hcondin
+        u_0 = self.__get_state_vector(time)
+
+        t_interval_sec = np.linspace(time, time+self.time_step, num=2)
+
+        max_n_steps_per_time_step = 1000 # max number of nonlinear algebraic solver
+                                         # iterations per time step
+
+        (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
+                                         rtol=1e-4, atol=1e-8,
+                                         mxstep=max_n_steps_per_time_step,
+                                         full_output=True, tfirst=False)
+
+        assert info_dict['message'] == 'Integration successful.', info_dict['message']
+
+        u_vec = u_vec_hist[1, :]  # solution vector at final time step
+
+        temp = u_vec[0] # primary outflow temp
+
         #update state variables
-        condenser_outflow = self.outflow_phase.get_row(time)
+        outflow = self.outflow_phase.get_row(time)
 
         time += self.time_step
 
-        self.outflow_phase.add_row(time, flow_out)
-        self.outflow_phase.set_value('temp', t_exit, time)
-        self.outflow_phase.set_value('flowrate', flow_out, time)
-        self.outflow_phase.set_value('pressure', p_out, time)
+        self.outflow_phase.add_row(time, outflow)
+        self.outflow_phase.set_value('temp', temp, time)
+        self.outflow_phase.set_value('pressure', self.outflow_pressure, time)     
 
         return time
+    
+    def __get_state_vector(self, time):
+        """Return a numpy array of all unknowns ordered as shown.
+           
+        """
+
+        u_vec = np.empty(0, dtype=np.float64)
+
+        temp = self.outflow_phase.get_value('temp', time)
+        u_vec = np.append(u_vec, temp)
+        
+        return  u_vec       
+    
+    def __f_vec(self, u_vec, time):
+
+        temp = u_vec[0]
+
+        # initialize f_vec to zero
+        f_tmp = np.zeros(1, dtype=np.float64) # vector for f_vec return
+
+        #-----------------------
+        # primary energy balance
+        #-----------------------
+        rho = 1/(steam_table._Region2(self.inflow_temp,self.inflow_pressure)["v"])
+        cp = steam_table._Region2(self.inflow_temp,self.inflow_pressure)["cp"]
+        vol = self.volume       
+        
+        temp_in = self.inflow_temp
+
+        tau = self.tau
+
+        #-----------------------
+        # calculations
+        #-----------------------
+        heat_source = self.heat_source_rate
+
+        f_tmp[0] = - 1/tau * (temp - temp_in) + 1./rho/cp/vol * heat_source     
+
+        return f_tmp
