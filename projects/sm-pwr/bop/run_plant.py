@@ -103,7 +103,7 @@ def main():
     plant_net.draw(engine='circo', node_shape='folder')
 
     # Run
-    if run:
+    if make_run:
         plant.run()  # Run network dynamics simulation
 
     # Plots
