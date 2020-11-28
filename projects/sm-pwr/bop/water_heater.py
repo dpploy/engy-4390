@@ -63,6 +63,7 @@ class WaterHeater(Module):
         self.inflow_pressure = 2
         self.inflow_temp = 20+273
         self.inflow_mass_flowrate = 67
+        self.inflow_quality =  0
 
         self.outflow_temp = 20 + 273.15
         #self.outflow_temp_ss = 422 #k
@@ -165,6 +166,8 @@ class WaterHeater(Module):
             self.inflow_temp = inflow['temperature']
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
+            self.inflow_quality = inflow['quality']
+            
 
         # Interactions in the heat port
         #----------------------------------------
@@ -234,8 +237,17 @@ class WaterHeater(Module):
         #-----------------------
         # primary energy balance
         #-----------------------
-        rho = 1/(steam_table._Region2(self.inflow_temp,self.inflow_pressure)["v"])
-        cp = steam_table._Region2(self.inflow_temp,self.inflow_pressure)["cp"]
+        if self.inflow_quality == 0:
+            rho = 1/(steam_table._Region1(self.inflow_temp,self.inflow_pressure)["v"])
+            cp = steam_table._Region1(self.inflow_temp,self.inflow_pressure)["cp"]
+        elif 0 < self.inflow_quality < 1:
+            rho = 1/(steam_table._Region4(self.inflow_pressure,self.inflow_quality)["v"])
+            cp = steam_table._Region4(self.inflow_pressure, self.inflow_quality)["cp"]
+        else:
+            rho = 1/(steam_table._Region2(self.inflow_temp,self.inflow_pressure)["v"])
+            cp = steam_table._Region2(self.inflow_temp,self.inflow_pressure)["cp"]
+        
+
         vol = self.volume
 
         temp_in = self.inflow_temp
