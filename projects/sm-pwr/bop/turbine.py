@@ -60,6 +60,7 @@ class Turbine(Module):
         self.inflow_pressure = 1.0*unit.bar
         self.inflow_temp = 20+273.15 #K
         self.inflow_mass_flowrate = 67*unit.kg/unit.second
+        self.inflow_quality =  0
 
         self.outflow_temp = 20+272.15 #K
         self.outflow_mass_flowrate = 67*unit.kg/unit.second
@@ -179,6 +180,7 @@ class Turbine(Module):
             self.inflow_temp = inflow['temperature']
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
+            self.inflow_quality = inflow['quality']
 
         # Interactions in the outflow port
         #-----------------------------------------
@@ -194,6 +196,7 @@ class Turbine(Module):
             outflow['temperature'] = temp
             outflow['pressure'] = self.vent_pressure
             outflow['mass_flowrate'] = self.outflow_mass_flowrate
+            outflow['quality'] = self.outflow_quality
 
             self.send((msg_time, outflow), 'outflow')
 
@@ -228,7 +231,7 @@ class Turbine(Module):
         p_out_MPa = self.vent_pressure/unit.mega/unit.pascal
 
         # If entering stream is not steam (valve closed scenario)        
-        if self.inflow_temp < steam_table._TSat_P(p_in_MPa):
+        if self.inflow_quality == 0:
             t_runoff = self.inflow_temp
             power = 0
             quality = 0            
@@ -284,7 +287,7 @@ class Turbine(Module):
                 quality = (h_out_real - bubl_enthalpy)/(dew_enthalpy - bubl_enthalpy)
                 t_runoff = steam_table._Region4(p_out_MPa, quality)['T']
             
-            power = self.inflow_mass_flowrate * w_real
+            power = self.inflow_mass_flowrate * w_real*self.inflow_quality
             
         process_heat = power*self.process_heat_fraction
         power *= 1-self.process_heat_fraction
