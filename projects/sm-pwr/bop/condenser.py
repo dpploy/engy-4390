@@ -69,7 +69,7 @@ class Condenser(Module):
         self.outflow_mass_flowrate = 67
         self.outflow_pressure = 2
         
-        self.heat_source_rate = 50000 #W
+        self.heat_source_rate = -50000 #W
 
         # Outflow phase history
         quantities = list()
