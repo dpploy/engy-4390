@@ -200,10 +200,13 @@ class WaterHeater(Module):
 
         temp = u_vec[0] # primary outflow temp
 
-        #update state variables
+        # Update state variables
         outflow = self.outflow_phase.get_row(time)
 
         time += self.time_step
+
+        water = steam_table(T=temp, P=self.outflow_pressure/unit.mega/unit.pascal)
+        assert water.phase != 'Vapour'
 
         self.outflow_phase.add_row(time, outflow)
         self.outflow_phase.set_value('temp', temp, time)
