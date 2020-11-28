@@ -2,7 +2,17 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
-"""Cortix module"""
+"""Cortix module.
+   Helical coil system steam generator for NuScale BOP.
+   Once-through heat exchanger to operate under fully developed nucleate boiling
+   heat transfer. Subcooled? or Saturated? regime??
+
+   + 1012 tubes (Iconel 690)
+   + 16 mm OD
+   + 0.9 mm tube wall
+   + 22.3 m long
+
+"""
 import logging
 
 import math
@@ -11,8 +21,7 @@ import numpy as np
 
 import unit
 
-
-import iapws.iapws97 as steam_table
+from iapws import IAPWS97 as steam_table
 
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
@@ -56,39 +65,38 @@ class Steamer(Module):
 
         # Configuration parameters
 
-        self.ntu = 12
-        self.primary_volume = 1*16.35*unit.meter**3
-        self.secondary_volume = 1*17.2*unit.meter**3
-        #self.ht_coeff = 4416194*unit.watt/unit.kelvin
-        self.ht_coeff = 41720000.29*unit.watt/unit.kelvin
+        self.helicoil_outer_radius = 16/2*unit.milli*unit.meter
+        self.helicoil_tube_wall = 0.9*unit.milli*unit.meter
+        self.helicoil_inner_radius = self.helicoil_outer_radius - self.helicoil_tube_wall
+        self.helicoil_length = 22.3*unit.meter
+        self.n_helicoil_tubes = 1012
 
-        self.primary_temp_sat = 602.8 #K
-        self.secondary_temp_sat = 516 #K
+        self.wall_temp_factor_primary = 0.97 # 0 < factor <= 1 wall temperature resistance
+        self.wall_temp_factor_secondary = 0.97 # 0 < factor <= 1 wall temperature resistance
 
-        # Initialization
-        self.primary_mass_dens = 1*unit.gram/unit.cc
-        self.primary_cp = 4.298 * unit.kj/unit.kg/unit.kelvin
+        self.iconel690_k = 12.1*unit.watt/unit.meter/unit.kelvin
 
+        self.primary_volume = 1.0*16.35*unit.meter**3
 
-        self.primary_inflow_pressure = 12.8*unit.mega*unit.pascal
+        self.secondary_volume = math.pi * self.helicoil_inner_radius**2 * \
+                                self.helicoil_length * self.n_helicoil_tubes
+
+       # Initialization
         self.primary_inflow_temp = (30+273.15)*unit.kelvin
-        self.primary_inflow_mass_flowrate = 666
+        self.primary_inflow_pressure = 128*unit.bar
+        self.primary_inflow_mass_flowrate = 666*unit.kg/unit.second
 
-        self.secondary_mass_dens = 1*unit.gram/unit.cc
-        self.secondary_cp = 4.298 * unit.kj/unit.kg/unit.kelvin
-        self.tau_secondary = 1*unit.minute
+        self.primary_outflow_temp = (20+273.15)*unit.kelvin
+        self.primary_outflow_pressure = 128*unit.bar
+        self.primary_outflow_mass_flowrate = 666*unit.kg/unit.second
 
-        self.secondary_inflow_pressure = 3.4*unit.mega*unit.pascal
         self.secondary_inflow_temp = (20+273.15)*unit.kelvin
-        self.secondary_inflow_mass_flowrate = 67
+        self.secondary_inflow_pressure = 34*unit.bar
+        self.secondary_inflow_mass_flowrate = 67*unit.kg/unit.second
 
-        self.primary_outflow_temp = (20 + 273.15)*unit.kelvin
-        self.primary_outflow_mass_flowrate = 67
-        self.primary_outflow_pressure = 12.8*unit.mega*unit.pascal
-
-        self.secondary_outflow_mass_flowrate = 67
-        self.secondary_outflow_temp = (20 + 273.15)*unit.kelvin
-        self.secondary_outflow_pressure = 3.4*unit.mega*unit.pascal
+        self.secondary_outflow_temp = (20+273.15)*unit.kelvin
+        self.secondary_outflow_pressure = 34*unit.bar
+        self.secondary_outflow_mass_flowrate = 67*unit.kg/unit.second
         self.secondary_outflow_quality = 0
 
         # Primary outflow phase history
@@ -125,17 +133,17 @@ class Steamer(Module):
         quantities.append(temp)
 
         press = Quantity(name='pressure',
-                         formal_name='p_out', unit='Pa',
+                         formal_name='P_2', unit='Pa',
                          value=self.secondary_outflow_pressure,
-                         latex_name=r'$p_out$',
+                         latex_name=r'$P_2$',
                          info='Steamer Secondary Outflow Pressure')
 
         quantities.append(press)
-        
+
         quality = Quantity(name='quality',
                          formal_name='X', unit=' ',
                          value=self.secondary_outflow_quality,
-                         latex_name=r'$X_sg$',
+                         latex_name=r'$\chi$',
                          info='Steamer Outlet Quality')
 
         quantities.append(quality)
@@ -226,8 +234,8 @@ class Steamer(Module):
             temp = self.primary_outflow_phase.get_value('temp', msg_time)
             primary_outflow = dict()
             primary_outflow['temperature'] = temp
-            primary_outflow['pressure'] = self.primary_outflow_pressure
-            primary_outflow['mass_flowrate'] = self.primary_outflow_mass_flowrate
+            primary_outflow['pressure'] = self.primary_inflow_pressure
+            primary_outflow['mass_flowrate'] = self.primary_inflow_mass_flowrate
             self.send((msg_time, primary_outflow), 'primary-outflow')
 
         # Interactions in the secondary-outflow port
@@ -308,8 +316,10 @@ class Steamer(Module):
     def __f_vec(self, u_vec, time):
 
         temp_p = u_vec[0] # get temperature of primary outflow
+        #print('primary   outflow temp [K] =', temp_p)
 
         temp_s = u_vec[1] # get temperature of secondary outflow
+        #print('secondary outflow temp [K] =', temp_s)
 
         # initialize f_vec to zero
         f_tmp = np.zeros(2, dtype=np.float64) # vector for f_vec return
@@ -318,76 +328,55 @@ class Steamer(Module):
         # primary energy balance
         #-----------------------
 
-        t_avg = (self.primary_inflow_temp + temp_p)/2
-        print('made here tavg',t_avg)
-        print('made here tp',temp_p)
-        print('made here ts',temp_s)
-        assert  20+273.15 <= t_avg <= self.primary_temp_sat
-
-        print('made here',self.primary_inflow_pressure)
-        print('made here',type(self.primary_inflow_pressure))
-
-        rho_p = 1/(steam_table._Region1(t_avg, self.primary_inflow_pressure/unit.mega)['v'])
-        cp_p = steam_table._Region1((self.primary_inflow_temp+temp_p)/2,
-                                    self.primary_inflow_pressure/unit.mega)['cp']
-        vol_p = self.primary_volume
-        tau_p = vol_p/(self.primary_inflow_mass_flowrate/rho_p)
-
         temp_p_in = self.primary_inflow_temp
+
+        press_p = self.primary_inflow_pressure
+
+        water_p = steam_table(T=temp_p, P=press_p/unit.mega/unit.pascal)
+
+        assert water_p.phase != 'Two phases'
+        assert water_p.phase != 'Vapour'
+
+        rho_p = water_p.rho
+        cp_p = water_p.cp * unit.kj/unit.kg/unit.K
+
+        vol_p = self.primary_volume
+        q_p = self.primary_inflow_mass_flowrate/rho_p
+        tau_p = vol_p/q_p
 
         #-----------------------
         # secondary energy balance
         #-----------------------
 
-        if temp_s > self.secondary_temp_sat:
-            rho_s_l = 1/steam_table._Region1(self.secondary_inflow_temp,self.secondary_inflow_pressure/unit.mega)["v"]
-            rho_s_v = 1/steam_table._Region4(self.secondary_inflow_pressure/unit.mega,1)["v"]
-            rho_s = rho_s_l*(1-self.secondary_outflow_quality) + self.secondary_outflow_quality*rho_s_v
+        temp_s_in = self.secondary_inflow_temp
+        #print('secondary inflow T [K] =', temp_s_in)
 
-            cp_s_l = steam_table._Region1(self.secondary_inflow_temp,self.secondary_inflow_pressure/unit.mega)["cp"]
-            cp_s_v = steam_table._Region2(temp_s,self.secondary_inflow_pressure/unit.mega)["cp"]
-            cp_s =  (1-self.secondary_outflow_quality)*cp_s_l + self.secondary_outflow_quality*cp_s_v
+        press_s = self.secondary_inflow_pressure
+        #print('secondary inflow P [bar] =', press_s/unit.bar)
 
+        #print('secondary P [bar] =', press_s/unit.bar)
+        #print('secondary T [K]   =', temp_s)
+
+        water_s = steam_table(T=temp_s, P=press_s/unit.mega/unit.pascal)
+
+        if water_s.phase == 'Two phases':
+            qual = water_s.x
+            rho_s = (1-qual)*water_s.Liquid.rho + qual*water_s.Vapor.rho
+            cp_s = (1-qual)*water_s.Liquid.cp + qual*water_s.Vapor.cp
         else:
-            rho_s = 1/steam_table._Region1((self.secondary_inflow_temp+temp_s)/2,self.secondary_inflow_pressure/unit.mega)["v"]
-            cp_s = steam_table._Region1((self.secondary_inflow_temp+temp_s)/2,self.secondary_inflow_pressure/unit.mega)["cp"]
+            rho_s = water_s.rho
+            cp_s = water_s.cp
+
+        cp_s *= unit.kj/unit.kg/unit.K
 
         vol_s = self.secondary_volume
-
-        temp_s_in = self.secondary_inflow_temp
-
-        tau_s = vol_s/(self.secondary_inflow_mass_flowrate/rho_s)
-
-        # Boiling test
-        spf_energy_heat_s = (temp_s-temp_s_in)*cp_s         # kJ/kg
-
-        cp_s_in = steam_table._Region1(self.secondary_inflow_temp,
-                                       self.secondary_inflow_pressure/unit.mega)['cp']
-        spf_energy_boil_s = (self.secondary_temp_sat - temp_s_in)*cp_s_in # kJ/kg
-
-        h_v = steam_table._Region4(self.secondary_inflow_pressure/unit.mega, 1)['h']
-        h_l = steam_table._Region4(self.secondary_inflow_pressure/unit.mega, 0)['h']
-        q_vap = (h_v-h_l)*self.secondary_inflow_mass_flowrate
-        h_vap = h_v-h_l
-
-        if spf_energy_heat_s < spf_energy_boil_s: # subcooled
-            self.secondary_outflow_quality = 0.0
-        elif spf_energy_heat_s < spf_energy_boil_s + h_vap: # mixed
-            self.secondary_outflow_quality = 1 - \
-                    (h_vap - (spf_energy_heat_s - spf_energy_boil_s))/h_vap
-        else:
-            self.secondary_outflow_quality = 1.0
-
-        q_evap = (spf_energy_heat_s - q_vap * self.secondary_outflow_quality)*self.secondary_inflow_mass_flowrate
-
-        print('quality',self.secondary_outflow_quality)
+        q_s = self.secondary_inflow_mass_flowrate/rho_s
+        tau_s = vol_s/q_s
 
         #-----------------------
         # calculations
         #-----------------------
-        heat_sink = self.__heat_sink_rate(temp_p_in, temp_s_in, cp_p, cp_s)
-
-        heat_sink -= q_evap
+        heat_sink = self.__heat_sink_rate(water_p, water_s)
 
         f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) + 1./rho_p/cp_p/vol_p * heat_sink
 
@@ -399,16 +388,187 @@ class Steamer(Module):
 
         return f_tmp
 
-    def __heat_sink_rate(self, temp_p, temp_s, cp_p, cp_s):
-        """Cooling rate of primary."""
+    def __heat_sink_rate(self, water_p, water_s):
+        """Cooling rate of the primary side.
 
-        c_min = cp_s*self.secondary_inflow_mass_flowrate
+           Assumptions
+           -----------
 
-        c_r = (c_min)/(cp_p*self.primary_inflow_mass_flowrate)
+           + primary side: overall single phase heat tranfer. Locally there may be
+             either partial nucleate boiling or fully developed nucleate boiling
+             but the model will not capture this.
 
-        eta = (1-np.exp(-self.ntu*(1-c_r)))/(1-c_r*np.exp(-self.ntu*(1-c_r)))
+           + secondary side: overall ranging from one phase heat tranfer to fully
+             developed nucleate boiling .
+        """
+        # Primary props
+        temp_p = water_p.T
 
-        q_p = - eta*c_min*(temp_p - temp_s)
+        water_p_sat = steam_table(P=water_p.P, x=0.0)
+        temp_p_sat = water_p_sat.T
 
+        # overall condition on the primary; locally there may be nucleate boiling
+        assert temp_p < temp_p_sat
+
+        #rho_p = 1.0/water_p.v
+        cp_p = water_p.cp
+        mu_p = water_p.mu
+        k_p = water_p.k
+        prtl_p = water_p.Prandt
+        cp_p *= unit.kj/unit.kg/unit.K
+
+        # Secondary props
+        temp_s = water_s.T
+
+        water_s_sat = steam_table(P=water_s.P, x=0.0)
+        temp_s_sat = water_s_sat.T
+
+        # overall condition on the secondary
+        assert temp_s <= temp_s_sat + 80*unit.kelvin # CHF calc neeeded
+
+        if water_s.phase == 'Two phases':
+            qual = water_s.x
+            #rho_s = (1-qual)*water_s.Liquid.rho + qual*water_s.Vapor.rho
+            cp_s = (1-qual)*water_s.Liquid.cp + qual*water_s.Vapor.cp
+            mu_s = (1-qual)*water_s.Liquid.mu + qual*water_s.Vapor.mu
+            k_s = (1-qual)*water_s.Liquid.k + qual*water_s.Vapor.k
+            prtl_s = (1-qual)*water_s.Liquid.Prandt + qual*water_s.Vapor.Prandt
+        else:
+            #rho_s = water_s.rho
+            cp_s = water_s.cp
+            mu_s = water_s.mu
+            k_s = water_s.k
+            prtl_s = water_s.Prandt
+
+        cp_s *= unit.kj/unit.kg/unit.K
+
+        ###########################################
+        # Heat transfer coefficient on primary side
+        ###########################################
+        radius_outer = self.helicoil_outer_radius
+
+        rey_p = self.primary_inflow_mass_flowrate * 2*radius_outer / mu_p
+        #print('primary Reynolds = ',rey_p)
+
+        sl = 1.0      # tube bundle pitch parallel to flow
+        st = 1.5 * sl # tube bundle pitch transverse to flow
+
+        temp_p_w = self.wall_temp_factor_primary * temp_p # wall temperature
+
+        water_p_w = steam_table(T=temp_p_w, P=water_p.P) # primary at wall T, P
+
+        assert water_p_w.phase != 'Two phases' # sanity check
+
+        prtl_w = water_p_w.Prandt
+
+        nusselt_p = self.__mean_nusselt_single_phase(rey_p, prtl_p, prtl_w, st/sl)
+
+        h_p = nusselt_p * k_p / (2*radius_outer)
+
+        #############################################
+        # Heat transfer coefficient on secondary side
+        #############################################
+        radius_inner = self.helicoil_inner_radius
+
+        temp_s_w = self.wall_temp_factor_secondary * temp_p_w
+        temp_s_w_F = unit.convert_temperature(temp_s_w, 'K', 'F')
+
+        water_s_sat = steam_table(P=water_s.P, x=0.0)
+        temp_s_sat = water_s_sat.T
+        temp_s_sat_F = unit.convert_temperature(temp_s_sat, 'K', 'F')
+
+        #print('secondary pressure [bar] = ',water_s.P*unit.mega*unit.pascal/unit.bar)
+        #print('primary   pressure [bar] = ',water_p.P*unit.mega*unit.pascal/unit.bar)
+
+        if (temp_s_w_F - temp_s_sat_F) > 0.0: # nucleate boiling
+        # Jens and Lottes correlation for subcooled/saturated nucleate boiling
+        # 500 <=  P <= 2000 psi
+            print('MADE HERE')
+            press_s_psia = water_s.P*unit.mega*unit.pascal/unit.psi
+            assert 400 <= press_s_psia <= 2000, 'press_s [psi] = %r'%press_s_psia
+
+            q2prime = ( (temp_s_w_F - temp_s_sat_F) * math.exp(press_s_psia/900) / 60 )**4 / 1e6
+            q2prime /= unit.Btu/unit.hour/unit.ft**2
+            h_s = q2prime/(temp_s_w - temp_s_sat)
+        else: # single phase transfer
+            rey_s = self.secondary_inflow_mass_flowrate * 2*radius_inner / mu_s
+            water_s_w = steam_table(T=temp_s_w, P=water_s.P) # secondary at wall T, P
+            assert water_s_w.phase != 'Two phases' # sanity check
+            prtl_w = water_s_w.Prandt
+            nusselt_s = self.__mean_nusselt_single_phase(rey_s, prtl_s, prtl_w, st/sl)
+            h_s = nusselt_s * k_s / (2*radius_inner)
+
+        ###################################################
+        # Overall heat transfer
+        ###################################################
+        # This is based on the secondary side
+
+        # Cross section geometry
+        area_outer = math.pi * self.helicoil_outer_radius**2
+        area_inner = math.pi * self.helicoil_inner_radius**2
+        radius_mean = (self.helicoil_outer_radius+self.helicoil_inner_radius)/2
+        area_mean = math.pi * radius_mean**2
+        radius_inner = self.helicoil_inner_radius
+        radius_outer = self.helicoil_outer_radius
+        therm_cond_wall = self.iconel690_k
+
+        fouling = 0.0003 * unit.F*unit.ft**2*unit.hour/unit.Btu
+
+        # Secondary side based heat transfer resistance
+        if h_s > 0:
+            one_over_U = 1.0/h_p * area_outer/area_inner + \
+            (radius_outer-radius_inner)/therm_cond_wall * area_outer/area_mean + \
+            fouling + \
+            1/h_s
+        else:
+            one_over_U = 1.0/h_p * area_outer/area_inner + \
+            (radius_outer-radius_inner)/therm_cond_wall * area_outer/area_mean + \
+            fouling
+
+        # Total area of heat tranfer
+        area = 2*math.pi*radius_mean* self.n_helicoil_tubes * self.helicoil_length
+
+        q_p = - area * 1/one_over_U * (temp_p - temp_s)
 
         return q_p
+
+    def __mean_nusselt_single_phase(self, rey, prtl, prtl_w, st_sl):
+        """Mean Nusselt number for turbulent one-phase flow.
+           Staggered tube bundle.
+           A. Zukauskas 1987,
+           Convective Heat Transfer in Cross Flows
+           Handbook of Single-Phase Convective Heat Transfer, Chap 6.
+           S. Kakac, R. Shah, and W. Aung Eds.
+           J. Wiley & Sons, New York 1987
+
+           Parameters
+           ----------
+
+           rey: float
+               Reynolds number based on diameter
+           prtl: float
+               Prandtl number
+           prtl_w: float
+               Prandtl number based on wall temperature.
+           st_sl: float
+               Ratio of tube pitch transversal to flow to the tube pitch along flow.
+        """
+
+        assert 1 <= rey <= 2e6
+
+        if 1 <= rey <= 5e2:
+            nusselt_p = 1.04 * rey**0.4 * prtl**0.36 * \
+                        (prtl/prtl_w)**0.25
+        elif 5e2 < rey <= 1e3:
+            nusselt_p = 0.71 * rey**0.5 * prtl**0.36 * \
+                        (prtl/prtl_w)**0.25
+        elif 1e3 < rey <= 2e5:
+            nusselt_p = 0.35 * (st_sl)**0.2 * rey**0.6 * prtl**0.36 * \
+                        (prtl/prtl_w)**0.25
+        elif 2e5 < rey <= 2e6:
+            nusselt_p = 0.031 * (st_sl)**0.2 * rey**0.8 * prtl**0.36 * \
+                        (prtl/prtl_w)**0.25
+        else:
+            assert False
+
+        return nusselt_p

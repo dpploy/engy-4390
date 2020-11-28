@@ -50,18 +50,20 @@ class Turbine(Module):
         # Domain attributes
 
         # Configuration parameters
-        
+ 
         self.turbine_efficiency = 0.7784
-        self.vent_pressure = 0.008066866*unit.mega*unit.pascal
+        #self.vent_pressure = 0.008066866*unit.mega*unit.pascal
+        self.vent_pressure = 1*unit.bar
         self.process_heat_fraction = .01 #1%
-        
-        # Initialization   
 
-        self.inflow_pressure = 1.0*unit.bar
+        # Initialization
+
         self.inflow_temp = 20+273.15 #K
+        self.inflow_pressure = 1.0*unit.bar
         self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
         self.outflow_temp = 20+272.15 #K
+        self.outflow_pressure = self.vent_pressure
         self.outflow_mass_flowrate = 67*unit.kg/unit.second
         self.outflow_quality = 0.0
 
@@ -162,8 +164,8 @@ class Turbine(Module):
             time = self.__step(time)
 
     def __call_ports(self, time):
-        
-        
+
+
         # Interactions in the inflow port
         #----------------------------------------
         # One way "from" inflow
@@ -231,7 +233,7 @@ class Turbine(Module):
         if self.inflow_temp < steam_table._TSat_P(p_in_MPa):
             t_runoff = self.inflow_temp
             power = 0
-            quality = 0            
+            quality = 0
 
         else:
             s_out_prime = steam_table._Region2(self.inflow_temp, p_in_MPa)['s']
@@ -278,17 +280,17 @@ class Turbine(Module):
             elif h_out_real > dew_enthalpy:
                 t_runoff = steam_table._Backward2_T_Ph(p_out_MPa, h_out_real)
                 quality = 1 # superheated steam
-                
+
             # Else run off is actually in two phase region
             else:
                 quality = (h_out_real - bubl_enthalpy)/(dew_enthalpy - bubl_enthalpy)
                 t_runoff = steam_table._Region4(p_out_MPa, quality)['T']
-            
+
             power = self.inflow_mass_flowrate * w_real
-            
+
         process_heat = power*self.process_heat_fraction
         power *= 1-self.process_heat_fraction
-            
+
         # Update state variables
         turbine_outflow = self.outflow_phase.get_row(time)
         turbine = self.state_phase.get_row(time)
