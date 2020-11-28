@@ -62,7 +62,7 @@ class SMPWR(Module):
 
         self.alpha_n = -3e-6 # control rod reactivity worth
 
-        self.n_dens_ss_operation = 5e14/2200/unit.meter**3
+        self.n_dens_ss_operation = 0.5*5e14/2200/unit.meter**3
 
         #Delayed neutron emission
         self.species_decay = [0.0124, 0.0305, 0.111, 0.301, 1.14, 3.01] # 1/sec
@@ -76,27 +76,27 @@ class SMPWR(Module):
         self.thermal_neutron_velo = 2200*unit.meter/unit.second
 
         self.fis_nuclide_num_dens = 9.84e26/unit.meter**3 # (fissile nuclei)/m3
-        self.condenser_pressure = 0.008066866 #MPa
-        self.temp_inlet_ss = 265 + 273.15
+        self.condenser_pressure = 0.008066866*unit.mega*unit.pascal
+        self.temp_inlet_ss = 265+273.15
 
         self.fuel_dens = 10800*unit.kg/unit.meter**3
         self.cp_fuel = 300*unit.joule/unit.kg/unit.kelvin
         self.fuel_volume = .8565*unit.meter**3
 
-        self.coolant_mass_flowrate = 666 #kg/s
+        self.coolant_mass_flowrate = 666*unit.kg/unit.second
         self.coolant_dens = 669.2294308156266*unit.kg/unit.meter**3
         self.cp_coolant = 1000*5.382268683703659 # J/(mol K) - > J/(kg K)
         self.coolant_volume = 2.8*unit.meter**3
-        self.coolant_pressure = 12.8 #MPa
+        self.coolant_pressure = 128*unit.bar
 
-        self.ht_coeff = 1300000*unit.watt/unit.kelvin
+        self.ht_coeff = 0.1*1300000*unit.watt/unit.kelvin
 
         self.tau = 2.8*unit.second # coolant flow residence time
 
         # Initialization
         self.n_dens_ref = 1.0
         self.q_0 = 1./self.gen_time # pulse neutron source
-        rho_0_over_beta = 0.35# $
+        rho_0_over_beta = 0.25# $
 
         self.n_0 = 0.0 # neutronless steady state before start up
         self.rho_0 = rho_0_over_beta * self.beta # neutron source

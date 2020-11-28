@@ -12,7 +12,7 @@ import math
 from scipy.integrate import odeint
 import numpy as np
 
-import iapws.iapws97 as steam_table
+from iapws import IAPWS97 as steam_table
 
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
@@ -55,22 +55,20 @@ class WaterHeater(Module):
 
         # Configuration parameters
 
-        self.tau = 1.5
-        self.volume = 5
+        self.volume = 15*unit.meter**3
 
         # Initialization
 
-        self.inflow_pressure = 2
-        self.inflow_temp = 20+273
-        self.inflow_mass_flowrate = 67
-        self.inflow_quality =  0
+        self.inflow_temp = (20+273)*unit.kelvin
+        self.inflow_pressure = 20*unit.bar
+        self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
-        self.outflow_temp = 20 + 273.15
+        self.outflow_temp = (20+273.15)*unit.kelvin
         #self.outflow_temp_ss = 422 #k
-        self.outflow_mass_flowrate = 67
-        self.outflow_pressure = 3.4*unit.mega*unit.pascal
+        self.outflow_pressure = 34*unit.bar
+        self.outflow_mass_flowrate = 67*unit.kg/unit.second
 
-        self.heat_source_rate = 0 #W
+        self.heat_source_rate = 0*unit.watt
 
         # Outflow phase history
         quantities = list()
@@ -79,7 +77,7 @@ class WaterHeater(Module):
                         formal_name='T', unit='K',
                         value=self.outflow_temp,
                         latex_name=r'$T$',
-                        info='Outflow Temperature')
+                        info='Water Heater Outflow Temperature')
 
         quantities.append(temp)
 
@@ -87,7 +85,7 @@ class WaterHeater(Module):
                          formal_name='P', unit='Pa',
                          value=self.outflow_pressure,
                          latex_name=r'$P$',
-                         info='Outflow Pressure')
+                         info='Water Heater Outflow Pressure')
 
         quantities.append(press)
 
@@ -166,8 +164,6 @@ class WaterHeater(Module):
             self.inflow_temp = inflow['temperature']
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
-            self.inflow_quality = inflow['quality']
-            
 
         # Interactions in the heat port
         #----------------------------------------
@@ -182,7 +178,7 @@ class WaterHeater(Module):
             assert abs(check_time-time) <= 1e-6
 
             self.heat_source_rate = heat
-            print(self.heat_source_rate)
+
     def __step(self, time=0.0):
 
         # Get state values
@@ -237,22 +233,18 @@ class WaterHeater(Module):
         #-----------------------
         # primary energy balance
         #-----------------------
-        if self.inflow_quality == 0:
-            rho = 1/(steam_table._Region1(self.inflow_temp,self.inflow_pressure)["v"])
-            cp = steam_table._Region1(self.inflow_temp,self.inflow_pressure)["cp"]
-        elif 0 < self.inflow_quality < 1:
-            rho = 1/(steam_table._Region4(self.inflow_pressure,self.inflow_quality)["v"])
-            cp = steam_table._Region4(self.inflow_pressure, self.inflow_quality)["cp"]
-        else:
-            rho = 1/(steam_table._Region2(self.inflow_temp,self.inflow_pressure)["v"])
-            cp = steam_table._Region2(self.inflow_temp,self.inflow_pressure)["cp"]
-        
+        water = steam_table(T=temp,
+                            P=self.inflow_pressure/unit.mega/unit.pascal)
 
+        assert water.phase != 'Vapour'
+
+        rho = water.rho
+        cp = water.cp*unit.kj/unit.kg/unit.K
         vol = self.volume
 
         temp_in = self.inflow_temp
 
-        tau = self.tau
+        tau = vol/(self.inflow_mass_flowrate/rho)
 
         #-----------------------
         # calculations

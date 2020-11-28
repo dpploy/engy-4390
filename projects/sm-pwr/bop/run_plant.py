@@ -23,7 +23,7 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 1*unit.hour
+    end_time = 18.0*unit.minute
     time_step = 30*unit.second
     show_time = (True, 5*unit.minute)
 
@@ -158,9 +158,6 @@ def main():
         plt.grid()
         plt.savefig('steamer-secondary-outflow-temp.png', dpi=300)
 
-
-        #steamer.secondary_outflow_phase.plot()
-
         # Turbine plots
         turbine = plant_net.modules[2]
 
@@ -170,6 +167,26 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('turbine-power.png', dpi=300)
+
+        # Condenser plots
+        condenser = plant_net.modules[3]
+
+        (quant, time_unit) = condenser.outflow_phase.get_quantity_history('temp')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('condenser-outflow-temp.png', dpi=300)
+
+        # Water heater plots
+        water_heater = plant_net.modules[4]
+
+        (quant, time_unit) = water_heater.outflow_phase.get_quantity_history('temp')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('water_heater-outflow-temp.png', dpi=300)
 
 
     plant.close()  # Properly shutdow plant

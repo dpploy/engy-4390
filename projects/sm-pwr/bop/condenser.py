@@ -8,11 +8,7 @@ import logging
 
 import unit
 
-import iapws.iapws97 as steam_table
-
-import math
-from scipy.integrate import odeint
-import numpy as np
+from iapws import IAPWS97 as steam_table
 
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
@@ -56,20 +52,16 @@ class Condenser(Module):
         # Domain attributes
 
         # Configuration parameters
-        self.tau = 1.5
-        self.volume = 5
 
         # Initialization
-        self.inflow_pressure = 0.008066866
-        self.inflow_temp = 20+273
-        self.inflow_mass_flowrate = 67
-        self.inflow_quality = 0
 
-        self.outflow_temp = 20 + 273.15
-        self.outflow_mass_flowrate = 67
-        self.outflow_pressure = 2
-        
-        self.heat_source_rate = -50000 #W
+        self.inflow_pressure = 34*unit.bar
+        self.inflow_temp = (20+273)*unit.K
+        self.inflow_mass_flowrate = 67*unit.kg/unit.second
+
+        self.outflow_temp = (20+273.15)*unit.K
+        self.outflow_mass_flowrate = 67*unit.kg/unit.second
+        self.outflow_pressure = 34*unit.bar
 
         # Outflow phase history
         quantities = list()
@@ -91,7 +83,7 @@ class Condenser(Module):
         quantities.append(temp)
 
         press = Quantity(name='pressure',
-                         formal_name='P_2', unit='MPa',
+                         formal_name='P_2', unit='Pa',
                          value=self.outflow_pressure,
                          latex_name=r'$P_2$',
                          info='Condenser Outflow Pressure')
@@ -139,11 +131,11 @@ class Condenser(Module):
             time = self.__step(time)
 
     def __call_ports(self, time):
-        
-        
+
+
         # Interactions in the inflow port
         #----------------------------------------
-        # one way "from" turbine
+        # one way "from" inflow
 
         # receive from
         if self.get_port('inflow').connected_port:
@@ -151,16 +143,15 @@ class Condenser(Module):
             self.send(time, 'inflow')
 
             (check_time, inflow) = self.recv('inflow')
-            print(check_time,time)
             assert abs(check_time-time) <= 1e-6
 
             self.inflow_temp = inflow['temperature']
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
 
-        # Interactions in the feed water inflow port
+        # Interactions in the outflow port
         #-----------------------------------------
-        # one way "to" feedwater
+        # one way "to" outflow
 
         # send to
         if self.get_port('outflow').connected_port:
@@ -178,28 +169,13 @@ class Condenser(Module):
 
     def __step(self, time=0.0):
 
-        # Get state values
-        t_exit = self.inflow_temp
-        p_out = steam_table._PSat_T(self.inflow_temp)
-        flow_out = self.inflow_mass_flowrate
-        # Get state values
-        u_0 = self.__get_state_vector(time)
+        # Comput state
+        #print('inflow pressure [bar] = ',self.inflow_pressure/unit.bar)
+        water = steam_table(P=self.inflow_pressure/unit.mega/unit.pascal, x=0.0)
 
-        t_interval_sec = np.linspace(time, time+self.time_step, num=2)
-
-        max_n_steps_per_time_step = 1000 # max number of nonlinear algebraic solver
-                                         # iterations per time step
-
-        (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
-                                         rtol=1e-4, atol=1e-8,
-                                         mxstep=max_n_steps_per_time_step,
-                                         full_output=True, tfirst=False)
-
-        assert info_dict['message'] == 'Integration successful.', info_dict['message']
-
-        u_vec = u_vec_hist[1, :]  # solution vector at final time step
-
-        temp = u_vec[0] # primary outflow temp
+        outflow_temp = water.T
+        outflow_mass_flowrate = self.inflow_mass_flowrate
+        outflow_pressure = self.inflow_pressure
 
         #update state variables
         condenser_outflow = self.outflow_phase.get_row(time)
@@ -207,55 +183,8 @@ class Condenser(Module):
         time += self.time_step
 
         self.outflow_phase.add_row(time, condenser_outflow)
-        self.outflow_phase.set_value('temp', t_exit, time)
-        self.outflow_phase.set_value('flowrate', flow_out, time)
-        self.outflow_phase.set_value('pressure', p_out, time)
+        self.outflow_phase.set_value('temp', outflow_temp, time)
+        self.outflow_phase.set_value('flowrate', outflow_mass_flowrate , time)
+        self.outflow_phase.set_value('pressure', outflow_pressure, time)
 
         return time
-    def __get_state_vector(self, time):
-        """Return a numpy array of all unknowns ordered as shown.
-
-        """
-
-        u_vec = np.empty(0, dtype=np.float64)
-
-        temp = self.outflow_phase.get_value('temp', time)
-        u_vec = np.append(u_vec, temp)
-
-        return  u_vec
-
-    def __f_vec(self, u_vec, time):
-
-        temp = u_vec[0]
-
-        # initialize f_vec to zero
-        f_tmp = np.zeros(1, dtype=np.float64) # vector for f_vec return
-
-        #-----------------------
-        # primary energy balance
-        #-----------------------
-        if self.inflow_quality == 0:
-            rho = 1/(steam_table._Region1(self.inflow_temp,self.inflow_pressure)["v"])
-            cp = steam_table._Region1(self.inflow_temp,self.inflow_pressure)["cp"]
-        elif 0 < self.inflow_quality < 1:
-            rho = 1/(steam_table._Region4(self.inflow_pressure,self.inflow_quality)["v"])
-            cp = steam_table._Region4(self.inflow_pressure, self.inflow_quality)["cp"]
-        else:
-            rho = 1/(steam_table._Region2(self.inflow_temp,self.inflow_pressure)["v"])
-            cp = steam_table._Region2(self.inflow_temp,self.inflow_pressure)["cp"]
-            
-        
-        vol = self.volume
-
-        temp_in = self.inflow_temp
-
-        tau = self.tau
-
-        #-----------------------
-        # calculations
-        #-----------------------
-        heat_source = self.heat_source_rate
-
-        f_tmp[0] = - 1/tau * (temp - temp_in) + 1./rho/cp/vol * heat_source
-
-        return f_tmp
