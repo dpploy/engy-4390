@@ -52,8 +52,9 @@ class Turbine(Module):
         # Configuration parameters
  
         self.turbine_efficiency = 0.7784
-        #self.vent_pressure = 0.008066866*unit.mega*unit.pascal
-        self.vent_pressure = 1*unit.bar
+        # Too low???
+        self.vent_pressure = 0.008066866*unit.mega*unit.pascal
+        #self.vent_pressure = 1*unit.bar
         self.process_heat_fraction = .01 #1%
 
         # Initialization

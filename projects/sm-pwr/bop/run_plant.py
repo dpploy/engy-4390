@@ -23,9 +23,9 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 18.0*unit.minute
-    time_step = 30*unit.second
-    show_time = (True, 5*unit.minute)
+    end_time = 15*unit.minute
+    time_step = 10*unit.second
+    show_time = (True, 2*unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -64,7 +64,7 @@ def main():
     turbine.end_time = end_time
     turbine.show_time = show_time
 
-    plant_net.module(turbine)  # Add steamer module to network
+    #plant_net.module(turbine)  # Add steamer module to network
 
     '''Condenser'''
 
@@ -76,7 +76,7 @@ def main():
     condenser.end_time = end_time
     condenser.show_time = show_time
 
-    plant_net.module(condenser)  # Add condenser module to network`
+    #plant_net.module(condenser)  # Add condenser module to network`
 
     '''Feedwater Heating system'''
 
@@ -88,17 +88,17 @@ def main():
     water_heater.end_time = end_time
     water_heater.show_time = show_time
 
-    plant_net.module(water_heater)  # Add water_heater module to network
+    #plant_net.module(water_heater)  # Add water_heater module to network
 
     # Balance of Plant Network Connectivity
 
     plant_net.connect([reactor, 'coolant-outflow'], [steamer, 'primary-inflow'])
     plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
-    plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
-    plant_net.connect([turbine, 'outflow'], [condenser, 'inflow'])
+    #plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
+    #plant_net.connect([turbine, 'outflow'], [condenser, 'inflow'])
     #plant_net.connect([turbine, 'process-heat'], [water_heater, 'heat'])
-    plant_net.connect([condenser, 'outflow'], [water_heater, 'inflow'])
-    plant_net.connect([water_heater, 'outflow'], [steamer, 'secondary-inflow'])
+    #plant_net.connect([condenser, 'outflow'], [water_heater, 'inflow'])
+    #plant_net.connect([water_heater, 'outflow'], [steamer, 'secondary-inflow'])
 
     plant_net.draw(engine='circo', node_shape='folder')
 
@@ -117,14 +117,14 @@ def main():
                    x_label='Time [m]', y_label=quant.latex_name+' ['+quant.unit+']')
 
         plt.grid()
-        plt.savefig('neutron-dens.png', dpi=300)
+        plt.savefig('reactor-neutron-dens.png', dpi=300)
 
         (quant, time_unit) = reactor.neutron_phase.get_quantity_history('delayed-neutrons-cc')
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
 
         plt.grid()
-        plt.savefig('delayed-neutrons-cc.png', dpi=300)
+        plt.savefig('reactor-delayed-neutrons-cc.png', dpi=300)
 
         (quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('temp')
 
@@ -132,14 +132,21 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
 
         plt.grid()
-        plt.savefig('coolant-outflow-temp.png', dpi=300)
+        plt.savefig('reactor-coolant-outflow-temp.png', dpi=300)
 
         (quant, time_unit) = reactor.reactor_phase.get_quantity_history('fuel-temp')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('fuel-temp.png', dpi=300)
+        plt.savefig('reactor-fuel-temp.png', dpi=300)
+
+        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('power')
+
+        quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.mega, x_label='Time [m]',
+                   y_label=quant.latex_name+' [M'+quant.unit+']')
+        plt.grid()
+        plt.savefig('reactor-power.png', dpi=300)
 
         # Steamer plots
         steamer = plant_net.modules[1]
@@ -158,6 +165,7 @@ def main():
         plt.grid()
         plt.savefig('steamer-secondary-outflow-temp.png', dpi=300)
 
+        '''
         # Turbine plots
         turbine = plant_net.modules[2]
 
@@ -187,7 +195,7 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('water_heater-outflow-temp.png', dpi=300)
-
+        '''
 
     plant.close()  # Properly shutdow plant
 
