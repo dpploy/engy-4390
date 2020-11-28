@@ -12,6 +12,8 @@ import numpy as np
 
 import unit
 
+from iapws import IAPWS97 as WaterProps
+
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
@@ -62,7 +64,7 @@ class SMPWR(Module):
 
         self.alpha_n = -3e-6 # control rod reactivity worth
 
-        self.n_dens_ss_operation = 0.5*5e14/2200/unit.meter**3
+        self.n_dens_ss_operation = 0.90*5e14/2200/unit.meter**3
 
         #Delayed neutron emission
         self.species_decay = [0.0124, 0.0305, 0.111, 0.301, 1.14, 3.01] # 1/sec
@@ -76,7 +78,6 @@ class SMPWR(Module):
         self.thermal_neutron_velo = 2200*unit.meter/unit.second
 
         self.fis_nuclide_num_dens = 9.84e26/unit.meter**3 # (fissile nuclei)/m3
-        self.condenser_pressure = 0.008066866*unit.mega*unit.pascal
         self.temp_inlet_ss = 265+273.15
 
         self.fuel_dens = 10800*unit.kg/unit.meter**3
@@ -84,14 +85,10 @@ class SMPWR(Module):
         self.fuel_volume = .8565*unit.meter**3
 
         self.coolant_mass_flowrate = 666*unit.kg/unit.second
-        self.coolant_dens = 669.2294308156266*unit.kg/unit.meter**3
-        self.cp_coolant = 1000*5.382268683703659 # J/(mol K) - > J/(kg K)
-        self.coolant_volume = 2.8*unit.meter**3
+        self.coolant_volume = 2.5*2.8*unit.meter**3
         self.coolant_pressure = 128*unit.bar
 
-        self.ht_coeff = 0.1*1300000*unit.watt/unit.kelvin
-
-        self.tau = 2.8*unit.second # coolant flow residence time
+        self.ht_coeff = 1300000*unit.watt/unit.kelvin
 
         # Initialization
         self.n_dens_ref = 1.0
@@ -117,7 +114,7 @@ class SMPWR(Module):
                             formal_name='q_c', unit='kg/s',
                             value=self.coolant_mass_flowrate,
                             latex_name=r'$q_c$',
-                            info='Reactor Outflow Coolant Flowrate')
+                            info='Reactor Coolant Outflow Flowrate')
 
         quantities.append(flowrate)
 
@@ -125,14 +122,15 @@ class SMPWR(Module):
                         formal_name='T_c', unit='K',
                         value=self.temp_c_0,
                         latex_name=r'$T_c$',
-                        info='Reactor Outflow Coolant Temperature')
+                        info='Reactor Coolant Outflow Temperature')
 
         quantities.append(temp)
 
         press = Quantity(name='pressure',
                          formal_name='P_c', unit='Pa',
+                         value=self.coolant_pressure,
                          latex_name=r'$P_c$',
-                         info='Reactor Outflow Coolant Pressure')
+                         info='Reactor Coolant Outflow Pressure')
 
         quantities.append(press)
 
@@ -169,19 +167,25 @@ class SMPWR(Module):
                              formal_name='T_f', unit='K',
                              value=self.temp_f_0,
                              latex_name=r'$T_f$',
-                             info='Nuclear Fuel Temperature')
+                             info='Reactor Nuclear Fuel Temperature')
         quantities.append(fuel_temp)
-        
+
         inlet_temp = Quantity(name='inlet-temp',
                              formal_name='T_in', unit='K',
                              value=self.inflow_cool_temp,
                              latex_name=r'$T_{in}$',
-                             info='Inflow Coolant Temperature')
+                             info='Reactor Coolant Inflow Temperature')
         quantities.append(inlet_temp)
+
+        pwr = Quantity(name='power',
+                             formal_name='Pth', unit='W',
+                             value=0.0,
+                             latex_name=r'$P_{th}$',
+                             info='Reactor Power')
+        quantities.append(pwr)
 
         self.reactor_phase = Phase(time_stamp=self.initial_time, time_unit='s',
                                    quantities=quantities)
-
 
     def run(self, *args):
 
@@ -232,11 +236,15 @@ class SMPWR(Module):
             msg_time = self.recv('coolant-outflow')
             assert msg_time <= time
 
-            outflow_cool_temp = self.coolant_outflow_phase.get_value('temp', msg_time)
+            temp = self.coolant_outflow_phase.get_value('temp', msg_time)
+            press = self.coolant_outflow_phase.get_value('pressure', msg_time)
+            flowrate = self.coolant_outflow_phase.get_value('flowrate', msg_time)
+
             coolant_outflow = dict()
-            coolant_outflow['temperature'] = outflow_cool_temp
-            coolant_outflow['pressure'] = self.coolant_pressure
-            coolant_outflow['mass_flowrate'] = self.coolant_mass_flowrate
+            coolant_outflow['temperature'] = temp
+            coolant_outflow['pressure'] = press
+            coolant_outflow['mass_flowrate'] = flowrate
+
             self.send((msg_time, coolant_outflow), 'coolant-outflow')
 
         # Interactions in the coolant-inflow port
@@ -310,6 +318,14 @@ class SMPWR(Module):
         self.neutron_phase.set_value('delayed-neutrons-cc', c_vec, time)
         self.reactor_phase.set_value('fuel-temp', fuel_temp, time)
         self.reactor_phase.set_value('inlet-temp', self.inflow_cool_temp, time)
+
+        water = WaterProps(T=cool_temp, P=self.coolant_pressure/unit.mega/unit.pascal)
+        assert water.phase != 'Two phases'
+        assert water.phase != 'Vapour'
+        cp  = water.cp*unit.kj/unit.kg/unit.K
+        pwr = self.coolant_mass_flowrate*cp*(cool_temp-self.inflow_cool_temp)
+        self.reactor_phase.set_value('power', pwr, time)
+
         return time
 
     def __get_state_vector(self, time):
@@ -504,13 +520,17 @@ class SMPWR(Module):
         #-----------------------
         # coolant energy balance
         #-----------------------
-        rho_c = self.coolant_dens
-        cp_c = self.cp_coolant
+        water = WaterProps(T=temp_c, P=self.coolant_pressure/unit.mega/unit.pascal)
+        assert water.phase != 'Two phases'
+        assert water.phase != 'Vapour'
+        rho_c = water.rho
+        cp_c = water.cp*unit.kj/unit.kg/unit.K
         vol_cool = self.coolant_volume
 
         temp_in = self.inflow_cool_temp
 
-        tau = self.tau
+        q_vol = self.coolant_mass_flowrate/rho_c
+        tau = vol_cool / q_vol
 
         heat_source = - heat_sink
 
