@@ -8,7 +8,7 @@ import logging
 
 import unit
 
-import iapws.iapws97 as steam_table
+from iapws import IAPWS97 as steam_table
 
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
@@ -55,13 +55,13 @@ class Condenser(Module):
 
         # Initialization
 
-        self.inflow_pressure = 3.4
-        self.inflow_temp = 20+273
-        self.inflow_mass_flowrate = 67
+        self.inflow_pressure = 34*unit.bar
+        self.inflow_temp = (20+273)*unit.K
+        self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
-        self.outflow_temp = 20 + 273.15
-        self.outflow_mass_flowrate = 67
-        self.outflow_pressure = 3.4
+        self.outflow_temp = (20+273.15)*unit.K
+        self.outflow_mass_flowrate = 67*unit.kg/unit.second
+        self.outflow_pressure = 34*unit.bar
 
         # Outflow phase history
         quantities = list()
@@ -83,7 +83,7 @@ class Condenser(Module):
         quantities.append(temp)
 
         press = Quantity(name='pressure',
-                         formal_name='P_2', unit='MPa',
+                         formal_name='P_2', unit='Pa',
                          value=self.outflow_pressure,
                          latex_name=r'$P_2$',
                          info='Condenser Outflow Pressure')
@@ -131,11 +131,11 @@ class Condenser(Module):
             time = self.__step(time)
 
     def __call_ports(self, time):
-        
-        
+
+
         # Interactions in the inflow port
         #----------------------------------------
-        # one way "from" turbine
+        # one way "from" inflow
 
         # receive from
         if self.get_port('inflow').connected_port:
@@ -143,16 +143,15 @@ class Condenser(Module):
             self.send(time, 'inflow')
 
             (check_time, inflow) = self.recv('inflow')
-            print(check_time,time)
             assert abs(check_time-time) <= 1e-6
 
             self.inflow_temp = inflow['temperature']
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
 
-        # Interactions in the feed water inflow port
+        # Interactions in the outflow port
         #-----------------------------------------
-        # one way "to" feedwater
+        # one way "to" outflow
 
         # send to
         if self.get_port('outflow').connected_port:
@@ -170,12 +169,13 @@ class Condenser(Module):
 
     def __step(self, time=0.0):
 
-        # Get state values
-        t_exit = self.inflow_temp
-        p_out = steam_table._PSat_T(self.inflow_temp)
-        flow_out = self.inflow_mass_flowrate
-        #h_exit = steam_table._Region4(p_in, 0)['h']
-        #q_removed = flow_rate*(h_exit-h_in)
+        # Comput state
+        #print('inflow pressure [bar] = ',self.inflow_pressure/unit.bar)
+        water = steam_table(P=self.inflow_pressure/unit.mega/unit.pascal, x=0.0)
+
+        outflow_temp = water.T
+        outflow_mass_flowrate = self.inflow_mass_flowrate
+        outflow_pressure = self.inflow_pressure
 
         #update state variables
         condenser_outflow = self.outflow_phase.get_row(time)
@@ -183,8 +183,8 @@ class Condenser(Module):
         time += self.time_step
 
         self.outflow_phase.add_row(time, condenser_outflow)
-        self.outflow_phase.set_value('temp', t_exit, time)
-        self.outflow_phase.set_value('flowrate', flow_out, time)
-        self.outflow_phase.set_value('pressure', p_out, time)
+        self.outflow_phase.set_value('temp', outflow_temp, time)
+        self.outflow_phase.set_value('flowrate', outflow_mass_flowrate , time)
+        self.outflow_phase.set_value('pressure', outflow_pressure, time)
 
         return time
