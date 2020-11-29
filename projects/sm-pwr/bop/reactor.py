@@ -86,9 +86,9 @@ class SMPWR(Module):
 
         self.coolant_mass_flowrate = 666*unit.kg/unit.second
         self.coolant_volume = 2.5*2.8*unit.meter**3
-        self.coolant_pressure = 128*unit.bar
+        self.coolant_pressure = 190*unit.bar
 
-        self.ht_coeff = 1300000*unit.watt/unit.kelvin
+        self.ht_coeff = 130000000*unit.watt/unit.kelvin
 
         # Initialization
         self.n_dens_ref = 1.0

@@ -83,11 +83,11 @@ class Steamer(Module):
 
        # Initialization
         self.primary_inflow_temp = (20+273.15)*unit.kelvin
-        self.primary_inflow_pressure = 128*unit.bar
+        self.primary_inflow_pressure = 190*unit.bar
         self.primary_inflow_mass_flowrate = 666*unit.kg/unit.second
 
-        self.primary_outflow_temp = self.primary_inflow_temp - 1*unit.K
-        self.primary_outflow_pressure = 128*unit.bar
+        self.primary_outflow_temp = self.primary_inflow_temp - 2*unit.K
+        self.primary_outflow_pressure = 190*unit.bar
         self.primary_outflow_mass_flowrate = 666*unit.kg/unit.second
 
         self.secondary_inflow_temp = self.primary_outflow_temp-\
@@ -333,6 +333,7 @@ class Steamer(Module):
 
         temp_p_in = self.primary_inflow_temp
         print('primary inflow temp [K] =', temp_p_in)
+        print('secondary inflow temp [K] =', self.secondary_inflow_temp)
 
         press_p = self.primary_inflow_pressure
 
@@ -347,6 +348,7 @@ class Steamer(Module):
         vol_p = self.primary_volume
         q_p = self.primary_inflow_mass_flowrate/rho_p
         tau_p = vol_p/q_p
+        
 
         #-----------------------
         # secondary energy balance
@@ -377,23 +379,52 @@ class Steamer(Module):
         vol_s = self.secondary_volume
         q_s = self.secondary_inflow_mass_flowrate/rho_s
         tau_s = vol_s/q_s
+        
 
         #-----------------------
         # calculations
         #-----------------------
         heat_sink = self.__heat_sink_rate(water_p, water_s)
-        assert heat_sink < 0
+        assert heat_sink < 0, 'heatsink =  %r'%(heat_sink)
 
         assert temp_p-temp_p_in < 0
         f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) + 1./rho_p/cp_p/vol_p * heat_sink
 
         heat_source = - heat_sink
 
-        assert temp_s-temp_s_in < 0
+        #assert temp_s-temp_s_in < 0
         f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + 1./rho_s/cp_s/vol_s * heat_source
+        
+        print('Primary:',f_tmp[0], 'Convective = ', - 1/tau_p * (temp_p - temp_p_in), 'heat term = ', heat_sink)
+        print('Secondary:',f_tmp[1], 'Convective = ', - 1/tau_s * (temp_s - temp_s_in), 'heat term = ', heat_source)
+        
+        
+        # Boiling test
+        
+        sensible_water = WaterProps(T=temp_s_in, P=press_s/unit.mega/unit.pascal)
+        sat_liq = WaterProps(P=press_s/unit.mega/unit.pascal, x=0.0)
+        sat_vap = WaterProps(P=press_s/unit.mega/unit.pascal, x=1.0)
+        cp_l_o = sensible_water.cp
+        #q_total = (temp_s-temp_s_in)*cp_s
+        q_total = heat_source*1000
+        q_heat = (sat_liq.T- temp_s_in)*cp_l_o
+        h_v = sat_vap.h
+        h_l = sat_liq.h
+        h_vap = h_v-h_l
+        q_vap = h_vap*self.secondary_inflow_mass_flowrate
+        if q_total < q_heat: # subcooled
+            self.secondary_outflow_quality = 0
+        elif q_total > (q_vap+q_heat): #superheated
+            self.secondary_outflow_quality = 1
+        else: #mixed
+            self.secondary_outflow_quality = (h_vap - (q_total - q_heat))/h_vap
+
+   
+        
 
         return f_tmp
-
+    
+    
     def __heat_sink_rate(self, water_p, water_s):
         """Cooling rate of the primary side.
 
@@ -459,7 +490,8 @@ class Steamer(Module):
         sl = 1.0      # tube bundle pitch parallel to flow
         st = 1.5 * sl # tube bundle pitch transverse to flow
 
-        temp_p_w = temp_p - self.wall_temp_delta_primary # wall temperature
+        temp_p_w = self.primary_inflow_temp - self.wall_temp_delta_primary # wall temperature
+        print('Prinary Wall Temp [K] =',temp_p_w)
 
         water_p_w = WaterProps(T=temp_p_w, P=water_p.P) # primary at wall T, P
 
@@ -476,7 +508,8 @@ class Steamer(Module):
         #############################################
         radius_inner = self.helicoil_inner_radius
 
-        temp_s_w = temp_p_w - self.wall_temp_delta_secondary
+        #temp_s_w = temp_p_w - self.wall_temp_delta_secondary
+        temp_s_w = temp_p_w
         temp_s_w_F = unit.convert_temperature(temp_s_w, 'K', 'F')
 
         water_s_sat = WaterProps(P=water_s.P, x=0.0)
@@ -486,18 +519,19 @@ class Steamer(Module):
         #print('secondary pressure [bar] = ',water_s.P*unit.mega*unit.pascal/unit.bar)
         #print('primary   pressure [bar] = ',water_p.P*unit.mega*unit.pascal/unit.bar)
 
-        assert temp_s_w >= temp_s, 'temp_s = %r, temp_s_w = %r'%(temp_s,temp_s_w)
+        #assert temp_s_w >= temp_s, 'temp_s = %r, temp_s_w = %r'%(temp_s,temp_s_w)
 
         if (temp_s_w_F - temp_s_sat_F) > 0.0: # nucleate boiling
         # Jens and Lottes correlation for subcooled/saturated nucleate boiling
         # 500 <=  P <= 2000 psi
             print('MADE HERE')
-            press_s_psia = water_s.P*unit.mega*unit.pascal/unit.psi
-            assert 400 <= press_s_psia <= 2000, 'press_s [psi] = %r'%press_s_psia
-
-            q2prime = ( (temp_s_w_F - temp_s_sat_F) * math.exp(press_s_psia/900) / 60 )**4 / 1e6
-            q2prime /= unit.Btu/unit.hour/unit.ft**2
+            #press_s_psia = water_s.P*unit.mega*unit.pascal/unit.psi
+            #assert 400 <= press_s_psia <= 2000, 'press_s [psi] = %r'%press_s_psia
+            #q2prime = ( (temp_s_w_F - temp_s_sat_F) * math.exp(press_s_psia/900) / 60 )**4 / 1e6
+            #q2prime /= unit.Btu/unit.hour/unit.ft**2
+            q2prime = ((temp_s_w - temp_s_sat)*math.exp((self.secondary_inflow_pressure/unit.mega/unit.pascal) /6.2)/0.79)**4
             h_s = q2prime/(temp_s_w - temp_s_sat)
+            print(q2prime,h_s,temp_s_sat_F)
         else: # single phase transfer
             rey_s = self.secondary_inflow_mass_flowrate * 2*radius_inner / mu_s
             water_s_w = WaterProps(T=temp_s_w, P=water_s.P) # secondary at wall T, P
@@ -505,6 +539,7 @@ class Steamer(Module):
             prtl_w = water_s_w.Prandt
             nusselt_s = self.__mean_nusselt_single_phase(rey_s, prtl_s, prtl_w, st/sl)
             h_s = nusselt_s * k_s / (2*radius_inner)
+            print(h_s)
 
         ###################################################
         # Overall heat transfer
@@ -535,8 +570,14 @@ class Steamer(Module):
 
         # Total area of heat tranfer
         area = 2*math.pi*radius_mean* self.n_helicoil_tubes * self.helicoil_length
-
-        q_p = - area * 1/one_over_U * (temp_p - temp_s)
+        
+        del_t_1 = (temp_p-temp_s)
+        #del_t_1_test = (self.primary_inflow_temp-self.secondary_inflow_temp)
+        #del_t_2 = (self.primary_outflow_temp-self.secondary_inflow_temp)
+        #delta_t_logmn = (del_t_1 - del_t_2)/np.log(del_t_1/del_t_2)
+        #q_p = - area * 1/one_over_U * (delta_t_logmn)
+        q_p = - area * 1/one_over_U * (del_t_1)
+        #q_p = - area * 1/one_over_U * (del_t_1_test)
 
         return q_p
 
