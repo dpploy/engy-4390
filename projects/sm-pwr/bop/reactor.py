@@ -5,7 +5,6 @@
 """Cortix module.
    PWR for NuScale BOP.
 
-
        + Coolant outflow temperature: 543 F (283.9 C) (w/ a 100 F rise)
        + Coolant inflow temperature: 497 F (258.3 C)
        + Coolant pressure: 1850 psi (127.6 bar)
@@ -677,7 +676,7 @@ class SMPWR(Module):
         assert water.phase != 'Vapour'
 
         # Compute the heating sink power
-        (heat_sink, _) = self.__heat_sink_rate(temp_f, water, mass_flowrate)
+        (heat_sink_pwr, _) = self.__heat_sink_rate(temp_f, water, mass_flowrate)
 
         #--------------------
         # fuel energy balance
@@ -686,11 +685,11 @@ class SMPWR(Module):
         cp_f = self.cp_fuel
         vol_fuel = self.fuel_volume
 
-        pwr_dens = self.__nuclear_pwr_dens_func(time, (temp_f+temp_c)/2, n_dens)
+        nuclear_pwr_dens = self.__nuclear_pwr_dens_func(time, (temp_f+temp_c)/2, n_dens)
 
-        heat_sink_pwr_dens = heat_sink/vol_fuel
+        heat_sink_pwr_dens = heat_sink_pwr/vol_fuel
 
-        f_tmp[-2] = -1/rho_f/cp_f * (pwr_dens - heat_sink_pwr_dens)
+        f_tmp[-2] = -1/rho_f/cp_f * (nuclear_pwr_dens - heat_sink_pwr_dens)
 
         #-----------------------
         # coolant energy balance
@@ -718,8 +717,8 @@ class SMPWR(Module):
             tau = 1*unit.hour
 
         # Heating source power
-        heat_source = - heat_sink
-        heat_source_pwr_dens = heat_source/vol_cool
+        heat_source_pwr = - heat_sink_pwr
+        heat_source_pwr_dens = heat_source_pwr/vol_cool
 
         f_tmp[-1] = - 1/tau * (temp_c - temp_in) + 1./rho_c/cp_c * heat_source_pwr_dens
 
