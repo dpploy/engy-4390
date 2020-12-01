@@ -23,9 +23,9 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 15*unit.minute
-    time_step = 10*unit.second
-    show_time = (True, 2*unit.minute)
+    end_time = 1*unit.hour
+    time_step = 2.5*unit.second
+    show_time = (True, 5*unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -52,7 +52,7 @@ def main():
     steamer.end_time = end_time
     steamer.show_time = show_time
 
-    plant_net.module(steamer)  # Add steamer module to network
+    #plant_net.module(steamer)  # Add steamer module to network
 
     # Turbine
 
@@ -92,8 +92,8 @@ def main():
 
     # Balance of Plant Network Connectivity
 
-    plant_net.connect([reactor, 'coolant-outflow'], [steamer, 'primary-inflow'])
-    plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
+    #plant_net.connect([reactor, 'coolant-outflow'], [steamer, 'primary-inflow'])
+    #plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
     #plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
     #plant_net.connect([turbine, 'outflow'], [condenser, 'inflow'])
     #plant_net.connect([turbine, 'process-heat'], [water_heater, 'heat'])
@@ -128,16 +128,16 @@ def main():
 
         (quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('temp')
 
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
+        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
+                   y_label=quant.latex_name+' [C]')
 
         plt.grid()
         plt.savefig('reactor-coolant-outflow-temp.png', dpi=300)
 
         (quant, time_unit) = reactor.reactor_phase.get_quantity_history('fuel-temp')
 
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
+        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
+                   y_label=quant.latex_name+' [C]')
         plt.grid()
         plt.savefig('reactor-fuel-temp.png', dpi=300)
 
@@ -148,6 +148,57 @@ def main():
         plt.grid()
         plt.savefig('reactor-power.png', dpi=300)
 
+        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('reynolds')
+
+        quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.mega, x_label='Time [m]',
+                   y_label=quant.latex_name+r' [$\times 10^6$'+quant.unit+']')
+        plt.grid()
+        plt.savefig('reactor-reynolds.png', dpi=300)
+
+        (quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('flowrate')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+r' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('reactor-mass-flowrate.png', dpi=300)
+
+        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('heatflux')
+
+        quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.mega, x_label='Time [m]',
+                   y_label=quant.latex_name+' [M'+quant.unit+']')
+        plt.grid()
+        plt.savefig('reactor-heatflux.png', dpi=300)
+
+        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('inlet-temp')
+
+        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
+                   y_label=quant.latex_name+' [C]')
+        plt.grid()
+        plt.savefig('reactor-coolant-inflow-temp.png', dpi=300)
+
+        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('nusselt')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('reactor-nusselt.png', dpi=300)
+
+        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('tau')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('reactor-coolant-tau.png', dpi=300)
+
+        (quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('quality')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+r' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('reactor-coolant-outflow-quality.png', dpi=300)
+
+
+        '''
         # Steamer plots
         steamer = plant_net.modules[1]
 
@@ -165,7 +216,6 @@ def main():
         plt.grid()
         plt.savefig('steamer-secondary-outflow-temp.png', dpi=300)
 
-        '''
         # Turbine plots
         turbine = plant_net.modules[2]
 
