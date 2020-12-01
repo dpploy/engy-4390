@@ -112,7 +112,9 @@ class SMPWR(Module):
 
         self.coolant_mass_flowrate_ss = 4.66e6*unit.lb/unit.hour
         self.flowrate_relaxation = 5*unit.minute
-        self.coolant_pressure = 1850*unit.psi
+
+        self.coolant_pressure = 1850*unit.psi  # altered by coolant-inflow port
+
         self.fuel_heat_transfer_area = 6275*unit.foot**2
         self.core_flow_area = 9.79*unit.foot**2
         self.core_length = 95.89*unit.inch
@@ -120,6 +122,8 @@ class SMPWR(Module):
         #self.coolant_volume = 2.5*2.8*unit.meter**3
         self.coolant_volume = self.core_flow_area * self.core_length
         #self.ht_coeff = 1300000*unit.watt/unit.kelvin
+
+        self.coolant_quality = 0.0 # not used; to be used in heat flux correlations
 
         # Initialization
         self.n_dens_ref = 1.0
@@ -307,11 +311,13 @@ class SMPWR(Module):
             temp = self.coolant_outflow_phase.get_value('temp', msg_time)
             press = self.coolant_outflow_phase.get_value('pressure', msg_time)
             flowrate = self.coolant_outflow_phase.get_value('flowrate', msg_time)
+            chi = self.coolant_outflow_phase.get_value('quality', msg_time)
 
             coolant_outflow = dict()
             coolant_outflow['temperature'] = temp
             coolant_outflow['pressure'] = press
             coolant_outflow['mass_flowrate'] = flowrate
+            coolant_outflow['quality'] = chi
 
             self.send((msg_time, coolant_outflow), 'coolant-outflow')
 
@@ -330,6 +336,7 @@ class SMPWR(Module):
             self.inflow_cool_temp = inflow_coolant['temperature']
             self.coolant_mass_flowrate = inflow_coolant['mass_flowrate']
             self.coolant_pressure = inflow_coolant['pressure']
+            self.coolant_quality = inflow_coolant['quality']
 
     def __step(self, time=0.0):
         r"""ODE IVP problem.
