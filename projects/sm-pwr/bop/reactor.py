@@ -5,7 +5,6 @@
 """Cortix module.
    PWR for NuScale BOP.
 
-
        + Coolant outflow temperature: 543 F (283.9 C) (w/ a 100 F rise)
        + Coolant inflow temperature: 497 F (258.3 C)
        + Coolant pressure: 1850 psi (127.6 bar)
@@ -18,11 +17,12 @@
        + Core average centerline pellet temperature (2.5 kw/ft): 1375 F (746.11 C)
        + Core rod centerline pellet temperature (6.5 kw/ft): 2075 F (1135 C)
        + Heat transfer area on fuel: 6275 ft^2
-       + Core flow area: 9.79 ft^2
+       + Core flow area: 9.79 ft^2 (0.91 m^2)
+       + Core flow diameter: 1.08 m
        + Core fuel volume: 0.841 m^3
        + Core fuel mass: 9221.88 kg (UO2)
        + Core fuel mass density at 273.15K:  9221.88/0.841
-       + Effective fuel length = 95.89 in
+       + Effective fuel length = 95.89 in (2.44 m)
        + Equivalent diameter of active core = 59.28 in
        + Power: 160 MW
        + Normal operation peak heat flux = 0.171e+6 Btu/hr-ft^2
@@ -235,10 +235,19 @@ class SMPWR(Module):
                              info='Reactor Coolant Reynolds Number')
         quantities.append(rey)
 
+        water = WaterProps(T=self.temp_c_0, P=self.coolant_pressure/unit.mega/unit.pascal)
+
+        prtl = Quantity(name='prandtl',
+                             formal_name='Pr_c', unit='',
+                             value=water.Prandt,
+                             latex_name=r'$Pr_{c}$',
+                             info='Reactor Coolant Prandtl Number')
+        quantities.append(prtl)
+
         q2prime = Quantity(name='heatflux',
                              formal_name='q2prime', unit='W/m2',
                              value=0.0,
-                             latex_name=r'$q''$',
+                             latex_name=r"$q''$",
                              info='Reactor Core Average Heat Flux')
         quantities.append(q2prime)
 
@@ -401,47 +410,70 @@ class SMPWR(Module):
 
         # Reactor power
         water = WaterProps(T=cool_temp, P=self.coolant_pressure/unit.mega/unit.pascal)
-        assert water.phase == 'Liquid' or water.phase == 'Two phases'
-        cp  = water.cp*unit.kj/unit.kg/unit.K
-        pwr = mass_flowrate*cp*(cool_temp-self.inflow_cool_temp)
-        if pwr <= 0: # reactor is heated by the coolant inflow
+        if water.phase == 'Two phases':
+            qual = water.x
+            assert qual <= 0.4 # limit to low quality
+            cp_c = (1-qual)*water.Liquid.cp + qual*water.Vapor.cp
+            cp_c *= unit.kj/unit.kg/unit.K
+            mu_c = (1-qual)*water.Liquid.mu + qual*water.Vapor.mu
+            k_c = (1-qual)*water.Liquid.k + qual*water.Vapor.k
+            prtl_c = (1-qual)*water.Liquid.Prandt + qual*water.Vapor.Prandt
+        elif water.phase == 'Liquid':
+            cp_c = water.Liquid.cp*unit.kj/unit.kg/unit.K
+            k_c = water.Liquid.k
+            mu_c = water.Liquid.mu
+            prtl_c = water.Liquid.Prandt
+        else:
+            assert False,'Vapor not allowed.'
+
+        pwr = mass_flowrate*cp_c*(cool_temp-self.inflow_cool_temp)
+
+        if pwr <= 0: # case when reactor is heated by the coolant inflow
             pwr = 0.0
         self.reactor_phase.set_value('power', abs(pwr), time)
 
         # Reynolds number
-        mu_c = water.mu
         diameter = (4*self.core_flow_area/math.pi)**.5
         rey_c = 4*mass_flowrate / mu_c / math.pi / diameter
         self.reactor_phase.set_value('reynolds', rey_c, time)
+
+        # Prandtl number
+        self.reactor_phase.set_value('prandtl', prtl_c, time)
 
         # Heat flux and Nusselt number
         (heat_sink_rate, nusselt) = self.__heat_sink_rate(fuel_temp, water,
                                                           mass_flowrate)
 
         q2prime = - heat_sink_rate/self.fuel_heat_transfer_area
-        if q2prime < 0.0: # reactor is heated by the coolant inflow
+        if q2prime < 0.0: # case when reactor is heated by the coolant inflow
             q2prime = 0.0
         self.reactor_phase.set_value('heatflux', q2prime, time)
         self.reactor_phase.set_value('nusselt', nusselt, time)
 
         heat_rate_transfered = - heat_sink_rate
 
-        # Coolant quality
-        water_sat_l = WaterProps(P=self.coolant_pressure/unit.mega/unit.pascal, x=0)
-        water_sat_v = WaterProps(P=self.coolant_pressure/unit.mega/unit.pascal, x=1)
-        spfc_h_sat_l = water_sat_l.Liquid.h * unit.kj/unit.kg
-        spfc_h_sat_v = water_sat_v.Vapor.h * unit.kj/unit.kg
+        # Coolant quality 
+        # Coolant temperature is likely below saturation but there is quality in
+        # view of local nucleate boiling.
+        if water.phase == 'Liquid':
+            water_sat_l = WaterProps(P=self.coolant_pressure/unit.mega/unit.pascal, x=0)
+            water_sat_v = WaterProps(P=self.coolant_pressure/unit.mega/unit.pascal, x=1)
+            spfc_h_sat_l = water_sat_l.Liquid.h * unit.kj/unit.kg
+            spfc_h_sat_v = water_sat_v.Vapor.h * unit.kj/unit.kg
 
-        heat_rate_latent = (spfc_h_sat_v-spfc_h_sat_l)*mass_flowrate
-        heat_rate_sensible = (water_sat_l.T-cool_temp)*cp*mass_flowrate
+            heat_rate_latent = (spfc_h_sat_v-spfc_h_sat_l)*mass_flowrate
+            heat_rate_sensible = (water_sat_l.T-cool_temp)*cp_c*mass_flowrate
 
         #print(heat_rate_transfered/unit.mega, heat_rate_sensible/unit.mega, heat_rate_latent/unit.mega)
         #print((heat_rate_transfered-heat_rate_sensible)/(heat_rate_latent-heat_rate_sensible)*100)
 
-        quality = (heat_rate_transfered-heat_rate_sensible)/\
-                  (heat_rate_latent-heat_rate_sensible)*100
+            quality = (heat_rate_transfered-heat_rate_sensible)/\
+                      (heat_rate_latent-heat_rate_sensible)*100
 
-        quality = quality if 0<=quality<=100 else 0
+            quality = quality if 0<=quality<=100 else 0
+
+        elif water.phase == 'Two phases':
+            quality = water.x
 
         self.coolant_outflow_phase.set_value('quality', quality, time)
 
@@ -644,7 +676,7 @@ class SMPWR(Module):
         assert water.phase != 'Vapour'
 
         # Compute the heating sink power
-        (heat_sink, _) = self.__heat_sink_rate(temp_f, water, mass_flowrate)
+        (heat_sink_pwr, _) = self.__heat_sink_rate(temp_f, water, mass_flowrate)
 
         #--------------------
         # fuel energy balance
@@ -653,17 +685,27 @@ class SMPWR(Module):
         cp_f = self.cp_fuel
         vol_fuel = self.fuel_volume
 
-        pwr_dens = self.__nuclear_pwr_dens_func(time, (temp_f+temp_c)/2, n_dens)
+        nuclear_pwr_dens = self.__nuclear_pwr_dens_func(time, (temp_f+temp_c)/2, n_dens)
 
-        heat_sink_pwr_dens = heat_sink/vol_fuel
+        heat_sink_pwr_dens = heat_sink_pwr/vol_fuel
 
-        f_tmp[-2] = -1/rho_f/cp_f * (pwr_dens - heat_sink_pwr_dens)
+        f_tmp[-2] = -1/rho_f/cp_f * (nuclear_pwr_dens - heat_sink_pwr_dens)
 
         #-----------------------
         # coolant energy balance
         #-----------------------
-        rho_c = water.rho
-        cp_c = water.cp*unit.kj/unit.kg/unit.K
+        if water.phase == 'Two phases':
+            qual = water.x
+            assert qual <= 0.4 # limit to low quality
+            cp_c = (1-qual)*water.Liquid.cp + qual*water.Vapor.cp
+            cp_c *= unit.kj/unit.kg/unit.K
+            rho_c = (1-qual)*water.Liquid.rho + qual*water.Vapor.rho
+        elif water.phase == 'Liquid':
+            cp_c = water.Liquid.cp*unit.kj/unit.kg/unit.K
+            rho_c = water.Liquid.rho
+        else:
+            assert False,'Vapor not allowed.'
+
         vol_cool = self.coolant_volume
 
         temp_in = self.inflow_cool_temp
@@ -675,8 +717,8 @@ class SMPWR(Module):
             tau = 1*unit.hour
 
         # Heating source power
-        heat_source = - heat_sink
-        heat_source_pwr_dens = heat_source/vol_cool
+        heat_source_pwr = - heat_sink_pwr
+        heat_source_pwr_dens = heat_source_pwr/vol_cool
 
         f_tmp[-1] = - 1/tau * (temp_c - temp_in) + 1./rho_c/cp_c * heat_source_pwr_dens
 
@@ -703,11 +745,6 @@ class SMPWR(Module):
         # Overall condition on colant; locally there may be nucleate boiling
         assert temp_c <= temp_c_sat
 
-        cp_c = water.cp * unit.kj/unit.kg/unit.K
-        mu_c = water.mu
-        k_c = water.k
-        prtl_c = water.Prandt
-
         if water.phase == 'Two phases':
             qual = water.x
             assert qual <= 0.4 # limit to low quality
@@ -716,6 +753,13 @@ class SMPWR(Module):
             mu_c = (1-qual)*water.Liquid.mu + qual*water.Vapor.mu
             k_c = (1-qual)*water.Liquid.k + qual*water.Vapor.k
             prtl_c = (1-qual)*water.Liquid.Prandt + qual*water.Vapor.Prandt
+        elif water.phase == 'Liquid':
+            cp_c = water.cp * unit.kj/unit.kg/unit.K
+            mu_c = water.mu
+            k_c = water.k
+            prtl_c = water.Prandt
+        else:
+            assert False, 'Vapor not allowed.'
 
         # Heat transfer coefficient
         diameter = (4*self.core_flow_area/math.pi)**.5
@@ -768,7 +812,7 @@ class SMPWR(Module):
         return (q_p, nusselt_c)
 
     def __mean_nusselt_single_phase(self, rey, prtl):
-        """Mean Nusselt number for turbulent one-phase flow on smooth pipes.
+        """Mean Nusselt number for turbulent one-phase flow on "smooth" pipes.
            Dittus and Boelter.
            Re > 10000
            L/D > 60
