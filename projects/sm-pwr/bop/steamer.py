@@ -571,9 +571,9 @@ class Steamer(Module):
         # Total area of heat tranfer
         area = 2*math.pi*radius_mean* self.n_helicoil_tubes * self.helicoil_length
         
-        del_t_1 = (self.primary_inflow_temp - self.secondary_outflow_temp)/2
+        del_t_1 = (self.primary_inflow_temp + self.secondary_outflow_temp)/2
         #del_t_1_test = (self.primary_inflow_temp-self.secondary_inflow_temp)
-        del_t_2 = (self.primary_outflow_temp-self.secondary_inflow_temp)/2
+        del_t_2 = (self.primary_outflow_temp+self.secondary_inflow_temp)/2
         #delta_t_logmn = (del_t_1 - del_t_2)/np.log(del_t_1/del_t_2)
         #q_p = - area * 1/one_over_U * (delta_t_logmn)
         q_p = - area * 1/one_over_U * (del_t_1-del_t_2)
