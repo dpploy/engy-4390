@@ -248,7 +248,7 @@ class SMPWR(Module):
         q2prime = Quantity(name='heatflux',
                              formal_name='q2prime', unit='W/m2',
                              value=0.0,
-                             latex_name=r'$q''$',
+                             latex_name=r"$q''$",
                              info='Reactor Core Average Heat Flux')
         quantities.append(q2prime)
 
