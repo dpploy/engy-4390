@@ -79,6 +79,7 @@ class SMPWR(Module):
         # Domain attributes
 
         # Configuration parameters
+        self.discard_tau_recording_before = 2*unit.minute
 
         # Data pertaining to one-group energy neutron balance
         self.gen_time = 1.0e-4*unit.second
@@ -244,6 +245,13 @@ class SMPWR(Module):
                              info='Reactor Coolant Nusselt Number')
         quantities.append(nusselt)
 
+        tau = Quantity(name='tau',
+                             formal_name='tau', unit='s',
+                             value=0.0,
+                             latex_name=r'$\tau_{c}$',
+                             info='Reactor Coolant Residence Time')
+        quantities.append(tau)
+
         self.reactor_phase = Phase(time_stamp=self.initial_time, time_unit='s',
                                    quantities=quantities)
 
@@ -384,6 +392,7 @@ class SMPWR(Module):
         self.reactor_phase.set_value('fuel-temp', fuel_temp, time)
         self.reactor_phase.set_value('inlet-temp', self.inflow_cool_temp, time)
 
+        # Reactor power
         water = WaterProps(T=cool_temp, P=self.coolant_pressure/unit.mega/unit.pascal)
         assert water.phase == 'Liquid' or water.phase == 'Two phases'
         cp  = water.cp*unit.kj/unit.kg/unit.K
@@ -392,11 +401,13 @@ class SMPWR(Module):
             pwr = 0.0
         self.reactor_phase.set_value('power', abs(pwr), time)
 
+        # Reynolds number
         mu_c = water.mu
         diameter = (4*self.core_flow_area/math.pi)**.5
         rey_c = 4*mass_flowrate / mu_c / math.pi / diameter
         self.reactor_phase.set_value('reynolds', rey_c, time)
 
+        # Heat flux and Nusselt number
         (heat_sink_rate, nusselt) = self.__heat_sink_rate(fuel_temp, water,
                                                           mass_flowrate)
 
@@ -408,6 +419,7 @@ class SMPWR(Module):
 
         heat_rate_transfered = - heat_sink_rate
 
+        # Coolant quality
         water_sat_l = WaterProps(P=self.coolant_pressure/unit.mega/unit.pascal, x=0)
         water_sat_v = WaterProps(P=self.coolant_pressure/unit.mega/unit.pascal, x=1)
         spfc_h_sat_l = water_sat_l.Liquid.h * unit.kj/unit.kg
@@ -426,6 +438,14 @@ class SMPWR(Module):
 
         self.coolant_outflow_phase.set_value('quality', quality, time)
 
+        # Coolant residence time
+        rho_c = water.rho
+        q_vol = mass_flowrate/rho_c
+
+        tau = self.coolant_volume/q_vol \
+              if q_vol > 0 and time > self.discard_tau_recording_before else 0
+
+        self.reactor_phase.set_value('tau', tau, time)
 
         return time
 

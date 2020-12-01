@@ -23,7 +23,7 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 20*unit.minute
+    end_time = 1*unit.hour
     time_step = 3*unit.second
     show_time = (True, 5*unit.minute)
 
@@ -182,6 +182,13 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('reactor-nusselt.png', dpi=300)
+
+        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('tau')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('reactor-coolant-tau.png', dpi=300)
 
         (quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('quality')
 
