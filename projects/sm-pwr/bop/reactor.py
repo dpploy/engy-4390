@@ -18,11 +18,12 @@
        + Core average centerline pellet temperature (2.5 kw/ft): 1375 F (746.11 C)
        + Core rod centerline pellet temperature (6.5 kw/ft): 2075 F (1135 C)
        + Heat transfer area on fuel: 6275 ft^2
-       + Core flow area: 9.79 ft^2
+       + Core flow area: 9.79 ft^2 (0.91 m^2)
+       + Core flow diameter: 1.08 m
        + Core fuel volume: 0.841 m^3
        + Core fuel mass: 9221.88 kg (UO2)
        + Core fuel mass density at 273.15K:  9221.88/0.841
-       + Effective fuel length = 95.89 in
+       + Effective fuel length = 95.89 in (2.44 m)
        + Equivalent diameter of active core = 59.28 in
        + Power: 160 MW
        + Normal operation peak heat flux = 0.171e+6 Btu/hr-ft^2
@@ -235,6 +236,15 @@ class SMPWR(Module):
                              info='Reactor Coolant Reynolds Number')
         quantities.append(rey)
 
+        water = WaterProps(T=self.temp_c_0, P=self.coolant_pressure/unit.mega/unit.pascal)
+
+        prtl = Quantity(name='prandtl',
+                             formal_name='Pr_c', unit='',
+                             value=water.Prandt,
+                             latex_name=r'$Pr_{c}$',
+                             info='Reactor Coolant Prandtl Number')
+        quantities.append(prtl)
+
         q2prime = Quantity(name='heatflux',
                              formal_name='q2prime', unit='W/m2',
                              value=0.0,
@@ -401,10 +411,10 @@ class SMPWR(Module):
 
         # Reactor power
         water = WaterProps(T=cool_temp, P=self.coolant_pressure/unit.mega/unit.pascal)
-        assert water.phase == 'Liquid' or water.phase == 'Two phases'
+        assert water.phase == 'Liquid'
         cp  = water.cp*unit.kj/unit.kg/unit.K
         pwr = mass_flowrate*cp*(cool_temp-self.inflow_cool_temp)
-        if pwr <= 0: # reactor is heated by the coolant inflow
+        if pwr <= 0: # case when reactor is heated by the coolant inflow
             pwr = 0.0
         self.reactor_phase.set_value('power', abs(pwr), time)
 
@@ -414,12 +424,17 @@ class SMPWR(Module):
         rey_c = 4*mass_flowrate / mu_c / math.pi / diameter
         self.reactor_phase.set_value('reynolds', rey_c, time)
 
+        # Prandtl number
+        prtl_c = water.Prandt
+        assert abs(prtl_c - cp * water.mu / water.k) <= 1e-5
+        self.reactor_phase.set_value('prandtl', prtl_c, time)
+
         # Heat flux and Nusselt number
         (heat_sink_rate, nusselt) = self.__heat_sink_rate(fuel_temp, water,
                                                           mass_flowrate)
 
         q2prime = - heat_sink_rate/self.fuel_heat_transfer_area
-        if q2prime < 0.0: # reactor is heated by the coolant inflow
+        if q2prime < 0.0: # case when reactor is heated by the coolant inflow
             q2prime = 0.0
         self.reactor_phase.set_value('heatflux', q2prime, time)
         self.reactor_phase.set_value('nusselt', nusselt, time)
@@ -768,7 +783,7 @@ class SMPWR(Module):
         return (q_p, nusselt_c)
 
     def __mean_nusselt_single_phase(self, rey, prtl):
-        """Mean Nusselt number for turbulent one-phase flow on smooth pipes.
+        """Mean Nusselt number for turbulent one-phase flow on "smooth" pipes.
            Dittus and Boelter.
            Re > 10000
            L/D > 60

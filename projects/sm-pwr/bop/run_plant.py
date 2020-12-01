@@ -155,6 +155,13 @@ def main():
         plt.grid()
         plt.savefig('reactor-reynolds.png', dpi=300)
 
+        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('prandtl')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+r' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('reactor-prandtl.png', dpi=300)
+
         (quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('flowrate')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
