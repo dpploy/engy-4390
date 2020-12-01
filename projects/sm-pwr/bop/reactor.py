@@ -5,7 +5,7 @@
 """Cortix module.
    PWR for NuScale BOP.
 
-   Design quantities at steady state:
+
        + Coolant outflow temperature: 543 F (283.9 C) (w/ a 100 F rise)
        + Coolant inflow temperature: 497 F (258.3 C)
        + Coolant pressure: 1850 psi (127.6 bar)
@@ -15,9 +15,13 @@
              - Min: 4.27e6
        + Coolant mass flux: 0.49e+6 lb/h-ft^2
        + Fuel temperature: 1200 C
+       + Core average centerline pellet temperature (2.5 kw/ft): 1375 F (746.11 C)
+       + Core rod centerline pellet temperature (6.5 kw/ft): 2075 F (1135 C)
        + Heat transfer area on fuel: 6275 ft^2
        + Core flow area: 9.79 ft^2
-       + Core fuel volume: 
+       + Core fuel volume: 0.841 m^3
+       + Core fuel mass: 9221.88 kg (UO2)
+       + Core fuel mass density at 273.15K:  9221.88/0.841
        + Effective fuel length = 95.89 in
        + Equivalent diameter of active core = 59.28 in
        + Power: 160 MW
@@ -83,9 +87,10 @@ class SMPWR(Module):
         self.k_infty = 1.49826
         self.buckling = 1.538e-4
 
-        self.alpha_n = -3e-6 # control rod reactivity worth
+        #self.alpha_n = -3e-6 # control rod reactivity worth
+        self.alpha_n = -1e-5 # control rod reactivity worth
 
-        self.n_dens_ss_operation = 1.0*5e14/2200/unit.meter**3
+        self.n_dens_ss_operation = 2*5e14/2200/unit.meter**3
 
         #Delayed neutron emission
         self.species_decay = [0.0124, 0.0305, 0.111, 0.301, 1.14, 3.01] # 1/sec
@@ -102,7 +107,7 @@ class SMPWR(Module):
 
         self.fuel_dens = 10800*unit.kg/unit.meter**3
         self.cp_fuel = 300*unit.joule/unit.kg/unit.kelvin
-        self.fuel_volume = 0.5*.8565*unit.meter**3
+        self.fuel_volume = 0.841*unit.meter**3
 
         self.coolant_mass_flowrate_ss = 4.66e6*unit.lb/unit.hour
         self.flowrate_relaxation = 5*unit.minute
@@ -130,7 +135,7 @@ class SMPWR(Module):
         self.temp_f_0 = self.temp_o
         self.temp_c_0 = self.temp_o
 
-        self.inflow_cool_temp = self.temp_o
+        #self.inflow_cool_temp = self.temp_o
         self.inflow_cool_temp = unit.convert_temperature(497,'F','K')
 
         # Coolant outflow phase history
@@ -157,6 +162,14 @@ class SMPWR(Module):
                          value=self.coolant_pressure,
                          latex_name=r'$P_c$',
                          info='Reactor Coolant Outflow Pressure')
+
+        quantities.append(press)
+
+        press = Quantity(name='quality',
+                         formal_name='X_c', unit='%',
+                         value=0.0,
+                         latex_name=r'$\chi_c$',
+                         info='Reactor Coolant Outflow Quality')
 
         quantities.append(press)
 
@@ -336,7 +349,8 @@ class SMPWR(Module):
                                          # iterations per time step
 
         (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
-                                         rtol=1e-4, atol=1e-8,
+                                         #rtol=1e-4, atol=1e-8,
+                                         #rtol=1e-4, atol=1e-5,
                                          mxstep=max_n_steps_per_time_step,
                                          full_output=True, tfirst=False)
 
@@ -366,12 +380,12 @@ class SMPWR(Module):
 
         self.neutron_phase.set_value('neutron-dens', n_dens, time)
         self.neutron_phase.set_value('delayed-neutrons-cc', c_vec, time)
+
         self.reactor_phase.set_value('fuel-temp', fuel_temp, time)
         self.reactor_phase.set_value('inlet-temp', self.inflow_cool_temp, time)
 
         water = WaterProps(T=cool_temp, P=self.coolant_pressure/unit.mega/unit.pascal)
-        assert water.phase != 'Two phases'
-        assert water.phase != 'Vapour'
+        assert water.phase == 'Liquid' or water.phase == 'Two phases'
         cp  = water.cp*unit.kj/unit.kg/unit.K
         pwr = mass_flowrate*cp*(cool_temp-self.inflow_cool_temp)
         if pwr <= 0: # reactor is heated by the coolant inflow
@@ -383,7 +397,6 @@ class SMPWR(Module):
         rey_c = 4*mass_flowrate / mu_c / math.pi / diameter
         self.reactor_phase.set_value('reynolds', rey_c, time)
 
-
         (heat_sink_rate, nusselt) = self.__heat_sink_rate(fuel_temp, water,
                                                           mass_flowrate)
 
@@ -392,6 +405,26 @@ class SMPWR(Module):
             q2prime = 0.0
         self.reactor_phase.set_value('heatflux', q2prime, time)
         self.reactor_phase.set_value('nusselt', nusselt, time)
+
+        heat_rate_transfered = - heat_sink_rate
+
+        water_sat_l = WaterProps(P=self.coolant_pressure/unit.mega/unit.pascal, x=0)
+        water_sat_v = WaterProps(P=self.coolant_pressure/unit.mega/unit.pascal, x=1)
+        spfc_h_sat_l = water_sat_l.Liquid.h * unit.kj/unit.kg
+        spfc_h_sat_v = water_sat_v.Vapor.h * unit.kj/unit.kg
+
+        heat_rate_latent = (spfc_h_sat_v-spfc_h_sat_l)*mass_flowrate
+        heat_rate_sensible = (water_sat_l.T-cool_temp)*cp*mass_flowrate
+
+        #print(heat_rate_transfered/unit.mega, heat_rate_sensible/unit.mega, heat_rate_latent/unit.mega)
+        #print((heat_rate_transfered-heat_rate_sensible)/(heat_rate_latent-heat_rate_sensible)*100)
+
+        quality = (heat_rate_transfered-heat_rate_sensible)/\
+                  (heat_rate_latent-heat_rate_sensible)*100
+
+        quality = quality if 0<=quality<=100 else 0
+
+        self.coolant_outflow_phase.set_value('quality', quality, time)
 
 
         return time
@@ -570,7 +603,7 @@ class SMPWR(Module):
         f_tmp[1:-3] = beta_vec / gen_time * n_dens - lambda_vec * c_vec
 
         #----------------------------
-        # mass flowrate ("buoyance") 
+        # mass flowrate ("buoyance")
         #----------------------------
 
         tau = self.flowrate_relaxation
@@ -622,7 +655,7 @@ class SMPWR(Module):
 
         return f_tmp
 
-    def __heat_sink_rate(self, temp_f, water, coolant_mass_flowrate): 
+    def __heat_sink_rate(self, temp_f, water, coolant_mass_flowrate):
         """Cooling rate of the fuel.
 
            Assumptions
@@ -641,7 +674,7 @@ class SMPWR(Module):
         temp_c_sat = water_sat.T
 
         # Overall condition on colant; locally there may be nucleate boiling
-        assert temp_c < temp_c_sat
+        assert temp_c <= temp_c_sat
 
         cp_c = water.cp * unit.kj/unit.kg/unit.K
         mu_c = water.mu
@@ -668,9 +701,7 @@ class SMPWR(Module):
         temp_c_w_F = unit.convert_temperature(temp_c_w, 'K', 'F')
         temp_c_sat_F = unit.convert_temperature(temp_c_sat, 'K', 'F')
 
-        #assert temp_c_w >= temp_c, 'temp_c = %r, temp_c_w = %r'%(temp_c,temp_c_w)
-
-        if (temp_c_w_F - temp_c_sat_F) > 0.0: # nucleate boiling
+        if temp_c_w_F > temp_c_sat_F: # nucleate boiling
         # Jens and Lottes correlation for subcooled/saturated nucleate boiling
         # 500 <=  P <= 2000 psi
 

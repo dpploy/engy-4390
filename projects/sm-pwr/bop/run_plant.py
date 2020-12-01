@@ -23,9 +23,9 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 15*unit.minute
-    time_step = 2*unit.second
-    show_time = (True, 1*unit.minute)
+    end_time = 20*unit.minute
+    time_step = 3*unit.second
+    show_time = (True, 5*unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -169,12 +169,26 @@ def main():
         plt.grid()
         plt.savefig('reactor-heatflux.png', dpi=300)
 
+        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('inlet-temp')
+
+        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
+                   y_label=quant.latex_name+' [C]')
+        plt.grid()
+        plt.savefig('reactor-coolant-inflow-temp.png', dpi=300)
+
         (quant, time_unit) = reactor.reactor_phase.get_quantity_history('nusselt')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('reactor-nusselt.png', dpi=300)
+
+        (quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('quality')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+r' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('reactor-coolant-outflow-quality.png', dpi=300)
 
 
         '''
