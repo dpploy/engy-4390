@@ -495,7 +495,7 @@ class Steamer(Module):
             press_s_psia = water_s.P*unit.mega*unit.pascal/unit.psi
             assert 400 <= press_s_psia <= 2000, 'press_s [psi] = %r'%press_s_psia
 
-            q2prime = ( (temp_s_w_F - temp_s_sat_F) * math.exp(press_s_psia/900) / 60 )**4 / 1e6
+            q2prime = ( (temp_s_w_F - temp_s_sat_F) * math.exp(press_s_psia/900) / 60 )**4 * 1e6
             q2prime /= unit.Btu/unit.hour/unit.ft**2
             h_s = q2prime/(temp_s_w - temp_s_sat)
         else: # single phase transfer
