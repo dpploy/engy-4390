@@ -83,12 +83,14 @@ class Steamer(Module):
         self.iconel690_k = 12.1*unit.watt/unit.meter/unit.kelvin
 
         self.primary_volume = 4.0*16.35*unit.meter**3
-
+        
+        
+         
         self.secondary_volume = math.pi * self.helicoil_inner_radius**2 * \
                                 self.helicoil_length * self.n_helicoil_tubes
 
        # Initialization
-        self.primary_inflow_temp = (283.9+273.15)*unit.kelvin
+        self.primary_inflow_temp = (20+273.15)*unit.kelvin
         self.primary_inflow_pressure = 127.6*unit.bar
         #self.primary_inflow_mass_flowrate = 600*unit.kg/unit.second
         self.primary_inflow_mass_flowrate = 0*unit.kg/unit.second
@@ -97,8 +99,7 @@ class Steamer(Module):
         self.primary_outflow_pressure = 190*unit.bar
         self.primary_outflow_mass_flowrate = self.primary_inflow_mass_flowrate
 
-        self.secondary_inflow_temp = self.primary_outflow_temp-\
-                self.wall_temp_delta_primary - self.wall_temp_delta_secondary
+        self.secondary_inflow_temp = (147 + 273.15)*unit.kelvin
 
         self.secondary_inflow_pressure = 34*unit.bar
         self.secondary_inflow_mass_flowrate = 67*unit.kg/unit.second
@@ -399,6 +400,8 @@ class Steamer(Module):
             tau_s = vol_s/q_s
         else:
             tau_s = 1*unit.hour
+            
+        print('taus', tau_p, tau_s)
 
         #-----------------------
         # calculations
