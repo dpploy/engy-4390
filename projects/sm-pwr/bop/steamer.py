@@ -83,7 +83,7 @@ class Steamer(Module):
 
         self.iconel690_k = 12.1*unit.watt/unit.meter/unit.kelvin
 
-        self.primary_volume = 4.0*16.35*unit.meter**3
+        self.primary_volume = 16.35*unit.meter**3
 
         self.secondary_volume = math.pi * self.helicoil_inner_radius**2 * \
                                 self.helicoil_length * self.n_helicoil_tubes
@@ -94,7 +94,7 @@ class Steamer(Module):
         self.primary_inflow_mass_flowrate = 600*unit.kg/unit.second
         #self.primary_inflow_mass_flowrate = 0*unit.kg/unit.second
 
-        self.primary_outflow_temp = self.primary_inflow_temp - 2*unit.K
+        self.primary_outflow_temp = self.primary_inflow_temp #- 2*unit.K
         self.primary_outflow_pressure = 190*unit.bar
         self.primary_outflow_mass_flowrate = self.primary_inflow_mass_flowrate
 
@@ -103,7 +103,7 @@ class Steamer(Module):
         self.secondary_inflow_pressure = 34*unit.bar
         self.secondary_inflow_mass_flowrate = 67*unit.kg/unit.second
 
-        self.secondary_outflow_temp = self.secondary_inflow_temp - 2*unit.K
+        self.secondary_outflow_temp = self.secondary_inflow_temp #- 2*unit.K
         self.secondary_outflow_pressure = 34*unit.bar
         self.secondary_outflow_mass_flowrate = self.secondary_inflow_mass_flowrate
 
@@ -283,7 +283,7 @@ class Steamer(Module):
                                          # iterations per time step
 
         (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
-                                         rtol=1e-4, atol=1e-8,
+                                         #rtol=1e-4, atol=1e-8,
                                          mxstep=max_n_steps_per_time_step,
                                          full_output=True, tfirst=False)
 
@@ -342,7 +342,7 @@ class Steamer(Module):
         #-----------------------
 
         temp_p_in = self.primary_inflow_temp
-        print('primary inflow temp [K] =', temp_p_in)
+        #print('primary inflow temp [K] =', temp_p_in)
         #print('secondary inflow temp [K] =', self.secondary_inflow_temp)
 
         press_p = self.primary_inflow_pressure
@@ -374,9 +374,9 @@ class Steamer(Module):
         #print('secondary inflow P [bar] =', press_s/unit.bar)
 
         #print('secondary P [bar] =', press_s/unit.bar)
-        print('Primary   T [K]   =', temp_p)
-        print('Secondary T [K]   =', temp_s)
-        print('quality = ', self.secondary_outflow_quality)
+        #print('Primary   T [K]   =', temp_p)
+        #print('Secondary T [K]   =', temp_s)
+        #print('quality = ', self.secondary_outflow_quality)
 
         water_s = WaterProps(T=temp_s, P=press_s/unit.mega/unit.pascal)
 
@@ -406,6 +406,8 @@ class Steamer(Module):
         heat_sink_pwr = self.__heat_sink_rate(water_p, water_s)
         heat_sink_pwr_dens = heat_sink_pwr/vol_p
 
+        #print('heat_sink =', heat_sink_pwr_dens)
+
         #assert heat_sink_pwr < 0, 'heatsink =  %r'%(heat_sink_pwr)
         #assert temp_p-temp_p_in < 0
 
@@ -434,7 +436,6 @@ class Steamer(Module):
         h_l = sat_liq.h
         h_vap = h_v-h_l
         q_vap = h_vap
-        print('pleaaaaaase', temp_s_in,sat_liq.T)
         if q_total < q_heat: # subcooled
             self.secondary_outflow_quality = 0
         elif q_total > (q_vap+q_heat): #superheated
@@ -466,7 +467,6 @@ class Steamer(Module):
         # Overall condition on the primary; locally there may be nucleate boiling
         assert temp_p < temp_p_sat
 
-        #rho_p = 1.0/water_p.v
         cp_p = water_p.cp
         mu_p = water_p.mu
         k_p = water_p.k
@@ -484,13 +484,11 @@ class Steamer(Module):
 
         if water_s.phase == 'Two phases':
             qual = water_s.x
-            #rho_s = (1-qual)*water_s.Liquid.rho + qual*water_s.Vapor.rho
             cp_s = (1-qual)*water_s.Liquid.cp + qual*water_s.Vapor.cp
             mu_s = (1-qual)*water_s.Liquid.mu + qual*water_s.Vapor.mu
             k_s = (1-qual)*water_s.Liquid.k + qual*water_s.Vapor.k
             prtl_s = (1-qual)*water_s.Liquid.Prandt + qual*water_s.Vapor.Prandt
         else:
-            #rho_s = water_s.rho
             cp_s = water_s.cp
             mu_s = water_s.mu
             k_s = water_s.k
@@ -510,7 +508,7 @@ class Steamer(Module):
         st = 1.5 * sl # tube bundle pitch transverse to flow
 
         temp_p_w = self.primary_inflow_temp - self.wall_temp_delta_primary # wall temperature
-        print('Prinary Wall Temp [K] =',temp_p_w)
+        #print('Prinary Wall Temp [K] =',temp_p_w)
 
         water_p_w = WaterProps(T=temp_p_w, P=water_p.P) # primary at wall T, P
 
@@ -537,12 +535,11 @@ class Steamer(Module):
         #print('primary   pressure [bar] = ',water_p.P*unit.mega*unit.pascal/unit.bar)
 
         #assert temp_s_w >= temp_s, 'temp_s = %r, temp_s_w = %r'%(temp_s,temp_s_w)
-        print('saturated temp = ', temp_s_sat)
+        #print('saturated temp = ', temp_s_sat)
 
         if (temp_s_w - temp_s_sat) > 0.0: # nucleate boiling
         # Jens and Lottes correlation for subcooled/saturated nucleate boiling
         # 500 <=  P <= 2000 psi
-            print('MADE HERE')
             q2prime = ((temp_s_w - temp_s_sat)*math.exp((self.secondary_inflow_pressure/unit.mega/unit.pascal) /6.2)/0.79)**4
             h_s = q2prime/(temp_s_w - temp_s_sat)
         else: # single phase transfer
@@ -552,7 +549,7 @@ class Steamer(Module):
             prtl_w = water_s_w.Prandt
             nusselt_s = self.__mean_nusselt_single_phase(rey_s, prtl_s, prtl_w, st/sl)
             h_s = nusselt_s * k_s / (2*radius_inner)
-            
+
 
         ###################################################
         # Overall heat transfer
@@ -583,14 +580,10 @@ class Steamer(Module):
 
         # Total area of heat tranfer
         area = 2*math.pi*radius_mean* self.n_helicoil_tubes * self.helicoil_length
-        
-        del_t_1 = (self.primary_inflow_temp + self.secondary_outflow_temp)/2
-        #del_t_1_test = (self.primary_inflow_temp-self.secondary_inflow_temp)
-        del_t_2 = (self.primary_outflow_temp+self.secondary_inflow_temp)/2
-        #delta_t_logmn = (del_t_1 - del_t_2)/np.log(del_t_1/del_t_2)
-        #q_p = - area * 1/one_over_U * (delta_t_logmn)
-        q_p = - area * 1/one_over_U * (del_t_1-del_t_2)
-        #q_p = - area * 1/one_over_U * (del_t_1_test)
+
+        temp_p_avg = (self.primary_inflow_temp + temp_p)/2
+        temp_s_avg = (self.secondary_inflow_temp + temp_s)/2
+        q_p = - area * 1/one_over_U * (temp_p_avg-temp_s_avg)
 
         return q_p
 
