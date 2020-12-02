@@ -23,7 +23,7 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 30*unit.second
+    end_time = 5*unit.minute
     time_step = 2.5*unit.second
     show_time = (True, 5*unit.minute)
 
@@ -214,14 +214,14 @@ def main():
         (quant, time_unit) = steamer.primary_outflow_phase.get_quantity_history('temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
+                   y_label=quant.latex_name+' [C]')
         plt.grid()
         plt.savefig('steamer-primary-outflow-temp.png', dpi=300)
 
         (quant, time_unit) = steamer.secondary_outflow_phase.get_quantity_history('temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
+                   y_label=quant.latex_name+' [C]')
         plt.grid()
         plt.savefig('steamer-secondary-outflow-temp.png', dpi=300)
 

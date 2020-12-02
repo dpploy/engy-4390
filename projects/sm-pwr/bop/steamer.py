@@ -17,6 +17,7 @@
          - Avg: 4.66e+6 (avg) lb/h
          - Max: 5.24e6
          - Min: 4.27e6
+   + Secondary inflow temperature: 149 C
 
 """
 import logging
@@ -90,15 +91,14 @@ class Steamer(Module):
        # Initialization
         self.primary_inflow_temp = (283.9+273.15)*unit.kelvin
         self.primary_inflow_pressure = 127.6*unit.bar
-        #self.primary_inflow_mass_flowrate = 600*unit.kg/unit.second
-        self.primary_inflow_mass_flowrate = 0*unit.kg/unit.second
+        self.primary_inflow_mass_flowrate = 600*unit.kg/unit.second
+        #self.primary_inflow_mass_flowrate = 0*unit.kg/unit.second
 
         self.primary_outflow_temp = self.primary_inflow_temp - 2*unit.K
         self.primary_outflow_pressure = 190*unit.bar
         self.primary_outflow_mass_flowrate = self.primary_inflow_mass_flowrate
 
-        self.secondary_inflow_temp = self.primary_outflow_temp-\
-                self.wall_temp_delta_primary - self.wall_temp_delta_secondary
+        self.secondary_inflow_temp = (149+273.15)*unit.kelvin
 
         self.secondary_inflow_pressure = 34*unit.bar
         self.secondary_inflow_mass_flowrate = 67*unit.kg/unit.second
