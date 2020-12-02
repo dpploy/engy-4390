@@ -170,28 +170,28 @@ def main():
         plt.grid()
         plt.savefig('reactor-mass-flowrate.png', dpi=300)
 
-        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('heatflux')
+        (quant, time_unit) = reactor.state_phase.get_quantity_history('heatflux')
 
         quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.mega, x_label='Time [m]',
                    y_label=quant.latex_name+' [M'+quant.unit+']')
         plt.grid()
         plt.savefig('reactor-heatflux.png', dpi=300)
 
-        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('inlet-temp')
+        (quant, time_unit) = reactor.state_phase.get_quantity_history('inlet-temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
                    y_label=quant.latex_name+' [C]')
         plt.grid()
         plt.savefig('reactor-coolant-inflow-temp.png', dpi=300)
 
-        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('nusselt')
+        (quant, time_unit) = reactor.state_phase.get_quantity_history('nusselt')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('reactor-nusselt.png', dpi=300)
 
-        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('tau')
+        (quant, time_unit) = reactor.state_phase.get_quantity_history('tau')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
@@ -224,6 +224,42 @@ def main():
                    y_label=quant.latex_name+' [C]')
         plt.grid()
         plt.savefig('steamer-secondary-outflow-temp.png', dpi=300)
+
+        (quant, time_unit) = steamer.state_phase.get_quantity_history('tau_p')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('steamer-primary-tau.png', dpi=300)
+
+        (quant, time_unit) = steamer.state_phase.get_quantity_history('tau_s')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('steamer-secondary-tau.png', dpi=300)
+
+        (quant, time_unit) = steamer.state_phase.get_quantity_history('heatflux')
+
+        quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.kilo, x_label='Time [m]',
+                   y_label=quant.latex_name+' [k'+quant.unit+']')
+        plt.grid()
+        plt.savefig('steamer-heatflux.png', dpi=300)
+
+        (quant, time_unit) = steamer.state_phase.get_quantity_history('nusselt_p')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('steamer-nusselt_p.png', dpi=300)
+
+        (quant, time_unit) = steamer.state_phase.get_quantity_history('nusselt_s')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('steamer-nusselt_s.png', dpi=300)
+
 
         '''
         # Turbine plots
