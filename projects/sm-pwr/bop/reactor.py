@@ -483,6 +483,7 @@ class SMPWR(Module):
 
         tau = self.coolant_volume/q_vol \
               if q_vol > 0 and time > self.discard_tau_recording_before else 0
+        print('PRIMARYTAU', tau)
 
         self.reactor_phase.set_value('tau', tau, time)
 
