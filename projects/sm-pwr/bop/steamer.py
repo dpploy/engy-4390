@@ -11,15 +11,19 @@
    + 16 mm OD
    + 0.9 mm tube wall
    + 22.3 m long
-   + Primary outflow temperature: 497 F (258.3 C)
    + Primary inflow temperature: 543 F (283.9 C) (w/ a 100 F rise)
+   + Primary outflow temperature: 497 F (258.3 C)
    + Primary mass flowrate:
          - Avg: 4.66e+6 (avg) lb/h
          - Max: 5.24e6
          - Min: 4.27e6
    + Secondary inflow temperature: 149 C
+   + Secondary outflow temperature: > 241 C
    + Heat transfer area:  17928 ft^2  (1665.57 m^2)
    + Heat flux at operating condition: 8.4077 Btu/ft^2-s (95482.27 W/m^2-s)
+   + Full stem flow: 532100 lb/h (67.04 kg/s)
+   + Operating secondary temperature: 575 F (301.67 C)
+   + Operating secondary pressure: 500 psi (34.47 bar)
 
 """
 import logging
@@ -80,14 +84,14 @@ class Steamer(Module):
         self.helicoil_tube_wall = 0.9*unit.milli*unit.meter
         self.helicoil_inner_radius = self.helicoil_outer_radius - self.helicoil_tube_wall
         self.helicoil_length = 22.3*unit.meter
-        self.n_helicoil_tubes = 2*1012
+        self.n_helicoil_tubes = 3*1012
 
         self.wall_temp_delta_primary = 1.5*unit.K
         self.wall_temp_delta_secondary = 1.5*unit.K
 
         self.iconel690_k = 12.1*unit.watt/unit.meter/unit.kelvin
 
-        self.primary_volume = 16.35*unit.meter**3
+        self.primary_volume = 2.5*unit.meter**3
 
         self.secondary_volume = math.pi * self.helicoil_inner_radius**2 * \
                                 self.helicoil_length * self.n_helicoil_tubes
@@ -95,14 +99,14 @@ class Steamer(Module):
        # Initialization
         self.primary_inflow_temp = (283.9+273.15)*unit.kelvin
         self.primary_pressure = 127.6*unit.bar
-        self.primary_mass_flowrate = 600*unit.kg/unit.second
+        self.primary_mass_flowrate = 2.5*600*unit.kg/unit.second
 
         self.primary_outflow_temp = self.primary_inflow_temp #- 2*unit.K
 
         self.secondary_inflow_temp = (149+273.15)*unit.kelvin
 
         self.secondary_pressure = 34*unit.bar
-        self.secondary_mass_flowrate = 67*unit.kg/unit.second
+        self.secondary_mass_flowrate = 5.4*67*unit.kg/unit.second
 
         self.secondary_outflow_temp = self.secondary_inflow_temp #- 2*unit.K
 
@@ -190,7 +194,7 @@ class Steamer(Module):
         nusselt_p = Quantity(name='nusselt_p',
                         formal_name='Nu_p', unit='',
                         value=0.0,
-                        latex_name=r'$\tau_{p}$',
+                        latex_name=r'$Nu_p$',
                         info='Steamer Primary Nusselt Number')
 
         quantities.append(nusselt_p)
@@ -198,7 +202,7 @@ class Steamer(Module):
         nusselt_s = Quantity(name='nusselt_s',
                         formal_name='Nu_s', unit='',
                         value=0.0,
-                        latex_name=r'$\tau_{s}$',
+                        latex_name=r'$Nu_s$',
                         info='Steamer Secondary Nusselt Number')
 
         quantities.append(nusselt_s)
@@ -415,7 +419,7 @@ class Steamer(Module):
         self.state_phase.set_value('tau_s', tau_s, time)
 
         # Heat flux and Nusselt number
-        (heat_sink_pwr, nusselt_p, nusselt_s) = self.__heat_sink_rate(water_p, water_s)
+        (heat_sink_pwr, nusselt_p, nusselt_s) = self.__heat_sink_pwr(water_p, water_s)
 
         q2prime = -heat_sink_pwr/self.heat_transfer_area
         if q2prime < 0.0: # case when primary is heated by the secondary
@@ -430,8 +434,6 @@ class Steamer(Module):
 
     def __get_state_vector(self, time):
         """Return a numpy array of all unknowns ordered as shown.
-           Neutron density, delayed neutron emmiter concentrations,
-           termperature of fuel, and temperature of coolant.
         """
 
         u_vec = np.empty(0, dtype=np.float64)
@@ -471,7 +473,7 @@ class Steamer(Module):
         assert water_p.phase != 'Vapour'
 
         rho_p = water_p.rho
-        cp_p = water_p.cp * unit.kj/unit.kg/unit.K
+        cp_p = water_p.Liquid.cp * unit.kj/unit.kg/unit.K
 
         vol_p = self.primary_volume
         q_p = self.primary_mass_flowrate/rho_p
@@ -521,7 +523,7 @@ class Steamer(Module):
         #-----------------------
         # calculations
         #-----------------------
-        (heat_sink_pwr, _, _) = self.__heat_sink_rate(water_p, water_s)
+        (heat_sink_pwr, _, _) = self.__heat_sink_pwr(water_p, water_s)
         heat_sink_pwr_dens = heat_sink_pwr/vol_p
 
         #print('heat_sink =', heat_sink_pwr_dens)
@@ -535,7 +537,7 @@ class Steamer(Module):
         heat_source_pwr_dens = heat_source_pwr/vol_s
 
         #assert temp_s-temp_s_in < 0
-        f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + heat_source_pwr/(rho_s*cp_s)
+        f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + heat_source_pwr_dens/(rho_s*cp_s)
 
         #print('Primary:',f_tmp[0], 'Convective = ', - 1/tau_p * (temp_p - temp_p_in), 'heat term = ', heat_sink, 'mass*cp = ' ,(rho_p*cp_p*vol_p) )
         #print('Secondary:',f_tmp[1], 'Convective = ', - 1/tau_s * (temp_s - temp_s_in), 'heat term = ', heat_source ,'mass*cp = ', (rho_s*cp_s*vol_s))
@@ -563,7 +565,7 @@ class Steamer(Module):
 
         return f_tmp
 
-    def __heat_sink_rate(self, water_p, water_s):
+    def __heat_sink_pwr(self, water_p, water_s):
         """Cooling rate of the primary side.
 
            Assumptions
@@ -657,8 +659,8 @@ class Steamer(Module):
 
         if (temp_s_w - temp_s_sat) > 0.0: # nucleate boiling
         # Jens and Lottes correlation for subcooled/saturated nucleate boiling
-        # 500 <=  P <= 2000 psi
-            q2prime = ((temp_s_w - temp_s_sat)*math.exp((self.secondary_pressure/unit.mega/unit.pascal) /6.2)/0.79)**4
+        # 3.5 <= P <= 14 MPa
+            q2prime = ((temp_s_w - temp_s_sat)*math.exp(self.secondary_pressure/unit.mega/unit.pascal/6.2)/0.79)**4
             h_s = q2prime/(temp_s_w - temp_s_sat)
             nusselt_s = h_s * 2*radius_inner / k_s
         else: # single phase transfer
@@ -668,7 +670,6 @@ class Steamer(Module):
             prtl_w = water_s_w.Prandt
             nusselt_s = self.__mean_nusselt_single_phase(rey_s, prtl_s, prtl_w, st/sl)
             h_s = nusselt_s * k_s / (2*radius_inner)
-
 
         ###################################################
         # Overall heat transfer
@@ -698,11 +699,15 @@ class Steamer(Module):
             fouling
 
         # Total area of heat tranfer
-        area = 2*math.pi*radius_mean* self.n_helicoil_tubes * self.helicoil_length
+        #area = 2*math.pi*radius_mean* self.n_helicoil_tubes * self.helicoil_length
+        area = self.heat_transfer_area
 
         temp_p_avg = (self.primary_inflow_temp + temp_p)/2
         temp_s_avg = (self.secondary_inflow_temp + temp_s)/2
         qdot = - area * 1/one_over_U * (temp_p_avg-temp_s_avg)
+        qdot = - 95482.27 * 1665.57
+        #qdot = - area * 1/one_over_U * (self.primary_inflow_temp-self.secondary_inflow_temp)
+        #print('here',qdot/area)
 
         return (qdot, nusselt_s, nusselt_p)
 

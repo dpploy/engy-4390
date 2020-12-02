@@ -24,7 +24,7 @@ def main():
 
     # Preamble
     end_time = 5*unit.minute
-    time_step = 2.5*unit.second
+    time_step = 0.2*unit.second
     show_time = (True, 5*unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
