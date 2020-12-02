@@ -82,15 +82,24 @@ class Steamer(Module):
 
         self.iconel690_k = 12.1*unit.watt/unit.meter/unit.kelvin
 
+<<<<<<< Updated upstream
         self.primary_volume = 4.0*16.35*unit.meter**3
         
         
          
+=======
+        self.primary_volume = 2*unit.meter**3
+
+>>>>>>> Stashed changes
         self.secondary_volume = math.pi * self.helicoil_inner_radius**2 * \
                                 self.helicoil_length * self.n_helicoil_tubes
 
        # Initialization
+<<<<<<< Updated upstream
         self.primary_inflow_temp = (20+273.15)*unit.kelvin
+=======
+        self.primary_inflow_temp = (280+273.15)*unit.kelvin
+>>>>>>> Stashed changes
         self.primary_inflow_pressure = 127.6*unit.bar
         #self.primary_inflow_mass_flowrate = 600*unit.kg/unit.second
         self.primary_inflow_mass_flowrate = 0*unit.kg/unit.second
