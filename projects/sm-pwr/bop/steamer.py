@@ -83,7 +83,7 @@ class Steamer(Module):
         self.helicoil_outer_radius = 16/2*unit.milli*unit.meter
         self.helicoil_tube_wall = 0.9*unit.milli*unit.meter
         self.helicoil_inner_radius = self.helicoil_outer_radius - self.helicoil_tube_wall
-        self.helicoil_length = 3*22.3*unit.meter
+        self.helicoil_length = 22.3*unit.meter
         self.n_helicoil_tubes = 1380
 
         self.wall_temp_delta_primary = 1.5*unit.K
@@ -154,7 +154,7 @@ class Steamer(Module):
         quantities.append(press)
 
         quality = Quantity(name='quality',
-                         formal_name='X', unit=' ',
+                         formal_name='X', unit='',
                          value=self.secondary_outflow_quality,
                          latex_name=r'$\chi$',
                          info='Steamer Outlet Quality')
@@ -357,78 +357,27 @@ class Steamer(Module):
         self.secondary_outflow_phase.set_value('temp', temp_s, time)
         self.secondary_outflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
         self.secondary_outflow_phase.set_value('pressure', self.secondary_pressure, time)
+        self.secondary_outflow_phase.set_value('quality', self.secondary_outflow_quality, time)
 
         self.state_phase.add_row(time, steamer)
 
-        # Primary properties
-        water_p = WaterProps(T=temp_p, P=self.primary_pressure/unit.mega/unit.pascal)
-        if water_p.phase == 'Two phases':
-            qual = water_p.x
-            assert qual <= 0.4 # limit to low quality
-            rho_p = (1-qual)*water_p.Liquid.rho + qual*water_p.Vapor.rho
-            cp_p = (1-qual)*water_p.Liquid.cp + qual*water_p.Vapor.cp
-            cp_p *= unit.kj/unit.kg/unit.K
-            mu_p = (1-qual)*water_p.Liquid.mu + qual*water_p.Vapor.mu
-            k_p = (1-qual)*water_p.Liquid.k + qual*water_p.Vapor.k
-            prtl_p = (1-qual)*water_p.Liquid.Prandt + qual*water_p.Vapor.Prandt
-        elif water_p.phase == 'Liquid':
-            rho_p = water_p.Liquid.rho
-            cp_p = water_p.Liquid.cp*unit.kj/unit.kg/unit.K
-            k_p = water_p.Liquid.k
-            mu_p = water_p.Liquid.mu
-            prtl_p = water_p.Liquid.Prandt
-        else:
-            assert False,'Vapor not allowed.'
-
         # Primary residence time
-        q_vol_p = self.primary_mass_flowrate/rho_p
-        tau_p = self.primary_volume/q_vol_p \
-                if q_vol_p > 0 and time > self.discard_tau_recording_before else 0
-
-        self.state_phase.set_value('tau_p', tau_p, time)
-
-        # Secondary properties
-        water_s = WaterProps(T=temp_s, P=self.secondary_pressure/unit.mega/unit.pascal)
-        if water_s.phase == 'Two phases':
-            qual = water_s.x
-            assert qual <= 0.4 # limit to low quality
-            rho_s = (1-qual)*water_s.Liquid.rho + qual*water_s.Vapor.rho
-            cp_s = (1-qual)*water_s.Liquid.cp + qual*water_s.Vapor.cp
-            cp_s *= unit.kj/unit.kg/unit.K
-            mu_s = (1-qual)*water_s.Liquid.mu + qual*water_s.Vapor.mu
-            k_s = (1-qual)*water_s.Liquid.k + qual*water_s.Vapor.k
-            prtl_s = (1-qual)*water_s.Liquid.Prandt + qual*water_s.Vapor.Prandt
-        elif water_s.phase == 'Liquid':
-            rho_s = water_s.Liquid.rho
-            cp_s = water_s.Liquid.cp*unit.kj/unit.kg/unit.K
-            k_s = water_s.Liquid.k
-            mu_s = water_s.Liquid.mu
-            prtl_s = water_s.Liquid.Prandt
-        else:
-            rho_s = water_s.Vapor.rho
-            cp_s = water_s.Vapor.cp*unit.kj/unit.kg/unit.K
-            k_s = water_s.Vapor.k
-            mu_s = water_s.Vapor.mu
-            prtl_s = water_s.Vapor.Prandt
+        self.state_phase.set_value('tau_p', self.tau_p, time)
 
         # Secondary residence time
-        q_vol_s = self.secondary_mass_flowrate/rho_s
-        tau_s = self.secondary_volume/q_vol_s \
-                if q_vol_s > 0 and time > self.discard_tau_recording_before else 0
-
-        self.state_phase.set_value('tau_s', tau_s, time)
+        self.state_phase.set_value('tau_s', self.tau_s, time)
 
         # Heat flux and Nusselt number
-        (heat_sink_pwr, nusselt_p, nusselt_s) = self.__heat_sink_pwr(water_p, water_s)
+        #(heat_sink_pwr, nusselt_p, nusselt_s) = self.__heat_sink_pwr(water_p, water_s)
 
-        q2prime = -heat_sink_pwr/self.heat_transfer_area
-        if q2prime < 0.0: # case when primary is heated by the secondary
-            q2prime = 0.0
-        self.state_phase.set_value('heatflux', q2prime, time)
+        #q2prime = -heat_sink_pwr/self.heat_transfer_area
+        #if q2prime < 0.0: # case when primary is heated by the secondary
+        #    q2prime = 0.0
+        #self.state_phase.set_value('heatflux', q2prime, time)
 
-        self.state_phase.set_value('nusselt_p', nusselt_p, time)
+        #self.state_phase.set_value('nusselt_p', nusselt_p, time)
 
-        self.state_phase.set_value('nusselt_s', nusselt_s, time)
+        #self.state_phase.set_value('nusselt_s', nusselt_s, time)
 
         return time
 
@@ -449,28 +398,87 @@ class Steamer(Module):
     def __f_vec(self, u_vec, time):
 
         temp_p = u_vec[0] # get temperature of primary outflow
-        #print('primary   outflow temp [K] =', temp_p)
+        press_p = self.primary_pressure
 
         temp_s = u_vec[1] # get temperature of secondary outflow
-        #print('secondary outflow temp [K] =', temp_s)
+        press_s = self.secondary_pressure
 
         # initialize f_vec to zero
         f_tmp = np.zeros(2, dtype=np.float64) # vector for f_vec return
+
+        # Heat transfered
+
+        water_p = WaterProps(T=temp_p, P=press_s/unit.mega/unit.pascal)
+        water_s = WaterProps(T=temp_s, P=press_s/unit.mega/unit.pascal)
+
+        (heat_sink_pwr, _, _) = self.__heat_sink_pwr(water_p, water_s)
+
+        # Secondary steam quality
+
+        sat_liq = WaterProps(P=press_s/unit.mega/unit.pascal, x=0.0)
+        sat     = WaterProps(P=press_s/unit.mega/unit.pascal, x=0.5)
+        sat_vap = WaterProps(P=press_s/unit.mega/unit.pascal, x=1.0)
+
+        temp_s_in = self.secondary_inflow_temp
+
+        assert temp_s_in < sat.T
+        sensible_water = WaterProps(T=(temp_s_in + sat_liq.T)/2 , P=press_s/unit.mega/unit.pascal)
+        cp_sensible = sensible_water.Liquid.cp
+
+        q_sensible = (sat_liq.T-temp_s_in)*cp_sensible
+
+        #heat_rate_transfered = (temp_s - temp_s_in)*cp_s/1000
+        heat_transfered = -heat_sink_pwr / 1000 / self.secondary_mass_flowrate
+
+        h_v = sat_vap.h
+        h_l = sat_liq.h
+        h_vap = h_v - h_l
+
+        if heat_transfered < q_sensible and temp_s < sat.T: # subcooled
+            self.secondary_outflow_quality = 0
+            water_s = WaterProps(T=temp_s, P=press_s/unit.mega/unit.pascal)
+            rho_s = water_s.Liquid.rho
+            cp_s = water_s.Liquid.cp
+            #assert temp_s < sat.T,'ht %r, q_sens %r'%(heat_transfered,q_sensible)
+        elif heat_transfered > q_sensible + h_vap and temp_s > sat.T: # superheated
+            self.secondary_outflow_quality = 1
+            water_s = WaterProps(T=temp_s, P=press_s/unit.mega/unit.pascal)
+            rho_s = water_s.Vapor.rho
+            cp_s = water_s.Vapor.cp
+            #assert temp_s > sat.T,'ht %r, q_sens %r, h_vap %r, temp_s %r, temp_sat %r'%(heat_transfered,q_sensible,h_vap,temp_s,sat.T)
+        elif heat_transfered > q_sensible + h_vap and temp_s <= sat.T: # slowed superheated
+            # Heat transfered is sufficient in equilibrium but in non-equilibrium,
+            # there is inertia.
+            qual = temp_s/sat.T
+            self.secondary_outflow_quality = min(qual,0.999)
+            qual = self.secondary_outflow_quality
+            w_sat = WaterProps(P=press_s/unit.mega/unit.pascal, x=qual)
+            mass_frac_v = w_sat.Vapor.rho / (w_sat.Liquid.rho + w_sat.Vapor.rho)
+            cp_s = (1-mass_frac_v)*w_sat.Liquid.cp + mass_frac_v*w_sat.Vapor.cp
+            rho_s = (1-mass_frac_v)*w_sat.Liquid.rho + mass_frac_v*w_sat.Vapor.rho
+
+        elif q_sensible <= heat_transfered <= q_sensible + h_vap:
+            self.secondary_outflow_quality = (heat_transfered - q_sensible)/ h_vap
+            qual = self.secondary_outflow_quality
+            w_sat = WaterProps(P=press_s/unit.mega/unit.pascal, x=qual)
+            mass_frac_v = w_sat.Vapor.rho / (w_sat.Liquid.rho + w_sat.Vapor.rho)
+            cp_s = (1-mass_frac_v)*w_sat.Liquid.cp + mass_frac_v*w_sat.Vapor.cp
+            rho_s = (1-mass_frac_v)*w_sat.Liquid.rho + mass_frac_v*w_sat.Vapor.rho
+        else:
+            print('ht %r, q_sens %r, h_vap %r, temp_s %r, temp_sat %r'%(heat_transfered,q_sensible,h_vap,temp_s,sat.T))
+            assert False, 'bailing out; unknown case.'
+
+        cp_s *= unit.kj/unit.kg/unit.K
 
         #-----------------------
         # primary energy balance
         #-----------------------
 
         temp_p_in = self.primary_inflow_temp
-        #print('primary inflow temp [K] =', temp_p_in)
-        #print('secondary inflow temp [K] =', self.secondary_inflow_temp)
-
-        press_p = self.primary_pressure
 
         water_p = WaterProps(T=temp_p, P=press_p/unit.mega/unit.pascal)
 
-        assert water_p.phase != 'Two phases'
-        assert water_p.phase != 'Vapour'
+        assert water_p.phase == 'Liquid'
 
         rho_p = water_p.rho
         cp_p = water_p.Liquid.cp * unit.kj/unit.kg/unit.K
@@ -485,80 +493,32 @@ class Steamer(Module):
 
         self.tau_p = tau_p
 
-        #-----------------------
-        # secondary energy balance
-        #-----------------------
+        #-------------------------
+        # Secondary energy balance
+        #-------------------------
 
         temp_s_in = self.secondary_inflow_temp
-        #print('secondary inflow T [K] =', temp_s_in)
-
-        press_s = self.secondary_pressure
-        #print('secondary inflow P [bar] =', press_s/unit.bar)
-
-        #print('secondary P [bar] =', press_s/unit.bar)
-        #print('Primary   T [K]   =', temp_p)
-        #print('Secondary T [K]   =', temp_s)
-        #print('quality = ', self.secondary_outflow_quality)
-
-
-        if self.secondary_outflow_quality == 0:
-            water_s = WaterProps(T=temp_s, P=press_s/unit.mega/unit.pascal)
-            rho_s = water_s.Liquid.rho
-            cp_s = water_s.Liquid.cp
-        elif self.secondary_outflow_quality == 1:
-            water_s = WaterProps(T=temp_s, P=press_s/unit.mega/unit.pascal)
-            rho_s = water_s.Vapor.rho
-            cp_s = water_s.Vapor.cp
-        else:
-            qual = self.secondary_outflow_quality
-            water_s = WaterProps(P=press_s/unit.mega/unit.pascal, x=qual)
-
-            mass_frac_v = water_s.Vapor.rho / (water_s.Liquid.rho + water_s.Vapor.rho)
-            cp_s = (1-mass_frac_v)*water_s.Liquid.cp + mass_frac_v*water_s.Vapor.cp
-
-            rho_s = (1-mass_frac_v)*water_s.Liquid.rho + mass_frac_v*water_s.Vapor.rho
-
-        cp_s *= unit.kj/unit.kg/unit.K
 
         vol_s = self.secondary_volume
         q_s = self.secondary_mass_flowrate/rho_s
 
         if q_s > 0:
-            tau_s = vol_s/q_s
+            if self.secondary_outflow_quality == 0:
+                tau_s = vol_s/q_s
+            elif self.secondary_outflow_quality == 1:
+                tau_s = 0.85*vol_s/q_s # faster moving gas with higher flow losses
+            else:
+                tau_s = 0.98*vol_s/q_s # two-phase moving gas with flow losses
         else:
             tau_s = 1*unit.hour
 
         self.tau_s = tau_s
 
         #-----------------------
-        # calculations
+        # Calculations
         #-----------------------
-        (heat_sink_pwr, _, _) = self.__heat_sink_pwr(water_p, water_s)
+
         heat_sink_pwr_dens = heat_sink_pwr/vol_p
-
-        # Quality calculation
-
-        sat_liq = WaterProps(P=press_s/unit.mega/unit.pascal, x=0.0)
-        sat_vap = WaterProps(P=press_s/unit.mega/unit.pascal, x=1.0)
-
-        sensible_water = WaterProps(T= (temp_s_in + sat_liq.T)/2 , P=press_s/unit.mega/unit.pascal)
-        cp_sensible = sensible_water.cp
-
-        q_sensible = (sat_liq.T- temp_s_in)*cp_sensible
-
-
-        heat_rate_transfered = (temp_s - temp_s_in)*cp_s/1000
-
-        h_v = sat_vap.h
-        h_l = sat_liq.h
-        h_vap = h_v - h_l
-
-        if heat_rate_transfered < q_sensible : # subcooled
-            self.secondary_outflow_quality = 0
-        elif heat_rate_transfered > q_sensible + h_vap: # superheated
-            self.secondary_outflow_quality = 1
-        else: # mixed
-            self.secondary_outflow_quality = (heat_rate_transfered - q_sensible)/ h_vap
 
         f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) +  heat_sink_pwr_dens/(rho_p*cp_p)
 
@@ -587,10 +547,14 @@ class Steamer(Module):
            + secondary side: overall ranging from one phase heat transfer to fully
              developed nucleate boiling .
         """
+
+        qdot = - 0.95 * 95482.27 * 1665.57
+        return (qdot, 0, 0)
+
         # Primary props
         temp_p = water_p.T
 
-        water_p_sat = WaterProps(P=water_p.P, x=0.0)
+        water_p_sat = WaterProps(P=water_p.P, x=0.5)
         temp_p_sat = water_p_sat.T
 
         # Overall condition on the primary; locally there may be nucleate boiling
@@ -605,7 +569,7 @@ class Steamer(Module):
         # Secondary props
         temp_s = water_s.T
 
-        water_s_sat = WaterProps(P=water_s.P, x=0.0)
+        water_s_sat = WaterProps(P=water_s.P, x=0.5)
         temp_s_sat = water_s_sat.T
 
         # Overall condition on the secondary
@@ -643,7 +607,7 @@ class Steamer(Module):
 
         assert water_p_w.phase != 'Two phases' # sanity check
 
-        prtl_w = water_p_w.Prandt
+        prtl_w = water_p_w.Liquid.Prandt
 
         nusselt_p = self.__mean_nusselt_single_phase(rey_p, prtl_p, prtl_w, st/sl)
 
@@ -676,7 +640,7 @@ class Steamer(Module):
             rey_s = self.secondary_mass_flowrate * 2*radius_inner / mu_s
             water_s_w = WaterProps(T=temp_s_w, P=water_s.P) # secondary at wall T, P
             assert water_s_w.phase != 'Two phases' # sanity check
-            prtl_w = water_s_w.Prandt
+            prtl_w = water_s_w.Vapor.Prandt
             nusselt_s = self.__mean_nusselt_single_phase(rey_s, prtl_s, prtl_w, st/sl)
             h_s = nusselt_s * k_s / (2*radius_inner)
 

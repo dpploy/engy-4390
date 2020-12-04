@@ -465,8 +465,7 @@ class SMPWR(Module):
             spfc_h_sat_v = water_sat_v.Vapor.h * unit.kj/unit.kg
 
             heat_rate_latent = (spfc_h_sat_v-spfc_h_sat_l)*mass_flowrate
-            heat_rate_sensible = (water_sat_l.T-cool_temp)*cp_c*mass_flowrate
-
+            heat_rate_sensible = (water_sat_l.T-self.inflow_cool_temp)*cp_c*mass_flowrate
         #print(heat_rate_transfered/unit.mega, heat_rate_sensible/unit.mega, heat_rate_latent/unit.mega)
         #print((heat_rate_transfered-heat_rate_sensible)/(heat_rate_latent-heat_rate_sensible)*100)
 
