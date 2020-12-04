@@ -83,8 +83,8 @@ class Steamer(Module):
         self.helicoil_outer_radius = 16/2*unit.milli*unit.meter
         self.helicoil_tube_wall = 0.9*unit.milli*unit.meter
         self.helicoil_inner_radius = self.helicoil_outer_radius - self.helicoil_tube_wall
-        self.helicoil_length = 22.3*unit.meter
-        self.n_helicoil_tubes = 2*1380
+        self.helicoil_length = 3*22.3*unit.meter
+        self.n_helicoil_tubes = 1380
 
         self.wall_temp_delta_primary = 1.5*unit.K
         self.wall_temp_delta_secondary = 1.5*unit.K
@@ -106,7 +106,7 @@ class Steamer(Module):
         self.secondary_inflow_temp = (149+273.15)*unit.kelvin
 
         self.secondary_pressure = 34*unit.bar
-        self.secondary_mass_flowrate = 1.5*67*unit.kg/unit.second
+        self.secondary_mass_flowrate = 67*unit.kg/unit.second
 
         self.secondary_outflow_temp = self.secondary_inflow_temp #- 2*unit.K
 
@@ -483,6 +483,8 @@ class Steamer(Module):
         else:
             tau_p = 1*unit.hour
 
+        self.tau_p = tau_p
+
         #-----------------------
         # secondary energy balance
         #-----------------------
@@ -510,8 +512,11 @@ class Steamer(Module):
         else:
             qual = self.secondary_outflow_quality
             water_s = WaterProps(P=press_s/unit.mega/unit.pascal, x=qual)
-            cp_s = (1-qual)*water_s.Liquid.cp + qual*water_s.Vapor.cp
-            rho_s = (1-qual)*water_s.Liquid.rho + qual*water_s.Vapor.rho
+
+            mass_frac_v = water_s.Vapor.rho / (water_s.Liquid.rho + water_s.Vapor.rho)
+            cp_s = (1-mass_frac_v)*water_s.Liquid.cp + mass_frac_v*water_s.Vapor.cp
+
+            rho_s = (1-mass_frac_v)*water_s.Liquid.rho + mass_frac_v*water_s.Vapor.rho
 
         cp_s *= unit.kj/unit.kg/unit.K
 
@@ -523,29 +528,15 @@ class Steamer(Module):
         else:
             tau_s = 1*unit.hour
 
+        self.tau_s = tau_s
+
         #-----------------------
         # calculations
         #-----------------------
         (heat_sink_pwr, _, _) = self.__heat_sink_pwr(water_p, water_s)
         heat_sink_pwr_dens = heat_sink_pwr/vol_p
 
-        #print('heat_sink =', heat_sink_pwr_dens)
-
-        #assert heat_sink_pwr < 0, 'heatsink =  %r'%(heat_sink_pwr)
-        #assert temp_p-temp_p_in < 0
-
-        f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) +  heat_sink_pwr_dens/(rho_p*cp_p)
-
-        heat_source_pwr = - heat_sink_pwr
-        heat_source_pwr_dens = heat_source_pwr/vol_s
-
-        #assert temp_s-temp_s_in < 0
-        f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + heat_source_pwr_dens/(rho_s*cp_s)
-
-        #print('Primary:',f_tmp[0], 'Convective = ', - 1/tau_p * (temp_p - temp_p_in), 'heat term = ', heat_sink, 'mass*cp = ' ,(rho_p*cp_p*vol_p) )
-        #print('Secondary:',f_tmp[1], 'Convective = ', - 1/tau_s * (temp_s - temp_s_in), 'heat term = ', heat_source ,'mass*cp = ', (rho_s*cp_s*vol_s))
-
-        # Boiling test
+        # Quality calculation
 
         sat_liq = WaterProps(P=press_s/unit.mega/unit.pascal, x=0.0)
         sat_vap = WaterProps(P=press_s/unit.mega/unit.pascal, x=1.0)
@@ -568,6 +559,18 @@ class Steamer(Module):
             self.secondary_outflow_quality = 1
         else: # mixed
             self.secondary_outflow_quality = (heat_rate_transfered - q_sensible)/ h_vap
+
+        f_tmp[0] = - 1/tau_p * (temp_p - temp_p_in) +  heat_sink_pwr_dens/(rho_p*cp_p)
+
+        heat_source_pwr = - heat_sink_pwr
+
+        heat_source_pwr -= self.secondary_outflow_quality * h_vap*unit.kj * self.secondary_mass_flowrate
+
+        heat_source_pwr_dens = heat_source_pwr/vol_s
+
+        #assert temp_s-temp_s_in < 0
+        f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + heat_source_pwr_dens/(rho_s*cp_s)
+
 
         return f_tmp
 
@@ -711,7 +714,7 @@ class Steamer(Module):
         temp_p_avg = (self.primary_inflow_temp + temp_p)/2
         temp_s_avg = (self.secondary_inflow_temp + temp_s)/2
         qdot = - area * 1/one_over_U * (temp_p_avg-temp_s_avg)
-        qdot = - 95482.27 * 1665.57
+        qdot = - 0.95 * 95482.27 * 1665.57
         #qdot = - area * 1/one_over_U * (self.primary_inflow_temp-self.secondary_inflow_temp)
         #print('here',qdot/area)
 
