@@ -545,7 +545,7 @@ class Steamer(Module):
              but the model will not capture this.
 
            + secondary side: overall ranging from one phase heat transfer to fully
-             developed nucleate boiling .
+             developed nucleate boiling.
         """
 
         qdot = - 0.95 * 95482.27 * 1665.57
