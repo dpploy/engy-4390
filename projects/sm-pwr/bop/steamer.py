@@ -7,7 +7,7 @@
    Once-through heat exchanger to operate under fully developed nucleate boiling
    heat transfer. Subcooled? or Saturated? regime??
 
-   + 1012 tubes (Iconel 690)
+   + 1380 tubes (Iconel 690)
    + 16 mm OD
    + 0.9 mm tube wall
    + 22.3 m long
@@ -18,9 +18,9 @@
          - Max: 5.24e6
          - Min: 4.27e6
    + Secondary inflow temperature: 149 C
-   + Secondary outflow temperature: > 241 C
+   + Secondary outflow temperature: 584.4 F (306.9 C) (saturated = 241.68 C)
    + Heat transfer area:  17928 ft^2  (1665.57 m^2)
-   + Heat flux at operating condition: 8.4077 Btu/ft^2-s (95482.27 W/m^2-s)
+   + Heat flux at operating condition: 8.4077 Btu/ft^2-s (95482.27 W/m^2)
    + Full stem flow: 532100 lb/h (67.04 kg/s)
    + Operating secondary temperature: 575 F (301.67 C)
    + Operating secondary pressure: 500 psi (34.47 bar)
@@ -84,7 +84,7 @@ class Steamer(Module):
         self.helicoil_tube_wall = 0.9*unit.milli*unit.meter
         self.helicoil_inner_radius = self.helicoil_outer_radius - self.helicoil_tube_wall
         self.helicoil_length = 22.3*unit.meter
-        self.n_helicoil_tubes = 3*1012
+        self.n_helicoil_tubes = 2*1380
 
         self.wall_temp_delta_primary = 1.5*unit.K
         self.wall_temp_delta_secondary = 1.5*unit.K
@@ -106,11 +106,11 @@ class Steamer(Module):
         self.secondary_inflow_temp = (149+273.15)*unit.kelvin
 
         self.secondary_pressure = 34*unit.bar
-        self.secondary_mass_flowrate = 5.4*67*unit.kg/unit.second
+        self.secondary_mass_flowrate = 1.5*67*unit.kg/unit.second
 
         self.secondary_outflow_temp = self.secondary_inflow_temp #- 2*unit.K
 
-        self.secondary_outflow_quality = 0
+        self.secondary_outflow_quality = 0 # running value of quality
 
         # Primary outflow phase history
         quantities = list()
@@ -390,7 +390,7 @@ class Steamer(Module):
         # Secondary properties
         water_s = WaterProps(T=temp_s, P=self.secondary_pressure/unit.mega/unit.pascal)
         if water_s.phase == 'Two phases':
-            qual = water.x
+            qual = water_s.x
             assert qual <= 0.4 # limit to low quality
             rho_s = (1-qual)*water_s.Liquid.rho + qual*water_s.Vapor.rho
             cp_s = (1-qual)*water_s.Liquid.cp + qual*water_s.Vapor.cp
@@ -498,17 +498,20 @@ class Steamer(Module):
         #print('Secondary T [K]   =', temp_s)
         #print('quality = ', self.secondary_outflow_quality)
 
-        water_s = WaterProps(T=temp_s, P=press_s/unit.mega/unit.pascal)
 
-        if water_s.phase == 'Liquid':
+        if self.secondary_outflow_quality == 0:
+            water_s = WaterProps(T=temp_s, P=press_s/unit.mega/unit.pascal)
             rho_s = water_s.Liquid.rho
             cp_s = water_s.Liquid.cp
-        elif water_s.phase == 'Two phases':
-            cp_s = (1-qual)*water.Liquid.cp + qual*water.Vapor.cp
-            rho_s = (1-qual)*water.Liquid.rho + qual*water.Vapor.rho
-        else:
+        elif self.secondary_outflow_quality == 1:
+            water_s = WaterProps(T=temp_s, P=press_s/unit.mega/unit.pascal)
             rho_s = water_s.Vapor.rho
             cp_s = water_s.Vapor.cp
+        else:
+            qual = self.secondary_outflow_quality
+            water_s = WaterProps(P=press_s/unit.mega/unit.pascal, x=qual)
+            cp_s = (1-qual)*water_s.Liquid.cp + qual*water_s.Vapor.cp
+            rho_s = (1-qual)*water_s.Liquid.rho + qual*water_s.Vapor.rho
 
         cp_s *= unit.kj/unit.kg/unit.K
 
@@ -542,26 +545,29 @@ class Steamer(Module):
         #print('Primary:',f_tmp[0], 'Convective = ', - 1/tau_p * (temp_p - temp_p_in), 'heat term = ', heat_sink, 'mass*cp = ' ,(rho_p*cp_p*vol_p) )
         #print('Secondary:',f_tmp[1], 'Convective = ', - 1/tau_s * (temp_s - temp_s_in), 'heat term = ', heat_source ,'mass*cp = ', (rho_s*cp_s*vol_s))
 
-
         # Boiling test
 
         sat_liq = WaterProps(P=press_s/unit.mega/unit.pascal, x=0.0)
         sat_vap = WaterProps(P=press_s/unit.mega/unit.pascal, x=1.0)
-        sensible_water = WaterProps(T= (temp_s_in +sat_liq.T)/2 , P=press_s/unit.mega/unit.pascal)
-        cp_l_o = sensible_water.cp
-        q_total = (temp_s - temp_s_in)*cp_s/1000
-        #q_total = heat_source/1000/self.secondary_mass_flowrate
-        q_heat = (sat_liq.T- temp_s_in)*cp_l_o
+
+        sensible_water = WaterProps(T= (temp_s_in + sat_liq.T)/2 , P=press_s/unit.mega/unit.pascal)
+        cp_sensible = sensible_water.cp
+
+        q_sensible = (sat_liq.T- temp_s_in)*cp_sensible
+
+
+        heat_rate_transfered = (temp_s - temp_s_in)*cp_s/1000
+
         h_v = sat_vap.h
         h_l = sat_liq.h
-        h_vap = h_v-h_l
-        q_vap = h_vap
-        if q_total < q_heat: # subcooled
+        h_vap = h_v - h_l
+
+        if heat_rate_transfered < q_sensible : # subcooled
             self.secondary_outflow_quality = 0
-        elif q_total > (q_vap+q_heat): #superheated
+        elif heat_rate_transfered > q_sensible + h_vap: # superheated
             self.secondary_outflow_quality = 1
-        else: #mixed
-            self.secondary_outflow_quality = 1- (h_vap - (q_total - q_heat))/h_vap
+        else: # mixed
+            self.secondary_outflow_quality = (heat_rate_transfered - q_sensible)/ h_vap
 
         return f_tmp
 
@@ -571,11 +577,11 @@ class Steamer(Module):
            Assumptions
            -----------
 
-           + primary side: overall single phase heat tranfer. Locally there may be
+           + primary side: overall single phase heat transfer. Locally there may be
              either partial nucleate boiling or fully developed nucleate boiling
              but the model will not capture this.
 
-           + secondary side: overall ranging from one phase heat tranfer to fully
+           + secondary side: overall ranging from one phase heat transfer to fully
              developed nucleate boiling .
         """
         # Primary props
@@ -698,7 +704,7 @@ class Steamer(Module):
             (radius_outer-radius_inner)/therm_cond_wall * area_outer/area_mean + \
             fouling
 
-        # Total area of heat tranfer
+        # Total area of heat transfer
         #area = 2*math.pi*radius_mean* self.n_helicoil_tubes * self.helicoil_length
         area = self.heat_transfer_area
 
