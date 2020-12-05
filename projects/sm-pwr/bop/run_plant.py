@@ -23,7 +23,7 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 10*unit.minute
+    end_time = 2*unit.minute
     time_step = 1.5*unit.second
     show_time = (True, 5*unit.minute)
 
@@ -246,7 +246,6 @@ def main():
         plt.grid()
         plt.savefig('steamer-secondary-quality.png', dpi=300)
 
-        '''
         (quant, time_unit) = steamer.state_phase.get_quantity_history('heatflux')
 
         quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.kilo, x_label='Time [m]',
@@ -267,7 +266,6 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('steamer-nusselt_s.png', dpi=300)
-        '''
 
 
         '''
