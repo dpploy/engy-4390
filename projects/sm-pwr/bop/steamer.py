@@ -158,9 +158,9 @@ class Steamer(Module):
         quantities = list()
 
         flowrate = Quantity(name='flowrate',
-                            formal_name='q_2', unit='kg/s',
+                            formal_name='m_2', unit='kg/s',
                             value=self.secondary_mass_flowrate,
-                            latex_name=r'$q_2$',
+                            latex_name=r'$\dot{m}_2$',
                             info='Steamer Secondary Outflow Mass Flowrate')
 
         quantities.append(flowrate)
