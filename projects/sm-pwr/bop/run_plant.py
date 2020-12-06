@@ -96,7 +96,7 @@ def main():
     plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
     plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
     plant_net.connect([turbine, 'outflow'], [condenser, 'inflow'])
-    #plant_net.connect([turbine, 'process-heat'], [water_heater, 'external-heat'])
+    plant_net.connect([turbine, 'process-heat'], [water_heater, 'external-heat'])
     plant_net.connect([condenser, 'outflow'], [water_heater, 'inflow'])
     plant_net.connect([water_heater, 'outflow'], [steamer, 'secondary-inflow'])
 
@@ -112,7 +112,6 @@ def main():
         # Reactor plots
         reactor = plant_net.modules[0]
 
-        '''
         (quant, time_unit) = reactor.neutron_phase.get_quantity_history('neutron-dens')
         quant.plot(x_scaling=1/unit.minute, y_scaling=1/max(quant.value),
                    x_label='Time [m]', y_label=quant.latex_name+' ['+quant.unit+']')
@@ -127,7 +126,6 @@ def main():
         plt.grid()
         plt.savefig('reactor-delayed-neutrons-cc.png', dpi=300)
 
-        '''
         (quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
@@ -191,7 +189,7 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('reactor-nusselt.png', dpi=300)
-        '''
+
         (quant, time_unit) = reactor.state_phase.get_quantity_history('tau')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
@@ -205,7 +203,6 @@ def main():
                    y_label=quant.latex_name+r' ['+quant.unit+']')
         plt.grid()
         plt.savefig('reactor-coolant-outflow-quality.png', dpi=300)
-        '''
 
         # Steamer plots
         steamer = plant_net.modules[1]
@@ -284,6 +281,20 @@ def main():
         plt.grid()
         plt.savefig('turbine-outflow-temp.png', dpi=300)
 
+        (quant, time_unit) = turbine.state_phase.get_quantity_history('process-heat')
+
+        quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.mega, x_label='Time [m]',
+                   y_label=quant.latex_name+' [M'+quant.unit+']')
+        plt.grid()
+        plt.savefig('turbine-process-heat.png', dpi=300)
+
+        (quant, time_unit) = turbine.state_phase.get_quantity_history('rejected-heat')
+
+        quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.mega, x_label='Time [m]',
+                   y_label=quant.latex_name+' [M'+quant.unit+']')
+        plt.grid()
+        plt.savefig('turbine-rejected-heat.png', dpi=300)
+
         # Condenser plots
         condenser = plant_net.modules[3]
 
@@ -310,6 +321,13 @@ def main():
                    y_label=quant.latex_name+r' ['+quant.unit+']')
         plt.grid()
         plt.savefig('water_heater-mass-flowrate.png', dpi=300)
+
+        (quant, time_unit) = water_heater.inflow_phase.get_quantity_history('external-heat')
+
+        quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.mega, x_label='Time [m]',
+                   y_label=quant.latex_name+r' [M'+quant.unit+']')
+        plt.grid()
+        plt.savefig('water_heater-external-heat.png', dpi=300)
 
     plant.close()  # Properly shutdow plant
 
