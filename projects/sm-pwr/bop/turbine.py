@@ -205,7 +205,7 @@ class Turbine(Module):
         #-----------------------------------------
         # One way "to" process-heat
 
-        # Send to 
+        # Send to
         if self.get_port('process-heat').connected_port:
 
             msg_time = self.recv('process-heat')
@@ -216,7 +216,7 @@ class Turbine(Module):
             outflow['pressure'] = self.vent_pressure
             outflow['mass_flowrate'] = self.outflow_mass_flowrate
 
-            self.send((msg_time, outflow), 'outflow')
+            self.send((msg_time, outflow), 'process-heat')
 
     def __step(self, time=0.0):
 
@@ -231,7 +231,7 @@ class Turbine(Module):
         p_in_MPa = self.inflow_pressure/unit.mega/unit.pascal
         p_out_MPa = self.vent_pressure/unit.mega/unit.pascal
 
-        # If entering stream is not steam (valve closed scenario)        
+        # If entering stream is not steam (valve closed scenario)
         if self.inflow_temp < steam_table._TSat_P(p_in_MPa):
             t_runoff = self.inflow_temp
             power = 0
@@ -308,7 +308,7 @@ class Turbine(Module):
 
         self.state_phase.add_row(time, turbine)
 
-        self.state_phase.set_value('power', power, time)
+        self.state_phase.set_value('power', power*unit.kilo*unit.watt, time)
         self.state_phase.set_value('process-heat', process_heat, time)
 
         return time
