@@ -60,7 +60,7 @@ class WaterHeater(Module):
         # Initialization
 
         self.inflow_temp = (20+273)*unit.kelvin
-        self.inflow_pressure = 20*unit.bar
+        self.inflow_pressure = 1*unit.bar
         self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
         self.outflow_temp = (20+273.15)*unit.kelvin
@@ -120,14 +120,14 @@ class WaterHeater(Module):
             else:
                 self.__logit = False
 
-            # Communicate information
-            #------------------------
-            self.__call_ports(time)
-
             # Evolve one time step
             #---------------------
 
             time = self.__step(time)
+
+            # Communicate information
+            #------------------------
+            self.__call_ports(time)
 
     def __call_ports(self, time):
 
@@ -216,7 +216,6 @@ class WaterHeater(Module):
 
     def __get_state_vector(self, time):
         """Return a numpy array of all unknowns ordered as shown.
-
         """
 
         u_vec = np.empty(0, dtype=np.float64)

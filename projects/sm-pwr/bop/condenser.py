@@ -55,13 +55,14 @@ class Condenser(Module):
 
         # Initialization
 
-        self.inflow_pressure = 34*unit.bar
+        #self.inflow_pressure = 34*unit.bar
+        self.inflow_pressure = 0.008066866*unit.mega*unit.pascal
         self.inflow_temp = (20+273)*unit.K
         self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
         self.outflow_temp = (20+273.15)*unit.K
         self.outflow_mass_flowrate = 67*unit.kg/unit.second
-        self.outflow_pressure = 34*unit.bar
+        self.outflow_pressure = 1*unit.bar
 
         # Outflow phase history
         quantities = list()
@@ -121,14 +122,14 @@ class Condenser(Module):
             else:
                 self.__logit = False
 
-            # Communicate information
-            #------------------------
-            self.__call_ports(time)
-
             # Evolve one time step
             #---------------------
 
             time = self.__step(time)
+
+            # Communicate information
+            #------------------------
+            self.__call_ports(time)
 
     def __call_ports(self, time):
 
