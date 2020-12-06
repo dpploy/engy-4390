@@ -60,7 +60,8 @@ class Turbine(Module):
         # Initialization
 
         self.inflow_temp = 20+273.15 #K
-        self.inflow_pressure = 1.0*unit.bar
+        #self.inflow_pressure = 1.0*unit.bar
+        self.inflow_pressure = 34*unit.bar
         self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
         self.outflow_temp = 20+272.15 #K
@@ -110,7 +111,7 @@ class Turbine(Module):
         quantities = list()
 
         power = Quantity(name='power',
-                         formal_name='W_s', unit='W_e',
+                         formal_name='W_s', unit='W$_e$',
                          value=0.0,
                          latex_name=r'$W_s$',
                          info='Turbine Power')
@@ -156,13 +157,13 @@ class Turbine(Module):
             else:
                 self.__logit = False
 
-            # Communicate information
-            #------------------------
-            self.__call_ports(time)
-
             # Evolve one time step
             #---------------------
             time = self.__step(time)
+
+            # Communicate information
+            #------------------------
+            self.__call_ports(time)
 
     def __call_ports(self, time):
 

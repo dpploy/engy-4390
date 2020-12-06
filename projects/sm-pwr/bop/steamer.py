@@ -557,7 +557,7 @@ class Steamer(Module):
         temp_p_avg = (self.primary_inflow_temp + temp_p)/2
         temp_s_avg = (self.secondary_inflow_temp + temp_s)/2
 
-        qdot = - area * 1/one_over_U * (temp_p_avg-temp_s_avg)
+        qdot = - area * 1/one_over_U * (temp_p_avg - temp_s_avg)
         qdot /= 3.45
         #print(qdot)
 
@@ -746,9 +746,10 @@ class Steamer(Module):
         sensible_water = WaterProps(T=(temp_s_in + sat_liq.T)/2 , P=press_s_MPa)
         cp_sensible = sensible_water.Liquid.cp*unit.kj/unit.kg/unit.K
 
-        q_sensible = (sat_liq.T-temp_s_in)*cp_sensible
+        q_sensible = (sat_liq.T - temp_s_in)*cp_sensible
 
         spcf_heat_transfered = - self.heat_sink_pwr/self.secondary_mass_flowrate
+        #print(-self.heat_sink_pwr/self.heat_transfer_area/unit.kilo)
 
         h_v = sat_vap.h * unit.kj/unit.kg
         h_l = sat_liq.h * unit.kj/unit.kg

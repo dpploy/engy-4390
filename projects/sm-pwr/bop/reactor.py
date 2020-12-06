@@ -835,4 +835,3 @@ class SMPWR(Module):
            nusselt = coeff * rey**0.8 * prtl**0.4
 
         return nusselt
-
