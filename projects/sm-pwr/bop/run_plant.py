@@ -40,7 +40,7 @@ def main():
     reactor.end_time = end_time
     reactor.show_time = show_time
 
-    #plant_net.module(reactor)  # Add reactor module to network
+    plant_net.module(reactor)  # Add reactor module to network
 
     # Steamer
 
@@ -92,7 +92,7 @@ def main():
 
     # Balance of Plant Network Connectivity
 
-    #plant_net.connect([reactor, 'coolant-outflow'], [steamer, 'primary-inflow'])
+    plant_net.connect([reactor, 'coolant-outflow'], [steamer, 'primary-inflow'])
     #plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
     #plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
     #plant_net.connect([turbine, 'outflow'], [condenser, 'inflow'])
@@ -205,7 +205,6 @@ def main():
         plt.grid()
         plt.savefig('reactor-coolant-outflow-quality.png', dpi=300)
         '''
-
 
         # Steamer plots
         steamer = plant_net.modules[0]

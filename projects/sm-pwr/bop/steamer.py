@@ -456,9 +456,11 @@ class Steamer(Module):
                 tau_s = vol_s/q_s  # liquid residence time
             elif self.secondary_outflow_quality == 1:
                 #tau_s = 0.85*vol_s/q_s # faster moving gas with higher flow losses
-                tau_s = 0.9*vol_s/q_s # vapor flow acceleration
-            else:
-                tau_s = 0.3*vol_s/q_s # vapor/liquid flow acceleration
+                # this controls how high temp_s will jumpt to
+                tau_s = 0.35*vol_s/q_s # vapor flow acceleration
+            else: # vapor/liquid mix
+                # This factor controls the onset of the transition jump in temp_s
+                tau_s = 0.9*vol_s/q_s # vapor/liquid flow acceleration
         else:
             tau_s = 1*unit.hour
 
@@ -479,7 +481,8 @@ class Steamer(Module):
 
         heat_source_pwr_dens = heat_source_pwr/vol_s
 
-        f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + heat_source_pwr_dens/(self.rho_s*self.cp_s)
+        f_tmp[1] = - 1/tau_s * (temp_s - temp_s_in) + \
+                   heat_source_pwr_dens/(self.rho_s*self.cp_s)
 
         #-----------------------
         # Wrap up
@@ -550,12 +553,15 @@ class Steamer(Module):
         temp_s_avg = (self.secondary_inflow_temp + temp_s)/2
 
         qdot = - area * 1/one_over_U * (temp_p_avg-temp_s_avg)
+        qdot /= 3.45
+        #print(qdot)
 
-        qdot = - 0.95 * 95482.27 * 1665.57
+        #qdot = - 0.95 * 95482.27 * 1665.57
         #qdot = - area * 1/one_over_U * (self.primary_inflow_temp-self.secondary_inflow_temp)
         #print('here',qdot/area)
 
-        qdot = - 0.95 * 95482.27 * 1665.57
+        #qdot = - 0.95 * 95482.27 * 1665.57
+        #print(qdot)
         return qdot
 
     def __heat_transfer_coeff_primary(self, temp_p):
