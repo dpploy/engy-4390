@@ -185,7 +185,7 @@ class Steamer(Module):
                          formal_name='X', unit='',
                          value=self.secondary_outflow_quality,
                          latex_name=r'$\chi$',
-                         info='Steamer Outlet Quality')
+                         info='Steamer Secondary Outflow Quality')
 
         quantities.append(quality)
 
@@ -340,10 +340,12 @@ class Steamer(Module):
             temp = self.secondary_outflow_phase.get_value('temp', msg_time)
             press = self.secondary_outflow_phase.get_value('pressure', msg_time)
             flowrate = self.secondary_outflow_phase.get_value('flowrate', msg_time)
+
             secondary_outflow = dict()
             secondary_outflow['temperature'] = temp
             secondary_outflow['pressure'] = press
             secondary_outflow['mass_flowrate'] = flowrate
+            secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
 
             self.send((msg_time, secondary_outflow), 'secondary-outflow')
 

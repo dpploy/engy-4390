@@ -6,9 +6,9 @@
 
 import logging
 
-import unit
-
 import iapws.iapws97 as steam_table
+
+import unit
 
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
@@ -50,13 +50,13 @@ class Turbine(Module):
         # Domain attributes
 
         # Configuration parameters
- 
+
         self.turbine_efficiency = 0.7784
         # Too low???
         self.vent_pressure = 0.008066866*unit.mega*unit.pascal
         #self.vent_pressure = 1*unit.bar
 
-        self.process_heat_pwr = 25*unit.mega*unit.watt
+        self.process_heat_pwr_max = 25*unit.mega*unit.watt
 
         # Initialization
 
@@ -64,11 +64,14 @@ class Turbine(Module):
         #self.inflow_pressure = 1.0*unit.bar
         self.inflow_pressure = 34*unit.bar
         self.inflow_mass_flowrate = 67*unit.kg/unit.second
+        self.inflow_total_heat_pwr = 0.0*unit.watt
 
         self.outflow_temp = 20+272.15 #K
         self.outflow_pressure = self.vent_pressure
         self.outflow_mass_flowrate = 67*unit.kg/unit.second
         self.outflow_quality = 0.0
+
+        self.process_heat_pwr = 0.0*unit.mega*unit.watt
 
         # Outflow phase history
         quantities = list()
@@ -122,10 +125,18 @@ class Turbine(Module):
         process_heat_pwr = Quantity(name='process-heat',
                          formal_name='Q', unit='W',
                          value=0.0,
-                         latex_name=r'$Q$',
-                         info='Turbine Process Heat Power')
+                         latex_name=r'$\dot{Q}$',
+                         info='Turbine Process Heat Power Provided')
 
         quantities.append(process_heat_pwr)
+
+        rejected_heat_pwr = Quantity(name='rejected-heat',
+                         formal_name='Q', unit='W',
+                         value=0.0,
+                         latex_name=r'$\dot{Q}$',
+                         info='Turbine Rejected Heat Power')
+
+        quantities.append(rejected_heat_pwr)
 
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
@@ -184,12 +195,13 @@ class Turbine(Module):
             self.inflow_temp = inflow['temperature']
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
+            self.inflow_total_heat_pwr = inflow['total_heat_power']
 
         # Interactions in the outflow port
         #-----------------------------------------
         # One way "to" outflow
 
-        # Send to 
+        # Send to
         if self.get_port('outflow').connected_port:
 
             msg_time = self.recv('outflow')
@@ -212,12 +224,10 @@ class Turbine(Module):
             msg_time = self.recv('process-heat')
 
             temp = self.outflow_phase.get_value('temp', msg_time)
-            outflow = dict()
-            outflow['temperature'] = temp
-            outflow['pressure'] = self.vent_pressure
-            outflow['mass_flowrate'] = self.outflow_mass_flowrate
 
-            self.send((msg_time, outflow), 'process-heat')
+            self.process_heat_pwr = min(self.inflow_total_heat_pwr, self.process_heat_pwr_max)
+
+            self.send((msg_time, self.process_heat_pwr), 'process-heat')
 
     def __step(self, time=0.0):
 
@@ -226,7 +236,7 @@ class Turbine(Module):
         p_in_max = 22.064*unit.mega*unit.pascal
         assert p_in_min <= self.inflow_pressure <= p_in_max
 
-        assert 20+273.15 <= self.inflow_temp <= 800+273.15
+        assert 19+273.15 <= self.inflow_temp <= 800+273.15, 'inflow temp = %r'%self.inflow_temp
 
         # Get state values
         p_in_MPa = self.inflow_pressure/unit.mega/unit.pascal
@@ -308,5 +318,7 @@ class Turbine(Module):
 
         self.state_phase.set_value('power', power*unit.kilo*unit.watt, time)
         self.state_phase.set_value('process-heat', self.process_heat_pwr, time)
+        rejected_heat_pwr = self.inflow_total_heat_pwr - self.process_heat_pwr
+        self.state_phase.set_value('rejected-heat', rejected_heat_pwr, time)
 
         return time

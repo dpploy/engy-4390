@@ -62,15 +62,33 @@ class WaterHeater(Module):
         self.inflow_temp = (20+273)*unit.kelvin
         self.inflow_pressure = 34*unit.bar
         self.inflow_mass_flowrate = 67*unit.kg/unit.second
+        self.external_heat_source_rate = 0*unit.watt # external
 
         self.outflow_temp = (20+273.15)*unit.kelvin
         #self.outflow_temp_ss = 422 #k
         self.outflow_pressure = 34*unit.bar
-        self.outflow_mass_flowrate = 67*unit.kg/unit.second
+        self.outflow_mass_flowrate_normal = 67*unit.kg/unit.second
+        self.outflow_mass_flowrate = self.outflow_mass_flowrate_normal
 
-        self.electric_heat_source_rate = 25*unit.mega*unit.watt
+        self.outflow_mass_flowrate_malfunction = 67*unit.kg/unit.second
+        self.outflow_temp_loss_malfunction = 0*unit.K
 
-        self.external_heat_source_rate = 0*unit.watt # external
+        self.electric_heat_source_rate = 0*unit.mega*unit.watt
+
+
+        # Inflow phase history
+        quantities = list()
+
+        heat = Quantity(name='external-heat',
+                         formal_name='qdot', unit='W',
+                         value=self.external_heat_source_rate,
+                         latex_name=r'$\dot{Q}$',
+                         info='Water Heater External Heating Power')
+
+        quantities.append(heat)
+
+        self.inflow_phase = Phase(time_stamp=self.initial_time,
+                                  time_unit='s', quantities=quantities)
 
         # Outflow phase history
         quantities = list()
@@ -92,12 +110,13 @@ class WaterHeater(Module):
         quantities.append(press)
 
         flowrate = Quantity(name='flowrate',
-                         formal_name='P', unit='kg/s',
+                         formal_name='m', unit='kg/s',
                          value=self.outflow_mass_flowrate,
-                         latex_name=r'$P$',
+                         latex_name=r'$\dot{m}$',
                          info='Water Heater Outflow Mass Flowrate')
 
         quantities.append(flowrate)
+
 
         self.outflow_phase = Phase(time_stamp=self.initial_time,
                                    time_unit='s', quantities=quantities)
@@ -117,12 +136,6 @@ class WaterHeater(Module):
             print_time_step = self.time_step
 
         while time <= self.end_time:
-
-            # Failure scenarios
-            if 10*unit.minute < time < 12*unit.minute:
-                self.inflow_mass_flowrate = 57*unit.kg/unit.second
-            else:
-                self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
             if self.show_time[0] and \
                (print_time <= time < print_time+print_time_step):
@@ -218,8 +231,18 @@ class WaterHeater(Module):
 
         # Update state variables
         outflow = self.outflow_phase.get_row(time)
+        inflow = self.inflow_phase.get_row(time)
 
         time += self.time_step
+
+        #-------------------------------------------------------------------------
+        # Malfunction scenario
+        if 10*unit.minute < time < 12*unit.minute:
+            self.outflow_mass_flowrate = self.outflow_mass_flowrate_malfunction
+            temp -= self.outflow_temp_loss_malfunction
+        else:
+            self.outflow_mass_flowrate = self.outflow_mass_flowrate_normal
+        #-------------------------------------------------------------------------
 
         water = steam_table(T=temp, P=self.outflow_pressure/unit.mega/unit.pascal)
         assert water.phase != 'Vapour'
@@ -229,7 +252,8 @@ class WaterHeater(Module):
         self.outflow_phase.set_value('pressure', self.outflow_pressure, time)
         self.outflow_phase.set_value('flowrate', self.outflow_mass_flowrate, time)
 
-        #print(temp-273.15,self.inflow_temp-273.15)
+        self.inflow_phase.add_row(time, inflow)
+        self.inflow_phase.set_value('external-heat', self.external_heat_source_rate, time)
 
         return time
 
@@ -260,7 +284,7 @@ class WaterHeater(Module):
         assert water.phase != 'Vapour'
 
         rho = water.rho
-        cp = water.cp*unit.kj/unit.kg/unit.K
+        cp = water.Liquid.cp*unit.kj/unit.kg/unit.K
         vol = self.volume
 
         temp_in = self.inflow_temp
@@ -270,7 +294,9 @@ class WaterHeater(Module):
         #-----------------------
         # calculations
         #-----------------------
-        heat_source_pwr = self.external_heat_source_rate + self.electric_heat_source_rate
+        heat_source_pwr = self.external_heat_source_rate + \
+                          self.electric_heat_source_rate
+
         heat_source_pwr_dens = heat_source_pwr/vol
 
         f_tmp[0] = - 1/tau * (temp - temp_in) + 1./rho/cp * heat_source_pwr_dens
