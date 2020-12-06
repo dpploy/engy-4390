@@ -207,8 +207,8 @@ def main():
         '''
 
         # Steamer plots
-        steamer = plant_net.modules[0]
-        #steamer = plant_net.modules[1]
+        reactor = plant_net.modules[0]
+        steamer = plant_net.modules[1]
 
         (quant, time_unit) = steamer.primary_outflow_phase.get_quantity_history('temp')
 
