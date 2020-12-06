@@ -55,7 +55,8 @@ class Turbine(Module):
         # Too low???
         self.vent_pressure = 0.008066866*unit.mega*unit.pascal
         #self.vent_pressure = 1*unit.bar
-        self.process_heat_fraction = .01 #1%
+
+        self.process_heat_pwr = 25*unit.mega*unit.watt
 
         # Initialization
 
@@ -118,13 +119,13 @@ class Turbine(Module):
 
         quantities.append(power)
 
-        process_heat = Quantity(name='process-heat',
-                         formal_name='W_s', unit='W_e',
+        process_heat_pwr = Quantity(name='process-heat',
+                         formal_name='Q', unit='W',
                          value=0.0,
-                         latex_name=r'$W_s$',
+                         latex_name=r'$Q$',
                          info='Turbine Process Heat Power')
 
-        quantities.append(process_heat)
+        quantities.append(process_heat_pwr)
 
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
@@ -290,9 +291,6 @@ class Turbine(Module):
 
             power = self.inflow_mass_flowrate * w_real
 
-        process_heat = power*self.process_heat_fraction
-        power *= 1-self.process_heat_fraction
-
         # Update state variables
         turbine_outflow = self.outflow_phase.get_row(time)
         turbine = self.state_phase.get_row(time)
@@ -309,6 +307,6 @@ class Turbine(Module):
         self.state_phase.add_row(time, turbine)
 
         self.state_phase.set_value('power', power*unit.kilo*unit.watt, time)
-        self.state_phase.set_value('process-heat', process_heat, time)
+        self.state_phase.set_value('process-heat', self.process_heat_pwr, time)
 
         return time

@@ -127,16 +127,16 @@ def main():
         plt.grid()
         plt.savefig('reactor-delayed-neutrons-cc.png', dpi=300)
 
+        '''
         (quant, time_unit) = reactor.coolant_outflow_phase.get_quantity_history('temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
                    y_label=quant.latex_name+' [C]')
 
-        '''
         plt.grid()
         plt.savefig('reactor-coolant-outflow-temp.png', dpi=300)
 
-        (quant, time_unit) = reactor.reactor_phase.get_quantity_history('fuel-temp')
+        (quant, time_unit) = reactor.state_phase.get_quantity_history('fuel-temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
                    y_label=quant.latex_name+' [C]')
