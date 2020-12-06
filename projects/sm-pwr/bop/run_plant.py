@@ -23,9 +23,9 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 20*unit.minute
+    end_time = 15*unit.minute
     time_step = 1.5*unit.second
-    show_time = (True, 2*unit.minute)
+    show_time = (True, 5*unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -132,6 +132,7 @@ def main():
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
                    y_label=quant.latex_name+' [C]')
 
+        '''
         plt.grid()
         plt.savefig('reactor-coolant-outflow-temp.png', dpi=300)
 
@@ -141,7 +142,6 @@ def main():
                    y_label=quant.latex_name+' [C]')
         plt.grid()
         plt.savefig('reactor-fuel-temp.png', dpi=300)
-        '''
 
         (quant, time_unit) = reactor.state_phase.get_quantity_history('power')
 
@@ -303,6 +303,13 @@ def main():
                    y_label=quant.latex_name+' [C]')
         plt.grid()
         plt.savefig('water_heater-outflow-temp.png', dpi=300)
+
+        (quant, time_unit) = water_heater.outflow_phase.get_quantity_history('flowrate')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+r' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('water_heater-mass-flowrate.png', dpi=300)
 
     plant.close()  # Properly shutdow plant
 
