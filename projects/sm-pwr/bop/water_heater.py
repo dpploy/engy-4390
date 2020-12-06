@@ -6,13 +6,12 @@
 
 import logging
 
-import unit
+from iapws import IAPWS97 as steam_table
 
-import math
 from scipy.integrate import odeint
 import numpy as np
 
-from iapws import IAPWS97 as steam_table
+import unit
 
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
@@ -70,8 +69,8 @@ class WaterHeater(Module):
         self.outflow_mass_flowrate_normal = 67*unit.kg/unit.second
         self.outflow_mass_flowrate = self.outflow_mass_flowrate_normal
 
-        self.outflow_mass_flowrate_malfunction = 67*unit.kg/unit.second
-        self.outflow_temp_loss_malfunction = 0*unit.K
+        self.outflow_mass_flowrate_malfunction = 47*unit.kg/unit.second
+        self.outflow_temp_loss_malfunction = 15*unit.K
 
         self.electric_heat_source_rate = 0*unit.mega*unit.watt
 
@@ -172,10 +171,20 @@ class WaterHeater(Module):
 
             temp = self.outflow_phase.get_value('temp', msg_time)
             pressure = self.outflow_phase.get_value('pressure', msg_time)
+
+            #-----------------------------------------------------------------
+            # Malfunction scenario
+            if 10*unit.minute < time < 12*unit.minute:
+                outflow_mass_flowrate = self.outflow_mass_flowrate_malfunction
+                temp -= self.outflow_temp_loss_malfunction
+            else:
+                outflow_mass_flowrate = self.outflow_mass_flowrate_normal
+            #-----------------------------------------------------------------
+
             outflow = dict()
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
-            outflow['mass_flowrate'] = self.outflow_mass_flowrate
+            outflow['mass_flowrate'] = outflow_mass_flowrate
             self.send((msg_time, outflow), 'outflow')
 
         # Interactions in the inflow port
@@ -234,15 +243,6 @@ class WaterHeater(Module):
         inflow = self.inflow_phase.get_row(time)
 
         time += self.time_step
-
-        #-------------------------------------------------------------------------
-        # Malfunction scenario
-        if 10*unit.minute < time < 12*unit.minute:
-            self.outflow_mass_flowrate = self.outflow_mass_flowrate_malfunction
-            temp -= self.outflow_temp_loss_malfunction
-        else:
-            self.outflow_mass_flowrate = self.outflow_mass_flowrate_normal
-        #-------------------------------------------------------------------------
 
         water = steam_table(T=temp, P=self.outflow_pressure/unit.mega/unit.pascal)
         assert water.phase != 'Vapour'
