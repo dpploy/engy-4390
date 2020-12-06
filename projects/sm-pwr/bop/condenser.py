@@ -60,7 +60,7 @@ class Condenser(Module):
         self.inflow_pressure = 0.008066866*unit.mega*unit.pascal
         self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
-        self.outflow_temp = 40 + 273.15
+        self.outflow_temp = 50 + 273.15
         self.outflow_pressure = 34.0*unit.bar
         self.outflow_mass_flowrate = self.inflow_mass_flowrate
 

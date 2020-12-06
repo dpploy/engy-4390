@@ -55,7 +55,7 @@ class WaterHeater(Module):
 
         # Configuration parameters
 
-        self.volume = 10*unit.meter**3
+        self.volume = 5*unit.meter**3
 
         # Initialization
 
@@ -68,7 +68,7 @@ class WaterHeater(Module):
         self.outflow_pressure = 34*unit.bar
         self.outflow_mass_flowrate = 67*unit.kg/unit.second
 
-        self.electric_heat_source_rate = 10*unit.kilo*unit.watt
+        self.electric_heat_source_rate = 25*unit.mega*unit.watt
 
         self.external_heat_source_rate = 0*unit.watt # external
 
@@ -91,6 +91,14 @@ class WaterHeater(Module):
 
         quantities.append(press)
 
+        flowrate = Quantity(name='flowrate',
+                         formal_name='P', unit='kg/s',
+                         value=self.outflow_mass_flowrate,
+                         latex_name=r'$P$',
+                         info='Water Heater Outflow Mass Flowrate')
+
+        quantities.append(flowrate)
+
         self.outflow_phase = Phase(time_stamp=self.initial_time,
                                    time_unit='s', quantities=quantities)
 
@@ -109,6 +117,12 @@ class WaterHeater(Module):
             print_time_step = self.time_step
 
         while time <= self.end_time:
+
+            # Failure scenarios
+            if 10*unit.minute < time < 12*unit.minute:
+                self.inflow_mass_flowrate = 57*unit.kg/unit.second
+            else:
+                self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
             if self.show_time[0] and \
                (print_time <= time < print_time+print_time_step):
@@ -213,6 +227,9 @@ class WaterHeater(Module):
         self.outflow_phase.add_row(time, outflow)
         self.outflow_phase.set_value('temp', temp, time)
         self.outflow_phase.set_value('pressure', self.outflow_pressure, time)
+        self.outflow_phase.set_value('flowrate', self.outflow_mass_flowrate, time)
+
+        #print(temp-273.15,self.inflow_temp-273.15)
 
         return time
 
