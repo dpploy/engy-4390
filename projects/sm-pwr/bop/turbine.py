@@ -124,7 +124,7 @@ class Turbine(Module):
                          info='Turbine Process Heat Power')
 
         quantities.append(process_heat)
-        
+
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
 

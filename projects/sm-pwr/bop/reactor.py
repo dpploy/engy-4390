@@ -141,7 +141,8 @@ class SMPWR(Module):
         self.temp_c_0 = self.temp_o
 
         #self.inflow_cool_temp = self.temp_o
-        self.inflow_cool_temp = unit.convert_temperature(497,'F','K')
+        #self.inflow_cool_temp = unit.convert_temperature(497,'F','K')
+        self.inflow_cool_temp = unit.convert_temperature(20,'C','K')
 
         # Coolant outflow phase history
         quantities = list()
@@ -296,14 +297,14 @@ class SMPWR(Module):
             else:
                 self.__logit = False
 
-            # Communicate information
-            #------------------------
-            self.__call_ports(time)
-
             # Evolve one time step
             #---------------------
 
             time = self.__step(time)
+
+            # Communicate information
+            #------------------------
+            self.__call_ports(time)
 
     def __call_ports(self, time):
 

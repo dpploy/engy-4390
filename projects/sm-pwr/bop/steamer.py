@@ -103,13 +103,18 @@ class Steamer(Module):
         self.tube_bundle_pitch_ratio = 1.5  # st/sl
 
         # Initialization
-        self.primary_inflow_temp = (320.9+273.15)*unit.kelvin
+        #self.primary_inflow_temp = (320.9+273.15)*unit.kelvin
+        self.primary_inflow_temp = (20+273.15)*unit.kelvin
+
         self.primary_pressure = 127.6*unit.bar
-        self.primary_mass_flowrate = 587.15*unit.kg/unit.second
+
+        #self.primary_mass_flowrate = 587.15*unit.kg/unit.second
+        self.primary_mass_flowrate = 0*unit.kg/unit.second
 
         self.primary_outflow_temp = self.primary_inflow_temp #- 2*unit.K
 
-        self.secondary_inflow_temp = (149+273.15)*unit.kelvin
+        #self.secondary_inflow_temp = (149+273.15)*unit.kelvin
+        self.secondary_inflow_temp = (20+273.15)*unit.kelvin
 
         self.secondary_pressure = 34*unit.bar
         self.secondary_mass_flowrate = 67*unit.kg/unit.second
@@ -261,14 +266,14 @@ class Steamer(Module):
             else:
                 self.__logit = False
 
-            # Communicate information
-            #------------------------
-            self.__call_ports(time)
-
             # Evolve one time step
             #---------------------
 
             time = self.__step(time)
+
+            # Communicate information
+            #------------------------
+            self.__call_ports(time)
 
     def __call_ports(self, time):
 
