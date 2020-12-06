@@ -23,9 +23,9 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 8*unit.minute
+    end_time = 20*unit.minute
     time_step = 1.5*unit.second
-    show_time = (True, 5*unit.minute)
+    show_time = (True, 2*unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -96,7 +96,7 @@ def main():
     plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
     plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
     plant_net.connect([turbine, 'outflow'], [condenser, 'inflow'])
-    #plant_net.connect([turbine, 'process-heat'], [water_heater, 'heat'])
+    #plant_net.connect([turbine, 'process-heat'], [water_heater, 'external-heat'])
     plant_net.connect([condenser, 'outflow'], [water_heater, 'inflow'])
     plant_net.connect([water_heater, 'outflow'], [steamer, 'secondary-inflow'])
 
@@ -276,6 +276,13 @@ def main():
                    y_label=quant.latex_name+' [M'+quant.unit+']')
         plt.grid()
         plt.savefig('turbine-power.png', dpi=300)
+
+        (quant, time_unit) = turbine.outflow_phase.get_quantity_history('temp')
+
+        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
+                   y_label=quant.latex_name+' [C]')
+        plt.grid()
+        plt.savefig('turbine-outflow-temp.png', dpi=300)
 
         # Condenser plots
         condenser = plant_net.modules[3]

@@ -356,7 +356,7 @@ class Steamer(Module):
 
         t_interval_sec = np.linspace(time, time+self.time_step, num=2)
 
-        max_n_steps_per_time_step = 1000 # max number of nonlinear algebraic solver
+        max_n_steps_per_time_step = 1500 # max number of nonlinear algebraic solver
                                          # iterations per time step
 
         (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
@@ -540,7 +540,7 @@ class Steamer(Module):
         fouling = 0.0003 * unit.F*unit.ft**2*unit.hour/unit.Btu
 
         # Secondary side based heat transfer resistance
-        if h_s > 0:
+        if h_s > 1:
             one_over_U = 1.0/h_p * area_outer/area_inner + \
             (radius_outer-radius_inner)/therm_cond_wall * area_outer/area_mean + \
             fouling + \
@@ -559,7 +559,7 @@ class Steamer(Module):
 
         qdot = - area * 1/one_over_U * (temp_p_avg - temp_s_avg)
         qdot /= 3.45
-        #print(qdot)
+        #print('qdot=',qdot/area/unit.kilo,'UA=',area/one_over_U,'DT=',temp_p_avg-temp_s_avg)
 
         #qdot = - 0.95 * 95482.27 * 1665.57
         #qdot = - area * 1/one_over_U * (self.primary_inflow_temp-self.secondary_inflow_temp)
@@ -695,12 +695,14 @@ class Steamer(Module):
         #assert temp_s_w >= temp_s, 'temp_s = %r, temp_s_w = %r'%(temp_s,temp_s_w)
         #print('saturated temp = ', temp_s_sat)
 
-        if (temp_s_w - temp_s_sat) > 0.0: # nucleate boiling
+        if (temp_s_w - temp_s_sat) > 5: # nucleate boiling (allow for development)
         # Jens and Lottes correlation for subcooled/saturated nucleate boiling
         # 3.5 <= P <= 14 MPa
             q2prime = ((temp_s_w - temp_s_sat)*math.exp(self.secondary_pressure/unit.mega/unit.pascal/6.2)/0.79)**4
             h_s = q2prime/(temp_s_w - temp_s_sat)
             self.nusselt_s = h_s * 2*radius_inner / self.k_s
+            #print('q2prime=',q2prime/unit.kilo,'DT=',temp_s_w-temp_s_sat)
+            #print('h_s JL=',h_s)
         else: # single phase transfer
             water_s_w = WaterProps(T=temp_s_w, P=press_s_MPa) # @ wall
             assert water_s_w.phase != 'Two phases' # sanity check
@@ -749,13 +751,13 @@ class Steamer(Module):
         q_sensible = (sat_liq.T - temp_s_in)*cp_sensible
 
         spcf_heat_transfered = - self.heat_sink_pwr/self.secondary_mass_flowrate
-        #print(-self.heat_sink_pwr/self.heat_transfer_area/unit.kilo)
+        #print("q''[kW/m2]=",-self.heat_sink_pwr/self.heat_transfer_area/unit.kilo)
 
         h_v = sat_vap.h * unit.kj/unit.kg
         h_l = sat_liq.h * unit.kj/unit.kg
         h_vap = h_v - h_l
 
-        if spcf_heat_transfered < q_sensible and temp_s < sat.T: # subcooled
+        if spcf_heat_transfered < q_sensible and temp_s < sat.T + 30: # subcooled
             self.secondary_outflow_quality = 0
         elif spcf_heat_transfered > q_sensible + h_vap and temp_s > sat.T: # superheated
             self.secondary_outflow_quality = 1

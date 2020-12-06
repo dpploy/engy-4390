@@ -39,7 +39,7 @@ class WaterHeater(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['inflow', 'outflow', 'heat']
+        self.port_names_expected = ['inflow', 'outflow', 'external-heat']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -55,12 +55,12 @@ class WaterHeater(Module):
 
         # Configuration parameters
 
-        self.volume = 15*unit.meter**3
+        self.volume = 10*unit.meter**3
 
         # Initialization
 
         self.inflow_temp = (20+273)*unit.kelvin
-        self.inflow_pressure = 1*unit.bar
+        self.inflow_pressure = 34*unit.bar
         self.inflow_mass_flowrate = 67*unit.kg/unit.second
 
         self.outflow_temp = (20+273.15)*unit.kelvin
@@ -68,7 +68,9 @@ class WaterHeater(Module):
         self.outflow_pressure = 34*unit.bar
         self.outflow_mass_flowrate = 67*unit.kg/unit.second
 
-        self.heat_source_rate = 0*unit.watt
+        self.electric_heat_source_rate = 10*unit.kilo*unit.watt
+
+        self.external_heat_source_rate = 0*unit.watt # external
 
         # Outflow phase history
         quantities = list()
@@ -133,7 +135,7 @@ class WaterHeater(Module):
 
         # Interactions in the feed water outflow port
         #-----------------------------------------
-        # one way "to" steam geneator
+        # one way "to" outflow
 
         # send to
         if self.get_port('outflow').connected_port:
@@ -165,19 +167,19 @@ class WaterHeater(Module):
             self.inflow_pressure = inflow['pressure']
             self.inflow_mass_flowrate = inflow['mass_flowrate']
 
-        # Interactions in the heat port
+        # Interactions in the external-heat port
         #----------------------------------------
-        # one way "from" heat
+        # one way "from" external-heat
 
         # receive from
-        if self.get_port('heat').connected_port:
+        if self.get_port('external-heat').connected_port:
 
-            self.send(time, 'heat')
+            self.send(time, 'external-heat')
 
-            (check_time, heat) = self.recv('heat')
+            (check_time, heat) = self.recv('external-heat')
             assert abs(check_time-time) <= 1e-6
 
-            self.heat_source_rate = heat
+            self.external_heat_source_rate = heat
 
     def __step(self, time=0.0):
 
@@ -251,8 +253,9 @@ class WaterHeater(Module):
         #-----------------------
         # calculations
         #-----------------------
-        heat_source = self.heat_source_rate
+        heat_source_pwr = self.external_heat_source_rate + self.electric_heat_source_rate
+        heat_source_pwr_dens = heat_source_pwr/vol
 
-        f_tmp[0] = - 1/tau * (temp - temp_in) + 1./rho/cp/vol * heat_source
+        f_tmp[0] = - 1/tau * (temp - temp_in) + 1./rho/cp * heat_source_pwr_dens
 
         return f_tmp
