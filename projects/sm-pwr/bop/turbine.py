@@ -56,8 +56,6 @@ class Turbine(Module):
         self.vent_pressure = 0.008066866*unit.mega*unit.pascal
         #self.vent_pressure = 1*unit.bar
 
-        self.process_heat_pwr_max = 25*unit.mega*unit.watt
-
         # Initialization
 
         self.inflow_temp = 20+273.15 #K
@@ -71,7 +69,8 @@ class Turbine(Module):
         self.outflow_mass_flowrate = 67*unit.kg/unit.second
         self.outflow_quality = 0.0
 
-        self.process_heat_pwr = 0.0*unit.mega*unit.watt
+        self.rejected_heat_pwr = 0.0*unit.mega*unit.watt
+        self.turbine_power = 0.0*unit.mega*unit.watt
 
         # Outflow phase history
         quantities = list()
@@ -121,14 +120,6 @@ class Turbine(Module):
                          info='Turbine Power')
 
         quantities.append(power)
-
-        process_heat_pwr = Quantity(name='process-heat',
-                         formal_name='Q', unit='W',
-                         value=0.0,
-                         latex_name=r'$\dot{Q}$',
-                         info='Turbine Process Heat Power Provided')
-
-        quantities.append(process_heat_pwr)
 
         rejected_heat_pwr = Quantity(name='rejected-heat',
                          formal_name='Q', unit='W',
@@ -223,11 +214,7 @@ class Turbine(Module):
 
             msg_time = self.recv('process-heat')
 
-            temp = self.outflow_phase.get_value('temp', msg_time)
-
-            self.process_heat_pwr = min(self.inflow_total_heat_pwr, self.process_heat_pwr_max)
-
-            self.send((msg_time, self.process_heat_pwr), 'process-heat')
+            self.send((msg_time, self.rejected_heat_pwr), 'process-heat')
 
     def __step(self, time=0.0):
 
@@ -245,7 +232,7 @@ class Turbine(Module):
         # If entering stream is not steam (valve closed scenario)
         if self.inflow_temp < steam_table._TSat_P(p_in_MPa):
             t_runoff = self.inflow_temp
-            power = 0
+            turbine_power = 0
             quality = 0
 
         else:
@@ -299,7 +286,7 @@ class Turbine(Module):
                 quality = (h_out_real - bubl_enthalpy)/(dew_enthalpy - bubl_enthalpy)
                 t_runoff = steam_table._Region4(p_out_MPa, quality)['T']
 
-            power = self.inflow_mass_flowrate * w_real
+            turbine_power = self.inflow_mass_flowrate * w_real * unit.kilo*unit.watt
 
         # Update state variables
         turbine_outflow = self.outflow_phase.get_row(time)
@@ -316,9 +303,8 @@ class Turbine(Module):
 
         self.state_phase.add_row(time, turbine)
 
-        self.state_phase.set_value('power', power*unit.kilo*unit.watt, time)
-        self.state_phase.set_value('process-heat', self.process_heat_pwr, time)
-        rejected_heat_pwr = self.inflow_total_heat_pwr - self.process_heat_pwr
-        self.state_phase.set_value('rejected-heat', rejected_heat_pwr, time)
+        self.state_phase.set_value('power', turbine_power, time)
+        self.rejected_heat_pwr = self.inflow_total_heat_pwr - turbine_power
+        self.state_phase.set_value('rejected-heat', self.rejected_heat_pwr, time)
 
         return time
