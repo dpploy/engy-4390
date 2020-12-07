@@ -72,7 +72,11 @@ class WaterHeater(Module):
         self.outflow_mass_flowrate_malfunction = 47*unit.kg/unit.second
         self.outflow_temp_loss_malfunction = 15*unit.K
 
+        self.heat_source_rate_needed = 25*unit.mega*unit.watt
+
         self.electric_heat_source_rate = 0*unit.mega*unit.watt
+
+        self.outflow_rejected_heat_pwr = 0.0*unit.mega*unit.watt
 
 
         # Inflow phase history
@@ -113,6 +117,14 @@ class WaterHeater(Module):
                          value=self.outflow_mass_flowrate,
                          latex_name=r'$\dot{m}$',
                          info='Water Heater Outflow Mass Flowrate')
+
+        quantities.append(flowrate)
+
+        flowrate = Quantity(name='rejected-heat',
+                         formal_name='m', unit='W',
+                         value=self.outflow_mass_flowrate,
+                         latex_name=r'$\dot{Q}$',
+                         info='Water Heater Rejected Heat')
 
         quantities.append(flowrate)
 
@@ -174,7 +186,7 @@ class WaterHeater(Module):
 
             #-----------------------------------------------------------------
             # Malfunction scenario
-            if 10*unit.minute < time < 12*unit.minute:
+            if 20*unit.minute < time < 25*unit.minute:
                 outflow_mass_flowrate = self.outflow_mass_flowrate_malfunction
                 temp -= self.outflow_temp_loss_malfunction
             else:
@@ -212,10 +224,11 @@ class WaterHeater(Module):
 
             self.send(time, 'external-heat')
 
-            (check_time, heat) = self.recv('external-heat')
+            (check_time, heat_pwr) = self.recv('external-heat')
             assert abs(check_time-time) <= 1e-6
 
-            self.external_heat_source_rate = heat
+            self.external_heat_source_rate = min(heat_pwr, self.heat_source_rate_needed)
+            self.outflow_rejected_heat_pwr = max(heat_pwr - self.heat_source_rate_needed, 0.0)
 
     def __step(self, time=0.0):
 
@@ -251,6 +264,7 @@ class WaterHeater(Module):
         self.outflow_phase.set_value('temp', temp, time)
         self.outflow_phase.set_value('pressure', self.outflow_pressure, time)
         self.outflow_phase.set_value('flowrate', self.outflow_mass_flowrate, time)
+        self.outflow_phase.set_value('rejected-heat', self.outflow_rejected_heat_pwr, time)
 
         self.inflow_phase.add_row(time, inflow)
         self.inflow_phase.set_value('external-heat', self.external_heat_source_rate, time)

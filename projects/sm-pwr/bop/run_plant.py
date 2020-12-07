@@ -23,7 +23,7 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 15*unit.minute
+    end_time = 45*unit.minute
     time_step = 1.5*unit.second
     show_time = (True, 5*unit.minute)
 
@@ -288,13 +288,6 @@ def main():
         plt.grid()
         plt.savefig('turbine-outflow-temp.png', dpi=300)
 
-        (quant, time_unit) = turbine.state_phase.get_quantity_history('process-heat')
-
-        quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.mega, x_label='Time [m]',
-                   y_label=quant.latex_name+' [M'+quant.unit+']')
-        plt.grid()
-        plt.savefig('turbine-process-heat.png', dpi=300)
-
         (quant, time_unit) = turbine.state_phase.get_quantity_history('rejected-heat')
 
         quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.mega, x_label='Time [m]',
@@ -335,6 +328,13 @@ def main():
                    y_label=quant.latex_name+r' [M'+quant.unit+']')
         plt.grid()
         plt.savefig('water_heater-external-heat.png', dpi=300)
+
+        (quant, time_unit) = water_heater.outflow_phase.get_quantity_history('rejected-heat')
+
+        quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.mega, x_label='Time [m]',
+                   y_label=quant.latex_name+r' [M'+quant.unit+']')
+        plt.grid()
+        plt.savefig('water_heater-rejected-heat.png', dpi=300)
 
     plant.close()  # Properly shutdow plant
 

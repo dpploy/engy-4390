@@ -137,12 +137,12 @@ class SMPWR(Module):
         beta_vec = np.array(self.species_rel_yield, dtype=np.float64) * self.beta
         c_vec_0 = beta_vec/lambda_vec/self.gen_time * self.n_0
 
-        self.temp_f_0 = self.temp_o
-        self.temp_c_0 = self.temp_o
+        self.temp_f_0 = self.temp_o + 20*unit.K
+        self.temp_c_0 = self.temp_o + 20*unit.K
 
         #self.inflow_cool_temp = self.temp_o
         #self.inflow_cool_temp = unit.convert_temperature(497,'F','K')
-        self.inflow_cool_temp = unit.convert_temperature(20,'C','K')
+        self.inflow_cool_temp = unit.convert_temperature(40,'C','K')
 
         # Coolant outflow phase history
         quantities = list()
