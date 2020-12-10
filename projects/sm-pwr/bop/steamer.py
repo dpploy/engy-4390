@@ -51,7 +51,7 @@ class Steamer(Module):
 
     """
 
-    def __init__(self):
+    def __init__(self, primary_inflow_temp=20+273.15, secondary_inflow_temp=20+273.15):
         """Constructor.
 
         Parameters
@@ -103,18 +103,15 @@ class Steamer(Module):
         self.tube_bundle_pitch_ratio = 1.5  # st/sl
 
         # Initialization
-        #self.primary_inflow_temp = (320.9+273.15)*unit.kelvin
-        self.primary_inflow_temp = (20+273.15)*unit.kelvin
+        self.primary_inflow_temp = primary_inflow_temp
 
         self.primary_pressure = 127.6*unit.bar
 
-        #self.primary_mass_flowrate = 587.15*unit.kg/unit.second
-        self.primary_mass_flowrate = 0*unit.kg/unit.second
+        self.primary_mass_flowrate = 4.66e6*unit.lb/unit.hour
 
         self.primary_outflow_temp = self.primary_inflow_temp #- 2*unit.K
 
-        #self.secondary_inflow_temp = (149+273.15)*unit.kelvin
-        self.secondary_inflow_temp = (20+273.15)*unit.kelvin
+        self.secondary_inflow_temp = secondary_inflow_temp
 
         self.secondary_pressure = 34*unit.bar
         self.secondary_mass_flowrate = 67*unit.kg/unit.second
@@ -140,6 +137,8 @@ class Steamer(Module):
         self.rey_s = 0.0
         self.nusselt_s = 0.0
 
+        self.heat_sink_pwr = 0.0
+
         # Primary outflow phase history
         quantities = list()
 
@@ -150,6 +149,14 @@ class Steamer(Module):
                         info='Steamer Primary Outflow Temperature')
 
         quantities.append(temp)
+
+        flowrate = Quantity(name='flowrate',
+                        formal_name='mdot', unit='kg/s',
+                        value=self.primary_mass_flowrate,
+                        latex_name=r'$\dot{m}_1$',
+                        info='Steamer Primary Mass Flowrate')
+
+        quantities.append(flowrate)
 
         self.primary_outflow_phase = Phase(time_stamp=self.initial_time,
                                            time_unit='s', quantities=quantities)
@@ -382,6 +389,7 @@ class Steamer(Module):
 
         self.primary_outflow_phase.add_row(time, primary_outflow)
         self.primary_outflow_phase.set_value('temp', temp_p, time)
+        self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
 
         self.secondary_outflow_phase.add_row(time, secondary_outflow)
         self.secondary_outflow_phase.set_value('temp', temp_s, time)
@@ -560,15 +568,12 @@ class Steamer(Module):
         temp_s_avg = (self.secondary_inflow_temp + temp_s)/2
 
         qdot = - area * 1/one_over_U * (temp_p_avg - temp_s_avg)
-        qdot /= 3.45
-        #print('qdot=',qdot/area/unit.kilo,'UA=',area/one_over_U,'DT=',temp_p_avg-temp_s_avg)
 
-        #qdot = - 0.95 * 95482.27 * 1665.57
-        #qdot = - area * 1/one_over_U * (self.primary_inflow_temp-self.secondary_inflow_temp)
-        #print('here',qdot/area)
+        qdot /= 2.61 # calibration factor for correlation to work with NuScale specs
 
-        #qdot = - 0.95 * 95482.27 * 1665.57
-        #print(qdot)
+        #print(qdot, -95482.27 * 1665.57)
+        #qdot = - 95482.27 * 1665.57
+
         return qdot
 
     def __heat_transfer_coeff_primary(self, temp_p):
@@ -671,11 +676,17 @@ class Steamer(Module):
         else:
             qual = self.secondary_outflow_quality
             w_sat = WaterProps(P=press_s_MPa, x=qual)
-            mass_frac_v = w_sat.Vapor.rho / (w_sat.Liquid.rho + w_sat.Vapor.rho)
-            self.rho_s = (1-mass_frac_v)*w_sat.Liquid.rho + mass_frac_v*w_sat.Vapor.rho
-            cp_s = (1-mass_frac_v)*w_sat.Liquid.cp + mass_frac_v*w_sat.Vapor.cp
-            self.mu_s = (1-mass_frac_v)*w_sat.Liquid.mu + mass_frac_v*w_sat.Vapor.mu
-            self.k_s = (1-mass_frac_v)*w_sat.Liquid.k + mass_frac_v*w_sat.Vapor.k
+            #mass_frac_v = w_sat.Vapor.rho / (w_sat.Liquid.rho + w_sat.Vapor.rho)
+            #self.rho_s = (1-mass_frac_v)*w_sat.Liquid.rho + mass_frac_v*w_sat.Vapor.rho
+            #cp_s = (1-mass_frac_v)*w_sat.Liquid.cp + mass_frac_v*w_sat.Vapor.cp
+            #self.mu_s = (1-mass_frac_v)*w_sat.Liquid.mu + mass_frac_v*w_sat.Vapor.mu
+            #self.k_s = (1-mass_frac_v)*w_sat.Liquid.k + mass_frac_v*w_sat.Vapor.k
+
+            self.rho_s = w_sat.rho
+            cp_s = (1-qual)*w_sat.Liquid.cp + qual*w_sat.Vapor.cp
+            self.mu_s = (1-qual)*w_sat.Liquid.mu + qual*w_sat.Vapor.mu
+            self.k_s = (1-qual)*w_sat.Liquid.k + qual*w_sat.Vapor.k
+
             self.prtl_s = cp_s*unit.kj/unit.kg/unit.K*self.mu_s/self.k_s
 
         cp_s *= unit.kj/unit.kg/unit.K
@@ -706,6 +717,7 @@ class Steamer(Module):
             #print('q2prime=',q2prime/unit.kilo,'DT=',temp_s_w-temp_s_sat)
             #print('h_s JL=',h_s)
         else: # single phase transfer
+            #print(temp_s_w-273.15, press_s_MPa)
             water_s_w = WaterProps(T=temp_s_w, P=press_s_MPa) # @ wall
             assert water_s_w.phase != 'Two phases' # sanity check
             if water_s_w.phase == 'Liquid':
@@ -759,7 +771,7 @@ class Steamer(Module):
         h_l = sat_liq.h * unit.kj/unit.kg
         h_vap = h_v - h_l
 
-        if spcf_heat_transfered < q_sensible and temp_s < sat.T + 30: # subcooled
+        if spcf_heat_transfered < q_sensible and temp_s < sat.T: # subcooled
             self.secondary_outflow_quality = 0
         elif spcf_heat_transfered > q_sensible + h_vap and temp_s > sat.T: # superheated
             self.secondary_outflow_quality = 1
@@ -770,19 +782,23 @@ class Steamer(Module):
             self.secondary_outflow_quality = min(qual,0.999)
             qual = self.secondary_outflow_quality
             w_sat = WaterProps(P=press_s_MPa, x=qual)
-            mass_frac_v = w_sat.Vapor.rho / (w_sat.Liquid.rho + w_sat.Vapor.rho)
-            cp_s = (1-mass_frac_v)*w_sat.Liquid.cp + mass_frac_v*w_sat.Vapor.cp
+            #mass_frac_v = w_sat.Vapor.rho / (w_sat.Liquid.rho + w_sat.Vapor.rho)
+            #cp_s = (1-mass_frac_v)*w_sat.Liquid.cp + mass_frac_v*w_sat.Vapor.cp
+            cp_s = (1-qual)*w_sat.Liquid.cp + qual*w_sat.Vapor.cp
             cp_s *= unit.kj/unit.kg/unit.K
-            rho_s = (1-mass_frac_v)*w_sat.Liquid.rho + mass_frac_v*w_sat.Vapor.rho
+            #rho_s = (1-mass_frac_v)*w_sat.Liquid.rho + mass_frac_v*w_sat.Vapor.rho
+            rho_s = w_sat.rho
 
         elif q_sensible <= spcf_heat_transfered <= q_sensible + h_vap:
             self.secondary_outflow_quality = (spcf_heat_transfered - q_sensible)/ h_vap
             qual = self.secondary_outflow_quality
             w_sat = WaterProps(P=press_s_MPa, x=qual)
-            mass_frac_v = w_sat.Vapor.rho / (w_sat.Liquid.rho + w_sat.Vapor.rho)
-            cp_s = (1-mass_frac_v)*w_sat.Liquid.cp + mass_frac_v*w_sat.Vapor.cp
+            #mass_frac_v = w_sat.Vapor.rho / (w_sat.Liquid.rho + w_sat.Vapor.rho)
+            #cp_s = (1-mass_frac_v)*w_sat.Liquid.cp + mass_frac_v*w_sat.Vapor.cp
+            cp_s = (1-qual)*w_sat.Liquid.cp + qual*w_sat.Vapor.cp
             cp_s *= unit.kj/unit.kg
-            rho_s = (1-mass_frac_v)*w_sat.Liquid.rho + mass_frac_v*w_sat.Vapor.rho
+            #rho_s = (1-mass_frac_v)*w_sat.Liquid.rho + mass_frac_v*w_sat.Vapor.rho
+            rho_s = w_sat.rho
         else:
             print('ht %r, q_sens %r, h_vap %r, temp_s %r, temp_sat %r'%(spcf_heat_transfered,q_sensible,h_vap,temp_s,sat.T))
             assert False, 'bailing out; unknown case.'
