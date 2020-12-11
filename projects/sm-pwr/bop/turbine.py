@@ -198,9 +198,11 @@ class Turbine(Module):
             msg_time = self.recv('outflow')
 
             temp = self.outflow_phase.get_value('temp', msg_time)
+
             outflow = dict()
             outflow['temperature'] = temp
             outflow['pressure'] = self.vent_pressure
+            self.outflow_mass_flowrate = self.inflow_mass_flowrate
             outflow['mass_flowrate'] = self.outflow_mass_flowrate
 
             self.send((msg_time, outflow), 'outflow')
