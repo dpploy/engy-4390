@@ -171,7 +171,7 @@ def main():
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+r' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('reactor-mass-flowrate.png', dpi=300)
+        plt.savefig('reactor-flowrate.png', dpi=300)
 
         (quant, time_unit) = reactor.state_phase.get_quantity_history('heatflux')
 
@@ -288,7 +288,6 @@ def main():
         plt.grid()
         plt.savefig('steamer-nusselt_s.png', dpi=300)
 
-
         # Turbine plots
         turbine = plant_net.modules[2]
 
@@ -316,6 +315,20 @@ def main():
         # Condenser plots
         condenser = plant_net.modules[3]
 
+        (quant, time_unit) = condenser.inflow_phase.get_quantity_history('temp')
+
+        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
+                   y_label=quant.latex_name+' [C]')
+        plt.grid()
+        plt.savefig('condenser-inflow-temp.png', dpi=300)
+
+        (quant, time_unit) = condenser.inflow_phase.get_quantity_history('flowrate')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('condenser-inflow-flowrate.png', dpi=300)
+
         (quant, time_unit) = condenser.outflow_phase.get_quantity_history('temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
@@ -338,7 +351,7 @@ def main():
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+r' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('water_heater-mass-flowrate.png', dpi=300)
+        plt.savefig('water_heater-flowrate.png', dpi=300)
 
         (quant, time_unit) = water_heater.inflow_phase.get_quantity_history('external-heat')
 

@@ -64,6 +64,28 @@ class Condenser(Module):
         self.outflow_pressure = 34.0*unit.bar
         self.outflow_mass_flowrate = self.inflow_mass_flowrate
 
+        # Inflow phase history
+        quantities = list()
+
+        flowrate = Quantity(name='flowrate',
+                            formal_name='q_1', unit='kg/s',
+                            value=self.outflow_mass_flowrate,
+                            latex_name=r'$q_1$',
+                            info='Condenser Inflow Mass Flowrate')
+
+        quantities.append(flowrate)
+
+        temp = Quantity(name='temp',
+                        formal_name='T_1', unit='K',
+                        value=self.outflow_temp,
+                        latex_name=r'$T_1$',
+                        info='Condenser Inflow Temperature')
+
+        quantities.append(temp)
+
+        self.inflow_phase = Phase(time_stamp=self.initial_time,
+                                  time_unit='s', quantities=quantities)
+
         # Outflow phase history
         quantities = list()
 
@@ -92,7 +114,7 @@ class Condenser(Module):
         quantities.append(press)
 
         self.outflow_phase = Phase(time_stamp=self.initial_time,
-                                             time_unit='s', quantities=quantities)
+                                   time_unit='s', quantities=quantities)
 
     def run(self, *args):
 
@@ -175,8 +197,13 @@ class Condenser(Module):
 
         # Update state variables
         condenser_outflow = self.outflow_phase.get_row(time)
+        condenser_inflow = self.inflow_phase.get_row(time)
 
         time += self.time_step
+
+        self.inflow_phase.add_row(time, condenser_inflow)
+        self.inflow_phase.set_value('temp', self.inflow_temp, time)
+        self.inflow_phase.set_value('flowrate', self.inflow_mass_flowrate , time)
 
         self.outflow_phase.add_row(time, condenser_outflow)
         self.outflow_phase.set_value('temp', self.outflow_temp, time)
