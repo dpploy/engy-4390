@@ -218,6 +218,20 @@ def main():
         plt.grid()
         plt.savefig('steamer-primary-outflow-temp.png', dpi=300)
 
+        (quant, time_unit) = steamer.secondary_inflow_phase.get_quantity_history('temp')
+
+        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
+                   y_label=quant.latex_name+' [C]')
+        plt.grid()
+        plt.savefig('steamer-secondary-inflow-temp.png', dpi=300)
+
+        (quant, time_unit) = steamer.secondary_inflow_phase.get_quantity_history('flowrate')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('steamer-secondary-inflow-flowrate.png', dpi=300)
+
         (quant, time_unit) = steamer.secondary_outflow_phase.get_quantity_history('temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
