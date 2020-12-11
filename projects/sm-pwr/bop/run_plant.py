@@ -23,7 +23,7 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 45*unit.minute
+    end_time = 60*unit.minute
     time_step = 1.5*unit.second
     show_time = (True, 5*unit.minute)
 
@@ -39,6 +39,8 @@ def main():
     reactor.time_step = time_step
     reactor.end_time = end_time
     reactor.show_time = show_time
+
+    reactor.shutdown = (True, 40*unit.minute)
 
     plant_net.module(reactor)  # Add reactor module to network
 
@@ -87,6 +89,8 @@ def main():
     water_heater.time_step = time_step
     water_heater.end_time = end_time
     water_heater.show_time = show_time
+
+    water_heater.malfunction = (False, 10*unit.minute, 20*unit.minute)
 
     plant_net.module(water_heater)  # Add water_heater module to network
 
