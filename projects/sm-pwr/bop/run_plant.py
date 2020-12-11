@@ -23,7 +23,7 @@ def main():
     make_run   = True
 
     # Preamble
-    end_time = 60*unit.minute
+    end_time = 55*unit.minute
     time_step = 1.5*unit.second
     show_time = (True, 5*unit.minute)
 

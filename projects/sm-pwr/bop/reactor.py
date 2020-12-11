@@ -217,54 +217,54 @@ class SMPWR(Module):
         quantities.append(fuel_temp)
 
         inlet_temp = Quantity(name='inlet-temp',
-                             formal_name='T_in', unit='K',
-                             value=self.inflow_cool_temp,
-                             latex_name=r'$T_{in}$',
-                             info='Reactor Coolant Inflow Temperature')
+                              formal_name='T_in', unit='K',
+                              value=self.inflow_cool_temp,
+                              latex_name=r'$T_{in}$',
+                              info='Reactor Coolant Inflow Temperature')
         quantities.append(inlet_temp)
 
         pwr = Quantity(name='power',
-                             formal_name='Pth', unit='W',
-                             value=0.0,
-                             latex_name=r'$P_{th}$',
-                             info='Reactor Power')
+                       formal_name='Pth', unit='W',
+                       value=0.0,
+                       latex_name=r'$P_{th}$',
+                       info='Reactor Power')
         quantities.append(pwr)
 
         rey = Quantity(name='reynolds',
-                             formal_name='Rey_c', unit='',
-                             value=0.0,
-                             latex_name=r'$R_{c}$',
-                             info='Reactor Coolant Reynolds Number')
+                       formal_name='Rey_c', unit='',
+                       value=0.0,
+                       latex_name=r'$R_{c}$',
+                       info='Reactor Coolant Reynolds Number')
         quantities.append(rey)
 
         water = WaterProps(T=self.temp_c_0, P=self.coolant_pressure/unit.mega/unit.pascal)
 
         prtl = Quantity(name='prandtl',
-                             formal_name='Pr_c', unit='',
-                             value=water.Prandt,
-                             latex_name=r'$Pr_{c}$',
-                             info='Reactor Coolant Prandtl Number')
+                        formal_name='Pr_c', unit='',
+                        value=water.Prandt,
+                        latex_name=r'$Pr_{c}$',
+                        info='Reactor Coolant Prandtl Number')
         quantities.append(prtl)
 
         q2prime = Quantity(name='heatflux',
-                             formal_name="q''", unit=r'W/m$^2$',
-                             value=0.0,
-                             latex_name=r"$q''$",
-                             info='Reactor Core Average Heat Flux')
+                           formal_name="q''", unit=r'W/m$^2$',
+                           value=0.0,
+                           latex_name=r"$q''$",
+                           info='Reactor Core Average Heat Flux')
         quantities.append(q2prime)
 
         nusselt = Quantity(name='nusselt',
-                             formal_name='Nu_c', unit='',
-                             value=0.0,
-                             latex_name=r'$Nu_{c}$',
-                             info='Reactor Coolant Nusselt Number')
+                           formal_name='Nu_c', unit='',
+                           value=0.0,
+                           latex_name=r'$Nu_{c}$',
+                           info='Reactor Coolant Nusselt Number')
         quantities.append(nusselt)
 
         tau = Quantity(name='tau',
-                             formal_name='tau', unit='s',
-                             value=0.0,
-                             latex_name=r'$\tau_{c}$',
-                             info='Reactor Coolant Residence Time')
+                       formal_name='tau', unit='s',
+                       value=0.0,
+                       latex_name=r'$\tau_{c}$',
+                       info='Reactor Coolant Residence Time')
         quantities.append(tau)
 
         self.state_phase = Phase(time_stamp=self.initial_time, time_unit='s',
@@ -676,7 +676,7 @@ class SMPWR(Module):
 
         if self.shutdown[0] and time > self.shutdown[1]:
             tau = self.flowrate_relaxation_shutdown
-            self.coolant_mass_flowrate_ss = 0.0
+            self.coolant_mass_flowrate_ss = 1.0*unit.kg/unit.second
         else:
             tau = self.flowrate_relaxation_startup
 
@@ -701,10 +701,6 @@ class SMPWR(Module):
         nuclear_pwr_dens = self.__nuclear_pwr_dens_func(time, (temp_f+temp_c)/2, n_dens)
 
         heat_sink_pwr_dens = heat_sink_pwr/vol_fuel
-
-        #if time > 11*unit.minute:
-             #print(n_dens)
-        #    print(nuclear_pwr_dens/unit.mega, heat_sink_pwr_dens/unit.mega)
 
         f_tmp[-2] = -1/rho_f/cp_f * (nuclear_pwr_dens - heat_sink_pwr_dens)
 
