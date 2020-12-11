@@ -162,9 +162,11 @@ class Condenser(Module):
 
             temp = self.outflow_phase.get_value('temp', msg_time)
             pressure = self.outflow_phase.get_value('pressure', msg_time)
+
             outflow = dict()
             outflow['temperature'] = temp
             outflow['pressure'] = pressure
+            self.outflow_mass_flowrate = self.inflow_mass_flowrate
             outflow['mass_flowrate'] = self.outflow_mass_flowrate
             self.send((msg_time, outflow), 'outflow')
 
