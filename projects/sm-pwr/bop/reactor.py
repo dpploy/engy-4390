@@ -376,12 +376,11 @@ class SMPWR(Module):
 
         t_interval_sec = np.linspace(time, time+self.time_step, num=2)
 
-        max_n_steps_per_time_step = 1000 # max number of nonlinear algebraic solver
+        max_n_steps_per_time_step = 1500 # max number of nonlinear algebraic solver
                                          # iterations per time step
 
         (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
-                                         #rtol=1e-4, atol=1e-8,
-                                         #rtol=1e-4, atol=1e-5,
+                                         rtol=1e-7, atol=1e-8,
                                          mxstep=max_n_steps_per_time_step,
                                          full_output=True, tfirst=False)
 
