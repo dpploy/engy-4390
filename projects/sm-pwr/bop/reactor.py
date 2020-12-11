@@ -72,12 +72,13 @@ class SMPWR(Module):
         self.time_step = 10.0*unit.second
 
         self.show_time = (False, 10.0*unit.second)
-        self.shutdown = (False, 10*unit.minute)
 
         self.log = logging.getLogger('cortix')
         self.__logit = True # flag indicating when to log
 
         # Domain attributes
+
+        self.shutdown = (False, 10*unit.minute)
 
         # Configuration parameters
         self.discard_tau_recording_before = 2*unit.minute

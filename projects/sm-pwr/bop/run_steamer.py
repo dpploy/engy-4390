@@ -4,17 +4,14 @@
 # https://cortix.org
 """Cortix Run File"""
 
-import unit
 import matplotlib.pyplot as plt
+
+import unit
 
 from cortix import Cortix
 from cortix import Network
 
-from reactor import SMPWR
 from steamer import Steamer
-from turbine import Turbine
-from condenser import Condenser
-from water_heater import WaterHeater
 
 def main():
 
@@ -75,12 +72,26 @@ def main():
         plt.grid()
         plt.savefig('steamer-primary-mass-flowrate.png', dpi=300)
 
+        (quant, time_unit) = steamer.secondary_inflow_phase.get_quantity_history('temp')
+
+        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
+                   y_label=quant.latex_name+' [C]')
+        plt.grid()
+        plt.savefig('steamer-secondary-inflow-temp.png', dpi=300)
+
         (quant, time_unit) = steamer.secondary_outflow_phase.get_quantity_history('temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
                    y_label=quant.latex_name+' [C]')
         plt.grid()
         plt.savefig('steamer-secondary-outflow-temp.png', dpi=300)
+
+        (quant, time_unit) = steamer.secondary_inflow_phase.get_quantity_history('flowrate')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('steamer-secondary-inflow-flowrate.png', dpi=300)
 
         (quant, time_unit) = steamer.secondary_outflow_phase.get_quantity_history('flowrate')
 

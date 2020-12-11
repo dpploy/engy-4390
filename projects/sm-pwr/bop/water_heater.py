@@ -51,6 +51,7 @@ class WaterHeater(Module):
         self.__logit = True # flag indicating when to log
 
         # Domain attributes
+        self.malfunction = (False, 10*unit.minute, 20*unit.minute)
 
         # Configuration parameters
 
@@ -186,7 +187,7 @@ class WaterHeater(Module):
 
             #-----------------------------------------------------------------
             # Malfunction scenario
-            if 20*unit.minute < time < 25*unit.minute:
+            if self.malfunction[0] and self.malfunction[1] < time < self.malfunction[2]:
                 outflow_mass_flowrate = self.outflow_mass_flowrate_malfunction
                 temp -= self.outflow_temp_loss_malfunction
             else:

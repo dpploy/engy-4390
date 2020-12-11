@@ -161,6 +161,28 @@ class Steamer(Module):
         self.primary_outflow_phase = Phase(time_stamp=self.initial_time,
                                            time_unit='s', quantities=quantities)
 
+        # Secondary inflow phase history
+        quantities = list()
+
+        flowrate = Quantity(name='flowrate',
+                            formal_name='m2i', unit='kg/s',
+                            value=self.secondary_mass_flowrate,
+                            latex_name=r'$\dot{m}_{2,in}$',
+                            info='Steamer Secondary Inflow Mass Flowrate')
+
+        quantities.append(flowrate)
+
+        temp = Quantity(name='temp',
+                        formal_name='T2i', unit='K',
+                        value=self.secondary_inflow_temp,
+                        latex_name=r'$T_{2,in}$',
+                        info='Steamer Secondary Inflow Temperature')
+
+        quantities.append(temp)
+
+        self.secondary_inflow_phase = Phase(time_stamp=self.initial_time,
+                                            time_unit='s', quantities=quantities)
+
         # Secondary outflow phase history
         quantities = list()
 
@@ -369,7 +391,7 @@ class Steamer(Module):
                                          # iterations per time step
 
         (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
-                                         #rtol=1e-4, atol=1e-8,
+                                         rtol=1e-6, atol=1e-8,
                                          mxstep=max_n_steps_per_time_step,
                                          full_output=True, tfirst=False)
 
@@ -382,6 +404,7 @@ class Steamer(Module):
 
         # Update phases
         primary_outflow = self.primary_outflow_phase.get_row(time)
+        secondary_inflow = self.secondary_inflow_phase.get_row(time)
         secondary_outflow = self.secondary_outflow_phase.get_row(time)
         steamer = self.state_phase.get_row(time)
 
@@ -390,6 +413,10 @@ class Steamer(Module):
         self.primary_outflow_phase.add_row(time, primary_outflow)
         self.primary_outflow_phase.set_value('temp', temp_p, time)
         self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
+
+        self.secondary_inflow_phase.add_row(time, secondary_inflow)
+        self.secondary_inflow_phase.set_value('temp', self.secondary_inflow_temp, time)
+        self.secondary_inflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
 
         self.secondary_outflow_phase.add_row(time, secondary_outflow)
         self.secondary_outflow_phase.set_value('temp', temp_s, time)
@@ -771,7 +798,11 @@ class Steamer(Module):
         h_l = sat_liq.h * unit.kj/unit.kg
         h_vap = h_v - h_l
 
-        if spcf_heat_transfered < q_sensible and temp_s < sat.T: # subcooled
+        if spcf_heat_transfered < 0.0: # subcooled
+            self.secondary_outflow_quality = 0
+        elif spcf_heat_transfered < q_sensible and temp_s > sat.T: # subcooled
+            self.secondary_outflow_quality = 0
+        elif spcf_heat_transfered < q_sensible and temp_s < sat.T: # subcooled
             self.secondary_outflow_quality = 0
         elif spcf_heat_transfered > q_sensible + h_vap and temp_s > sat.T: # superheated
             self.secondary_outflow_quality = 1
