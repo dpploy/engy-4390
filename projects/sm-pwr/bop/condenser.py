@@ -45,6 +45,7 @@ class Condenser(Module):
         self.time_step = 10.0*unit.second
 
         self.show_time = (False, 10.0*unit.second)
+        self.save = True
 
         self.log = logging.getLogger('cortix')
         self.__logit = True # flag indicating when to log
