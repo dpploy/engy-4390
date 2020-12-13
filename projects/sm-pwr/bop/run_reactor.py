@@ -34,8 +34,8 @@ def main():
     reactor.end_time = end_time
     reactor.show_time = show_time
 
-    # NuScale specs
-    #reactor.inflow_cool_temp = unit.convert_temperature(497,'F','K')
+    # Steady state condition for NuScale case
+    reactor.inflow_cool_temp = unit.convert_temperature(497,'F','K')
 
     reactor.shutdown = (True, 45*unit.minute)
 
