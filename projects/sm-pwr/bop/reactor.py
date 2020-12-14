@@ -313,6 +313,8 @@ class SMPWR(Module):
                 self.rho_0 = -1.0
                 self.species_rel_yield = len(self.species_rel_yield)*[0.0]
 
+        self.end_time = time # correct the final time if needed
+
     def __call_ports(self, time):
 
         # Interactions in the coolant-outflow port

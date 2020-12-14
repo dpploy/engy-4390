@@ -305,6 +305,8 @@ class Steamer(Module):
             #------------------------
             self.__call_ports(time)
 
+        self.end_time = time # correct the final time if needed
+
     def __call_ports(self, time):
 
         # Interactions in the primary-inflow port
