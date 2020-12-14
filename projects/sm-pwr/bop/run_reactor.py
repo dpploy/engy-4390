@@ -30,12 +30,12 @@ def main():
     # Reactor
     reactor = SMPWR()  # Create reactor module
 
-    reactor.name = 'SMPWR'
-    reactor.save = True
     reactor.time_step = time_step
     reactor.end_time = end_time
     reactor.show_time = show_time
-    #reactor.inflow_cool_temp = unit.convert_temperature(497,'F','K')
+
+    # Steady state condition for NuScale case
+    reactor.inflow_cool_temp = unit.convert_temperature(497,'F','K')
 
     reactor.shutdown = (True, 45*unit.minute)
 
@@ -48,6 +48,8 @@ def main():
     # Run
     if make_run:
         plant.run()  # Run network dynamics simulation
+
+    plant.close()  # Properly shutdow Cortix
 
     # Plots
     if make_plots and plant.use_multiprocessing or plant.rank == 0:
@@ -78,12 +80,12 @@ def main():
         plt.grid()
         plt.savefig('reactor-coolant-outflow-temp.png', dpi=300)
 
-        (quant, time_unit) = reactor.state_phase.get_quantity_history('fuel-temp')
+        (quant, time_unit) = reactor.state_phase.get_quantity_history('core-temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
                    y_label=quant.latex_name+' [C]')
         plt.grid()
-        plt.savefig('reactor-fuel-temp.png', dpi=300)
+        plt.savefig('reactor-core-temp.png', dpi=300)
 
         (quant, time_unit) = reactor.state_phase.get_quantity_history('power')
 
@@ -148,7 +150,6 @@ def main():
         plt.grid()
         plt.savefig('reactor-coolant-outflow-quality.png', dpi=300)
 
-    plant.close()  # Properly shutdow plant
 
 if __name__ == '__main__':
     main()

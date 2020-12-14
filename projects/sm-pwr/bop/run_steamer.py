@@ -30,11 +30,12 @@ def main():
 
     # Steamer
 
-    # Steady state conditions for NuSCale case
-    primary_inflow_temp = (320.9+273.15)*unit.kelvin
-    secondary_inflow_temp = (149+273.15)*unit.kelvin
+    steamer = Steamer()  # Create reactor module
 
-    steamer = Steamer(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
+    # Steady state conditions for NuSCale case
+    #primary_inflow_temp = (320.9+273.15)*unit.kelvin
+    #secondary_inflow_temp = (149+273.15)*unit.kelvin
+    #steamer = Steamer(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
 
     steamer.name = 'Steamer'
     steamer.save = True
@@ -51,6 +52,8 @@ def main():
     # Run
     if make_run:
         plant.run()  # Run network dynamics simulation
+
+    plant.close()  # Properly shutdow Cortix
 
     # Plots
     if make_plots and plant.use_multiprocessing or plant.rank == 0:
@@ -142,8 +145,6 @@ def main():
         plt.grid()
         plt.savefig('steamer-nusselt_s.png', dpi=300)
 
-
-    plant.close()  # Properly shutdow plant
 
 if __name__ == '__main__':
     main()
