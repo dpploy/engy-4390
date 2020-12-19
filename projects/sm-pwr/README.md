@@ -1,4 +1,4 @@
-# NuScale 720 SMR BoP Simulation
+# NuScale 720 SMR Extended BoP Simulation
 
 UMass Lowell Fall 2020 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
@@ -16,7 +16,7 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 |  |
 |---|
 | <img width="380" src="pics/network-0.gv.png" title="Plant Layout">|
-| <p style="text-align:center;"><b>Balance of plant network.</b></p> |
+| <p style="text-align:center;"><b>Extended balance of plant network.</b></p> |
 
 
 References:
