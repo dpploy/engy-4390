@@ -19,8 +19,8 @@ from water_heater import WaterHeater
 def main():
 
     # Debugging
-    make_plots = True
-    make_run   = True
+    make_plots = False
+    make_run   = False
 
     # Preamble
     end_time = 75*unit.minute
@@ -33,6 +33,7 @@ def main():
 
     # Reactor
     reactor = SMPWR()  # Create reactor module
+    reactor.name = "SM-PWR"
 
     reactor.shutdown = (True, 60*unit.minute)
 
