@@ -29,6 +29,7 @@ def main():
 
     # Reactor
     reactor = SMPWR()  # Create reactor module
+    reactor.name = "SM-PWR"
 
     reactor.time_step = time_step
     reactor.end_time = end_time
