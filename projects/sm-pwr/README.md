@@ -1,4 +1,4 @@
-# NuScale 720 SMR Extended BoP Simulation
+# NuScale Small Modular Nuclear Reactor Extended BoP Simulation
 
 UMass Lowell Fall 2020 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
