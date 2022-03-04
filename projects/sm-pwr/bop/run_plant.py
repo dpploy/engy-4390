@@ -19,8 +19,8 @@ from water_heater import WaterHeater
 def main():
 
     # Debugging
-    make_plots = False
-    make_run   = False
+    make_plots = True
+    make_run   = True
 
     # Preamble
     end_time = 75*unit.minute
