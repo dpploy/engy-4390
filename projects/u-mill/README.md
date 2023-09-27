@@ -6,7 +6,7 @@ Engy-4390: Nuclear Systems Design and Analysis
 
 View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/projects/u-mill/project-report.ipynb)
 
-Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2Fsm-pwr%2Fproject-report.ipynb)
+Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2Fuu-mill%2Fproject-report.ipynb)
 
  >**Students:** [Jack Kennedy](https://github.com/xxxx), [Nik Kemper](https://github.com/xxxx) <br>
  >**Mentor/Collaborator:** [Prof. Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
