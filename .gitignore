@@ -1,8 +1,8 @@
 # local
 *.DS_Store
 *~
-projects/sm-pwr/*
-#*.png
+#projects/sm-pwr/*
+*.png
 *.gv
 .*saved
 *.log
