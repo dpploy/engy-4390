@@ -19,7 +19,7 @@ from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
 
 class Precipitation(Module):
-    """Steam generator.
+    """Precipitation.
 
     Notes
     -----

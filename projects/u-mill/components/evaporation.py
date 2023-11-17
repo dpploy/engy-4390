@@ -19,7 +19,7 @@ from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
 
-class Evaporator(Module):
+class Evaporation(Module):
     """Calciner Tank.
 
     Notes
