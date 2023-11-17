@@ -16,8 +16,8 @@ from solvex import Solvex
 def main():
 
     # Debugging
-    make_plots = True
-    make_run   = True
+    make_plots = False
+    make_run   = False
 
     # Preamble
     end_time = 10*unit.minute
