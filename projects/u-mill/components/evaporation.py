@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
-"Cortix module.
-   "Calciner evaporation Tank used in Uranium Purification.
+"""
+Cortix module.
+This module is a model of the Evaporator/Calcining process
+"""
 
 import logging
 
