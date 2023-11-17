@@ -15,6 +15,7 @@ import unit
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
+from cortix import Species
 
 class Filtration(Module):
     """Filtration system
@@ -54,9 +55,10 @@ class Filtration(Module):
         # Domain attributes
 
         # Configuration parameters
+        self.wash_water_flowrate = 1.0 * unit.liter/unit.minute
         '''
         Example
-        
+
         self.discard_tau_recording_before = 2*unit.minute
         self.heat_transfer_area = 1665.57*unit.meter**2
 
@@ -78,15 +80,19 @@ class Filtration(Module):
                                 self.helix_to_cylinder
 
         self.primary_volume = 0.5 * self.secondary_volume
-        
+
         # Ratio of the tube bundle pithc transverse to flow to parallel to flow
         self.tube_bundle_pitch_ratio = 1.5  # st/sl
         '''
-        
+
         # Initialization
+
+        self.feed_aqueous_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.feed_solid_mass_flowrate = 1.0 * unit.liter/unit.minute
+
         '''
         Example
-        
+
         self.primary_inflow_temp = primary_inflow_temp
 
         self.primary_pressure = 127.6*unit.bar
@@ -124,9 +130,53 @@ class Filtration(Module):
 
         self.heat_sink_pwr = 0.0
         '''
-        # Primary outflow phase history
+
+        # Aqueous feed history
         quantities = list()
+        species = list()
+
+        feed_aqueous_flowrate = Quantity(name='flowrate',
+                        formal_name='mdot', unit='kg/s',
+                        value=self.feed_aqueous_mass_flowrate,
+                        latex_name=r'$\dot{m}_1$',
+                        info='Clarification Feed Aqueous Mass Flowrate')
+        quantities.append(feed_aqueous_flowrate)
+
+        uo2so434minus_feed = Species( name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(feed)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_feed)
+
+        self.feed_aqueous_phase = Phase(time_stamp=self.initial_time,
+                                       time_unit='s', quantities=quantities, species=species)
+
+        # Solid feed history
+        quantities = list()
+
+        feed_solid_flowrate = Quantity(name='flowrate',
+                        formal_name='mdot', unit='kg/s',
+                        value=self.feed_solid_mass_flowrate,
+                        latex_name=r'$\dot{m}_1$',
+                        info='Clarification Feed Solid Mass Flowrate')
+        quantities.append(feed_solid_flowrate)
+
+        self.feed_solid_phase = Phase(time_stamp=self.initial_time,
+                                       time_unit='s', quantities=quantities)
+
+        # Aqueous raffinate history
+
+
+        # Solid raffinate history
+
+
+        # Solid waste history
+
+        # Liquid waste history
+
+
+        # Primary outflow phase history
         '''
+        quantities = list()
         temp = Quantity(name='temp',
                         formal_name='T_1', unit='K',
                         value=self.primary_outflow_temp,
