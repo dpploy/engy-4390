@@ -126,7 +126,7 @@ class Filtration(Module):
         '''
         # Primary outflow phase history
         quantities = list()
-
+        '''
         temp = Quantity(name='temp',
                         formal_name='T_1', unit='K',
                         value=self.primary_outflow_temp,
@@ -251,7 +251,8 @@ class Filtration(Module):
 
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
-def __call_ports(self, time):
+        '''
+    def __call_ports(self, time):
 
         # Interactions in the cc_decantation-inflow port
         #----------------------------------------

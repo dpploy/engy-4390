@@ -11,7 +11,7 @@ import unit
 from cortix import Cortix
 from cortix import Network
 
-from filtration import filtration #Will have to add a filtration class in filtration.py file
+from filtration import Filtration #Will have to add a filtration class in filtration.py file
 
 def main():
 
@@ -30,13 +30,13 @@ def main():
 
     # Filtration
 
-    filtration = filtration()  # Create reactor module
+    filtration = Filtration()  # Create filtration module
 
     # Steady state conditions for NuSCale case
     #primary_inflow_temp = (320.9+273.15)*unit.kelvin
     #secondary_inflow_temp = (149+273.15)*unit.kelvin
     #filtration = filtration(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
-
+    '''
     filtration.name = 'filtration'
     filtration.save = True
     filtration.time_step = time_step
@@ -48,7 +48,7 @@ def main():
     # Balance of Plant Network Connectivity
 
     plant_net.draw(engine='circo', node_shape='folder')
-
+    '''
     # Run
     if make_run:
         plant.run()  # Run network dynamics simulation
