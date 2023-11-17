@@ -29,7 +29,8 @@ class Solvex(Module):
 
     """
     
-    def __init__(self, primary_inflow_temp=20+273.15, secondary_inflow_temp=20+273.15):
+    def __init__(self):
+        #Original: def __init__(self, primary_inflow_temp=20+273.15, secondary_inflow_temp=20+273.15):
         """Constructor.
 
         Parameters
@@ -56,6 +57,7 @@ class Solvex(Module):
         # Domain attributes
 
         # Configuration parameters
+        '''
         self.discard_tau_recording_before = 2*unit.minute
         self.heat_transfer_area = 1665.57*unit.meter**2
 
@@ -80,8 +82,10 @@ class Solvex(Module):
 
         # Ratio of the tube bundle pithc transverse to flow to parallel to flow
         self.tube_bundle_pitch_ratio = 1.5  # st/sl
-
+        '''
+        
         # Initialization
+        '''
         self.primary_inflow_temp = primary_inflow_temp
 
         self.primary_pressure = 127.6*unit.bar
@@ -98,8 +102,10 @@ class Solvex(Module):
         self.secondary_outflow_temp = self.secondary_inflow_temp #- 2*unit.K
 
         self.secondary_outflow_quality = 0 # running value of quality
-
+        '''
+        
         # Derived quantities
+        '''
         self.rho_p = 0.0
         self.cp_p = 0.0
         self.mu_p = 0.0
@@ -117,6 +123,7 @@ class Solvex(Module):
         self.nusselt_s = 0.0
 
         self.heat_sink_pwr = 0.0
+        '''
 
         # Primary outflow phase history
         quantities = list()

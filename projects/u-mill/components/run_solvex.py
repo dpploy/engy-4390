@@ -36,7 +36,7 @@ def main():
     #primary_inflow_temp = (320.9+273.15)*unit.kelvin
     #secondary_inflow_temp = (149+273.15)*unit.kelvin
     #solvent extraction = Solvex(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
-
+    '''
     solvex.name = 'Solvex'
     solvex.save = True
     solvex.time_step = time_step
@@ -48,7 +48,7 @@ def main():
     # Balance of Plant Network Connectivity
 
     plant_net.draw(engine='circo', node_shape='folder')
-
+    '''
     # Run
     if make_run:
         plant.run()  # Run network dynamics simulation
