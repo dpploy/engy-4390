@@ -16,7 +16,7 @@ from precipitation import Precipitation
 def main():
 
     # Debugging
-    make_run   = True
+    make_run   = False
     make_plots = False
 
     # Preamble
@@ -37,6 +37,7 @@ def main():
     #secondary_inflow_temp = (149+273.15)*unit.kelvin
     #precipt = Precipitation(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
 
+    '''
     precipt.name = 'Precipitation'
     precipt.save = True
     precipt.time_step = time_step
@@ -48,6 +49,7 @@ def main():
     # Balance of Plant Network Connectivity
 
     plant_net.draw(engine='circo', node_shape='folder')
+    '''
 
     # Run
     if make_run:

@@ -129,6 +129,7 @@ class Precipitation(Module):
         # Primary outflow phase history
         quantities = list()
 
+        '''
         temp = Quantity(name='temp',
                         formal_name='T_1', unit='K',
                         value=self.primary_outflow_temp,
@@ -253,6 +254,7 @@ class Precipitation(Module):
 
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
+        '''
 
     def run(self, *args):
 
@@ -366,6 +368,5 @@ class Precipitation(Module):
             secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
 
             self.send((msg_time, secondary_outflow), 'secondary-outflow')
-
 
 
