@@ -128,6 +128,7 @@ class Solvex(Module):
         # Primary outflow phase history
         quantities = list()
 
+        '''
         temp = Quantity(name='temp',
                         formal_name='T_1', unit='K',
                         value=self.primary_outflow_temp,
@@ -252,6 +253,7 @@ class Solvex(Module):
 
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
+        '''
 
     def run(self, *args):
 
@@ -291,3 +293,77 @@ class Solvex(Module):
             self.__call_ports(time)
 
         self.end_time = time # correct the final time if needed
+
+    def __call_ports(self, time):
+
+        # Interactions in the uranium-inflow port
+        #----------------------------------------
+        # One way "from" uranium-inflow
+
+        # Receive from
+        if self.get_port('uranium-inflow').connected_port:
+
+            self.send(time, 'uranium-inflow')
+
+            (check_time, primary_inflow) = self.recv('uranium-inflow')
+            assert abs(check_time-time) <= 1e-6
+
+            self.primary_inflow_temp = primary_inflow['temperature']
+            self.primary_ressure = primary_inflow['pressure']
+            self.primary_mass_flowrate = primary_inflow['mass_flowrate']
+
+        # Interactions in the secondary-inflow port
+        #----------------------------------------
+        # One way "from" secondary-inflow
+
+        # Receive from
+        if self.get_port('secondary-inflow').connected_port:
+
+            self.send(time, 'secondary-inflow')
+
+            (check_time, secondary_inflow) = self.recv('secondary-inflow')
+            assert abs(check_time-time) <= 1e-6
+
+            self.secondary_inflow_temp = secondary_inflow['temperature']
+            self.secondary_pressure = secondary_inflow['pressure']
+            self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
+
+        # Interactions in the primary-outflow port
+        #-----------------------------------------
+        # One way "to" primary-outflow
+
+        # Send to
+        if self.get_port('primary-outflow').connected_port:
+
+            msg_time = self.recv('primary-outflow')
+
+            temp = self.primary_outflow_phase.get_value('temp', msg_time)
+
+            primary_outflow = dict()
+            primary_outflow['temperature'] = temp
+            primary_outflow['pressure'] = self.primary_pressure
+            primary_outflow['mass_flowrate'] = self.primary_mass_flowrate
+            primary_outflow['quality'] = 0.0
+
+            self.send((msg_time, primary_outflow), 'primary-outflow')
+
+        # Interactions in the secondary-outflow port
+        #-----------------------------------------
+        # One way "to" secondary-outflow
+
+        # Send to
+        if self.get_port('secondary-outflow').connected_port:
+
+            msg_time = self.recv('secondary-outflow')
+
+            temp = self.secondary_outflow_phase.get_value('temp', msg_time)
+            press = self.secondary_outflow_phase.get_value('pressure', msg_time)
+            flowrate = self.secondary_outflow_phase.get_value('flowrate', msg_time)
+
+            secondary_outflow = dict()
+            secondary_outflow['temperature'] = temp
+            secondary_outflow['pressure'] = press
+            secondary_outflow['mass_flowrate'] = flowrate
+            secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
+
+            self.send((msg_time, secondary_outflow), 'secondary-outflow')

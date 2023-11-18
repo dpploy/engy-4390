@@ -35,7 +35,7 @@ def main():
     # Steady state conditions for NuSCale case
     #primary_inflow_temp = (320.9+273.15)*unit.kelvin
     #secondary_inflow_temp = (149+273.15)*unit.kelvin
-    #solvent extraction = Solvex(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
+    #solvex = Solvex(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
     '''
     solvex.name = 'Solvex'
     solvex.save = True
