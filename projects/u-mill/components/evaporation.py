@@ -4,7 +4,7 @@
 # https://cortix.org
 """
 Cortix Module
-This module is a model of the Evaporation/Calcination process
+This module is a model of the Evaporation/Calcination process in the White Mesa Uranium Milling Plant
 """
 
 import logging

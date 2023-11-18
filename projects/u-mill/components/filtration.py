@@ -1,7 +1,11 @@
 #!/usr/bin/env python
-# coding: utf-8
-
-'''This is the Filtration Module'''
+# -*- coding: utf-8 -*-
+# This file is part of the Cortix toolkit environment.
+# https://cortix.org
+"""
+Cortix Module
+This module is a model of the Clarification/Filtration process in the White Mesa Uranium Milling Plant
+"""
 
 #Practicing with Steamer Module
 import logging
@@ -10,12 +14,12 @@ import math
 from scipy.integrate import odeint
 import numpy as np
 
-import unit
-
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
 from cortix import Species
+
+import unit
 
 class Filtration(Module):
     """Filtration system
@@ -488,5 +492,3 @@ class Filtration(Module):
             secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
 
             self.send((msg_time, secondary_outflow), 'secondary-outflow')
-
-

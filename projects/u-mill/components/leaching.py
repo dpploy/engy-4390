@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
 """
 Cortix Module
-This module is a model of the Leaching process
+This module is a model of the Leaching process in the White Mesa Milling Plant
 """
 
 import logging
@@ -360,4 +361,3 @@ class Leaching(Module):
             secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
 
             self.send((msg_time, secondary_outflow), 'secondary-outflow')
-
