@@ -13,11 +13,12 @@ import math
 from scipy.integrate import odeint
 import numpy as np
 
-import unit
-
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
+from cortix import Species
+
+import unit
 
 class Leaching(Module):
     """Heap Leach.
@@ -27,9 +28,9 @@ class Leaching(Module):
     These are the `port` names available in this module to connect to respective
     modules: Filtration.
     See instance attribute `port_names_expected`.
-    
+
     """
-    
+
     def __init__(self):
         """Constructor.
 
