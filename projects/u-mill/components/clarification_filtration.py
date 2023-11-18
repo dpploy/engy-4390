@@ -20,7 +20,7 @@ from cortix import Species
 
 import unit
 
-class Filtration(Module):
+class ClarificationFiltration(Module):
     """Filtration system
 
     Notes
