@@ -13,11 +13,12 @@ import math
 from scipy.integrate import odeint
 import numpy as np
 
-import unit
-
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
+from cortix import Species
+
+import unit
 
 class Precipitation(Module):
     """Precipitation.
@@ -369,5 +370,3 @@ class Precipitation(Module):
             secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
 
             self.send((msg_time, secondary_outflow), 'secondary-outflow')
-
-

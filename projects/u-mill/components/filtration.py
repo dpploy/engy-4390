@@ -7,7 +7,6 @@ Cortix Module
 This module is a model of the Clarification/Filtration process in the White Mesa Uranium Milling Plant
 """
 
-#Practicing with Steamer Module
 import logging
 
 import math

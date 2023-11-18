@@ -13,11 +13,12 @@ import math
 from scipy.integrate import odeint
 import numpy as np
 
-import unit
-
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
+from cortix import Species
+
+import unit
 
 class Evaporation(Module):
     """Calciner Tank.
