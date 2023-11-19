@@ -4,7 +4,10 @@
 # https://cortix.org
 """Cortix Module.
    Clarification/Filtration process in the White Mesa Uranium Milling Plant.
+   Add info here:...
 
+   + Wash water (volume? mass?) flowrate:
+   + Feed (aqueous/solids) (volume? mass?) flow rate:
 
 """
 
@@ -42,7 +45,7 @@ class ClarificationFiltration(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['cc_decantation-inflow', 'cc_decantation-outflow',
+        self.port_names_expected = ['decantation-inflow', 'decantation-outflow',
                                      'drum-inflow', 'drum-outflow'] #Need to define these
 
         # General attributes
@@ -306,18 +309,60 @@ class ClarificationFiltration(Module):
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
         '''
+
+    def run(self, *args):
+
+        # Some logic for logging time stamps
+        if self.initial_time + self.time_step > self.end_time:
+            self.end_time = self.initial_time + self.time_step
+
+        time = self.initial_time
+
+        print_time = self.initial_time
+        print_time_step = self.show_time[1]
+
+        if print_time_step < self.time_step:
+            print_time_step = self.time_step
+
+        while time <= self.end_time:
+
+            if self.show_time[0] and \
+               (print_time <= time < print_time+print_time_step):
+
+                msg = self.name+'::run():time[m]='+ str(round(time/unit.minute, 1))
+                self.log.info(msg)
+
+                self.__logit = True
+                print_time += self.show_time[1]
+
+            else:
+                self.__logit = False
+
+            # Evolve one time step
+            #---------------------
+
+            time = self.__step(time)
+
+            # Communicate information
+            #------------------------
+            #self.__call_ports(time)
+
+        self.end_time = time # correct the final time if needed
+
+
+    '''
     def __call_ports(self, time):
 
-        # Interactions in the cc_decantation-inflow port
+        # Interactions in the decantation-inflow port
         #----------------------------------------
-        # One way "from" cc_decantation-inflow
+        # One way "from" decantation-inflow
 
         # Receive from
-        if self.get_port('cc_decantation-inflow').connected_port:
+        if self.get_port('decantation-inflow').connected_port:
 
-            self.send(time, 'cc_decantation-inflow')
+            self.send(time, 'decantation-inflow')
 
-            (check_time, primary_inflow) = self.recv('cc_decantation-inflow')
+            (check_time, primary_inflow) = self.recv('decantation-inflow')
             assert abs(check_time-time) <= 1e-6
 
             self.primary_inflow_temp = primary_inflow['temperature']
@@ -379,58 +424,20 @@ class ClarificationFiltration(Module):
             secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
 
             self.send((msg_time, secondary_outflow), 'secondary-outflow')
+    '''
 
-    def run(self, *args):
-
-        # Some logic for logging time stamps
-        if self.initial_time + self.time_step > self.end_time:
-            self.end_time = self.initial_time + self.time_step
-
-        time = self.initial_time
-
-        print_time = self.initial_time
-        print_time_step = self.show_time[1]
-
-        if print_time_step < self.time_step:
-            print_time_step = self.time_step
-
-        while time <= self.end_time:
-
-            if self.show_time[0] and \
-               (print_time <= time < print_time+print_time_step):
-
-                msg = self.name+'::run():time[m]='+ str(round(time/unit.minute, 1))
-                self.log.info(msg)
-
-                self.__logit = True
-                print_time += self.show_time[1]
-
-            else:
-                self.__logit = False
-
-            # Evolve one time step
-            #---------------------
-
-            time = self.__step(time)
-
-            # Communicate information
-            #------------------------
-            #self.__call_ports(time)
-
-        self.end_time = time # correct the final time if needed
-        
     def __call_ports(self, time):
 
-        # Interactions in the cc_decantation-inflow port
+        # Interactions in the decantation-inflow port
         #----------------------------------------
-        # One way "from" cc_decantation-inflow
+        # One way "from" decantation-inflow
 
         # Receive from
-        if self.get_port('cc_decantation-inflow').connected_port:
+        if self.get_port('decantation-inflow').connected_port:
 
-            self.send(time, 'cc_decantation-inflow')
+            self.send(time, 'decantation-inflow')
 
-            (check_time, primary_inflow) = self.recv('cc_decantation-inflow')
+            (check_time, primary_inflow) = self.recv('decantation-inflow')
             assert abs(check_time-time) <= 1e-6
 
             self.primary_inflow_temp = primary_inflow['temperature']
