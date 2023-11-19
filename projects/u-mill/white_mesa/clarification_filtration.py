@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
-"""
-Cortix Module
-This module is a model of the Clarification/Filtration process in the White Mesa Uranium Milling Plant
+"""Cortix Module.
+   Clarification/Filtration process in the White Mesa Uranium Milling Plant.
+
+
 """
 
 import logging
