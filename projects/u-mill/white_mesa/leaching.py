@@ -2,9 +2,16 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
-"""
-Cortix Module
-This module is a model of the Leaching process in the White Mesa Milling Plant
+"""Cortix Module.
+   Leaching process in the White Mesa Milling Plant.
+   Add info here... what ore mineral (brannerite)?
+
+   + Capacity: 1 t of ore
+   + Acid (H2SO4) amount: 20 kg/t ore
+   + Temperature:
+   + Residual H2SO4: 50 g/L free acid
+
+   Source of info:
 """
 
 import logging
@@ -250,6 +257,7 @@ class Leaching(Module):
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
       '''  
+
     def run(self, *args):
 
         # Some logic for logging time stamps

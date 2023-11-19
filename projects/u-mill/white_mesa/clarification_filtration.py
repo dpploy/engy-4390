@@ -9,6 +9,7 @@
    + Wash water (volume? mass?) flowrate:
    + Feed (aqueous/solids) (volume? mass?) flow rate:
 
+   Source of info:
 """
 
 import logging
@@ -63,6 +64,7 @@ class ClarificationFiltration(Module):
 
         # Configuration parameters
         self.wash_water_flowrate = 1.0 * unit.liter/unit.minute
+
         '''
         Example
 
@@ -348,6 +350,7 @@ class ClarificationFiltration(Module):
             #self.__call_ports(time)
 
         self.end_time = time # correct the final time if needed
+
 
 
     '''
