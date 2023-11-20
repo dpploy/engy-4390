@@ -98,7 +98,8 @@ class DecantationFiltration(Module):
 
         self.feed_aqueous_mass_flowrate = 1.0 * unit.liter/unit.minute
         self.feed_solid_mass_flowrate = 1.0 * unit.liter/unit.minute
-
+        self.raffinate_aqueous_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.raffinate_solid_mass_flowrate = 1.0 * unit.liter/unit.minute
         '''
         Example
 
@@ -140,7 +141,7 @@ class DecantationFiltration(Module):
         self.heat_sink_pwr = 0.0
         '''
 
-        # Aqueous feed history
+        # Aqueous feed decantation history
         quantities = list()
         species = list()
 
@@ -155,35 +156,119 @@ class DecantationFiltration(Module):
                            atoms=['U','2*O','3*S','12*O'],
                            info='UO2-(SO4)3^4-')
         species.append(uo2so434minus_feed)
+        
+        h2o_feed = Species(name='H2O',formula_name='H2O(feed)',
+                           atoms=['2*H','O'],
+                           info='H2O')
+        species.append(h2o_feed)
 
+        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(feed)',
+                           atoms=['2*H','S','4*O'],
+                           info='H2SO4')
+        species.append(h2so4_feed)
         self.feed_aqueous_phase = Phase(time_stamp=self.initial_time,
-                                       time_unit='s', quantities=quantities, species=species)
-
-        # Solid feed history
+                                        time_unit='s', quantities=quantities, species=species)
+        # Solid feed decantation history (Iron, Gold, and Copper impurities)
         quantities = list()
+        species = list()#Is it proper to rest the species list too?
 
         feed_solid_flowrate = Quantity(name='flowrate',
                         formal_name='mdot', unit='kg/s',
                         value=self.feed_solid_mass_flowrate,
-                        latex_name=r'$\dot{m}_1$',
+                        latex_name=r'$\dot{m}_2$',
                         info='Clarification Feed Solid Mass Flowrate')
         quantities.append(feed_solid_flowrate)
 
+        iron_feed = Species(name='Fe', formula_name='Fe(feed)',
+                           atoms=['Fe'],
+                           info='Fe')
+        species.append(iron_feed)
+
+        copper_feed = Species(name='Cu', formula_name='Cu(feed)',
+                           atoms=['Cu'],
+                           info='Cu')
+        species.append(copper_feed)
+
+        gold_feed = Species(name='Au', formula_name='Au(feed)',
+                           atoms=['Au'],
+                           info='Au')
+        species.append(gold_feed)
         self.feed_solid_phase = Phase(time_stamp=self.initial_time,
-                                       time_unit='s', quantities=quantities)
+                                       time_unit='s', quantities=quantities, species=species)
 
-        # Aqueous raffinate history
+        # Aqueous raffinate decantation history
+        quantities = list()
+        species = list()
 
+        raffinate_aqueous_flowrate = Quantity(name='flowrate',
+                                         formal_name='mdot', unit='kg/s',
+                                         value=self.raffinate_aqueous_mass_flowrate,
+                                         latex_name=r'$\dot{m}_3$',
+                                         info='Clarification Raffinate Aqueous Mass Flowrate')
+        quantities.append(raffinate_aqueous_flowrate)
 
-        # Solid raffinate history
+        uo2so434minus_raffinate = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(raffinate)',
+                                     atoms=['U', '2*O', '3*S', '12*O'],
+                                     info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_raffinate)
 
+        h2o_raffinate = Species(name='H2O', formula_name='H2O(raffinate)',
+                           atoms=['2*H', 'O'],
+                           info='H2O')
+        species.append(h2o_raffinate)
 
-        # Solid waste history
+        h2so4_raffinate = Species(name='H2SO4', formula_name='H2SO4(raffinate)',
+                             atoms=['2*H', 'S', '4*O'],
+                             info='H2SO4')
+        species.append(h2so4_raffinate)
+        self.raffinate_aqueous_phase = Phase(time_stamp=self.initial_time,
+                                        time_unit='s', quantities=quantities, species=species)
 
-        # Liquid waste history
+        # Solid raffinate decantation history
+        quantities = list()
+        species = list()  # Is it proper to rest the species list too?
 
+        raffinate_solid_flowrate = Quantity(name='flowrate',
+                                       formal_name='mdot', unit='kg/s',
+                                       value=self.raffinate_solid_mass_flowrate,
+                                       latex_name=r'$\dot{m}_4$',
+                                       info='Clarification raffinate Solid Mass Flowrate')
+        quantities.append(raffinate_solid_flowrate)
 
-        # Primary outflow phase history
+        iron_raffinate = Species(name='Fe', formula_name='Fe(raffinate)',
+                            atoms=['Fe'],
+                            info='Fe')
+        species.append(iron_raffinate)
+
+        copper_raffinate = Species(name='Cu', formula_name='Cu(raffinate)',
+                              atoms=['Cu'],
+                              info='Cu')
+        species.append(copper_raffinate)
+
+        gold_raffinate = Species(name='Au', formula_name='Au(raffinate)',
+                            atoms=['Au'],
+                            info='Au')
+        species.append(gold_raffinate)
+        self.raffinate_solid_phase = Phase(time_stamp=self.initial_time,
+                                      time_unit='s', quantities=quantities, species=species)
+
+        # Solid waste decantation history
+
+        # Liquid waste decantation history
+
+        # Aqueous feed filtration history
+
+        # Solid feed filtration history
+
+        # Aqueous raffinate filtration history
+
+        # Solid raffinate filtration history
+        # Essentially 0% wt
+
+        # Aqueous waste filtration history
+
+        # Solid waste filtration history
+
         '''
         quantities = list()
         temp = Quantity(name='temp',
