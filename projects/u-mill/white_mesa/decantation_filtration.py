@@ -3,7 +3,7 @@
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
 """Cortix Module.
-   Clarification/Filtration process in the White Mesa Uranium Milling Plant.
+   Decantation/Filtration process in the White Mesa Uranium Milling Plant.
    Add info here:...
 
    + Wash water (volume? mass?) flowrate:
@@ -25,8 +25,8 @@ from cortix import Species
 
 import unit
 
-class ClarificationFiltration(Module):
-    """Filtration system
+class DecantationFiltration(Module):
+    """Decantation-filtration system.
 
     Notes
     -----

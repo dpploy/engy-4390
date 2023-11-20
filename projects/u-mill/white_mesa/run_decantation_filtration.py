@@ -6,12 +6,12 @@
 
 import matplotlib.pyplot as plt
 
-import unit
-
 from cortix import Cortix
 from cortix import Network
 
-from clarification_filtration import ClarificationFiltration #Will have to add a filtration class in filtration.py file
+from decantation_filtration import DecantationFiltration
+
+import unit
 
 def main():
 
@@ -30,18 +30,18 @@ def main():
 
     # Filtration
 
-    cfiltration = ClarificationFiltration()  # Create Clarification/filtration module
+    decant_filt = DecantationFiltration()  # Create decantation/filtration module
 
     # Steady state conditions for NuSCale case
     #primary_inflow_temp = (320.9+273.15)*unit.kelvin
     #secondary_inflow_temp = (149+273.15)*unit.kelvin
     #filtration = filtration(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
+    decant_filt.name = 'decantation-filtration'
     '''
-    cfiltration.name = 'filtration'
-    cfiltration.save = True
-    cfiltration.time_step = time_step
-    cfiltration.end_time = end_time
-    cfiltration.show_time = show_time
+    decant_filt.save = True
+    decant_filt.time_step = time_step
+    decant_filt.end_time = end_time
+    decant_filt.show_time = show_time
 
     plant_net.module(filtration)  # Add filtration module to network
 
