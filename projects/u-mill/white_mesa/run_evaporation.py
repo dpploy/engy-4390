@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
-"Cortix module.
-   "Calciner evaporation Tank used in Uranium Purification.
+#Cortix module.
+#Calciner evaporation Tank used in Uranium Purification.
 
 
 import matplotlib.pyplot as plt
@@ -13,13 +13,13 @@ import unit
 from cortix import Cortix
 from cortix import Network
 
-from evaporaiton import Evaporator
+from evaporation import Evaporator
 
 def main():
 
     # Debugging
-    make_plots = True
-    make_run   = True
+    make_plots = False
+    make_run   = False
 
     # Preamble
     end_time = 10*unit.minute
@@ -30,27 +30,27 @@ def main():
 
     plant_net = plant.network = Network() # Network
 
-    # Steamer
+    # Evaporator
 
-    steamer = Steamer()  # Create reactor module
+    evaporation = Evaporator()  # Create reactor module
 
     # Steady state conditions for NuSCale case
     #primary_inflow_temp = (320.9+273.15)*unit.kelvin
     #secondary_inflow_temp = (149+273.15)*unit.kelvin
     #steamer = Steamer(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
+    '''
+    evaporation.name = 'Evaporator'
+    evaporation.save = True
+    evaporation.time_step = time_step
+    evaporation.end_time = end_time
+    evaporation.show_time = show_time
 
-    steamer.name = 'Steamer'
-    steamer.save = True
-    steamer.time_step = time_step
-    steamer.end_time = end_time
-    steamer.show_time = show_time
-
-    plant_net.module(steamer)  # Add steamer module to network
+    plant_net.module(evaporation)  # Add steamer module to network
 
     # Balance of Plant Network Connectivity
 
     plant_net.draw(engine='circo', node_shape='folder')
-
+    '''
     # Run
     if make_run:
         plant.run()  # Run network dynamics simulation

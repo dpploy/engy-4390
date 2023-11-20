@@ -131,6 +131,7 @@ class Evaporator(Module):
         # Primary outflow phase history
         quantities = list()
 
+        '''
         temp = Quantity(name='temp',
                         formal_name='T_1', unit='K',
                         value=self.primary_outflow_temp,
@@ -255,7 +256,7 @@ class Evaporator(Module):
 
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
-
+        '''
 
     def run(self, *args):
 
