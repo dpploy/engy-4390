@@ -2,9 +2,14 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
-"""
-Cortix Module
-This module is a model of the Evaporation/Calcination process in the White Mesa Uranium Milling Plant
+"""Cortix Module.
+   Evaporation/Calcination process in the White Mesa Uranium Milling Plant.
+   Add info here:...
+
+   + ?
+   + ?
+
+   Source of info:
 """
 
 import logging
@@ -20,8 +25,8 @@ from cortix import Species
 
 import unit
 
-class Evaporation(Module):
-    """Calciner Tank.
+class EvaporationCalcination(Module):
+    """Evaporation-Calcination system.
 
     Notes
     -----

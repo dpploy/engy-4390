@@ -5,6 +5,10 @@
 """Cortix Module.
    Leaching process in the White Mesa Milling Plant.
    Add info here... what ore mineral (brannerite)?
+                    what oxidation process?
+
+                    Carnotite sandstone 0.2% U3O8, 1.5-2.0% V2O5
+                    Arizona Strip breccia pipe 0.5-0.9% U3O8
 
    + Capacity: 1 t of ore
    + Acid (H2SO4) amount: 20 kg/t ore
