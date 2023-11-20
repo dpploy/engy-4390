@@ -2,14 +2,9 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
-"""Cortix Module.
-   Evaporation/Calcination process in the White Mesa Uranium Milling Plant.
-   Add info here:...
-
-   + ?
-   + ?
-
-   Source of info:
+"""
+Cortix Module
+This module is a model of the Evaporation/Calcination process
 """
 
 import logging
@@ -25,8 +20,8 @@ from cortix import Species
 
 import unit
 
-class EvaporationCalcination(Module):
-    """Evaporation-Calcination system.
+class Evaporator(Module):
+    """Calciner Tank.
 
     Notes
     -----
@@ -136,6 +131,7 @@ class EvaporationCalcination(Module):
         # Primary outflow phase history
         quantities = list()
 
+        '''
         temp = Quantity(name='temp',
                         formal_name='T_1', unit='K',
                         value=self.primary_outflow_temp,
@@ -260,7 +256,7 @@ class EvaporationCalcination(Module):
 
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
-
+        '''
 
     def run(self, *args):
 
