@@ -100,6 +100,12 @@ class DecantationFiltration(Module):
         self.feed_solid_mass_flowrate = 1.0 * unit.liter/unit.minute
         self.raffinate_aqueous_mass_flowrate = 1.0 * unit.liter/unit.minute
         self.raffinate_solid_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.tailings_solid_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.tailings_aqueous_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.filtration_raffinate_aqueous_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.filtration_raffinate_solid_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.filtration_tailings_aqueous_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.filtration_tailings_solid_mass_flowrate = 1.0 * unit.liter/unit.minute
         '''
         Example
 
@@ -252,22 +258,155 @@ class DecantationFiltration(Module):
         self.raffinate_solid_phase = Phase(time_stamp=self.initial_time,
                                       time_unit='s', quantities=quantities, species=species)
 
-        # Solid waste decantation history
+        # Solid tailings decantation history
+        quantities = list()
+        species = list()  # Is it proper to rest the species list too?
 
-        # Liquid waste decantation history
+        tailings_solid_flowrate = Quantity(name='flowrate',
+                                       formal_name='mdot', unit='kg/s',
+                                       value=self.tailings_solid_mass_flowrate,
+                                       latex_name=r'$\dot{m}_4$',
+                                       info='Clarification tailings Solid Mass Flowrate')
+        quantities.append(tailings_solid_flowrate)
+
+        iron_tailings = Species(name='Fe', formula_name='Fe(tailings)',
+                            atoms=['Fe'],
+                            info='Fe')
+        species.append(iron_tailings)
+
+        copper_tailings = Species(name='Cu', formula_name='Cu(tailings)',
+                              atoms=['Cu'],
+                              info='Cu')
+        species.append(copper_tailings)
+
+        gold_tailings = Species(name='Au', formula_name='Au(tailings)',
+                            atoms=['Au'],
+                            info='Au')
+        species.append(gold_tailings)
+        self.tailings_solid_phase = Phase(time_stamp=self.initial_time,
+                                      time_unit='s', quantities=quantities, species=species)
+
+        # Aqueous tailings decantation history
+        quantities = list()
+        species = list()
+
+        tailings_aqueous_flowrate = Quantity(name='flowrate',
+                                              formal_name='mdot', unit='kg/s',
+                                              value=self.tailings_aqueous_mass_flowrate,
+                                              latex_name=r'$\dot{m}_3$',
+                                              info='Clarification tailings Aqueous Mass Flowrate')
+        quantities.append(raffinate_aqueous_flowrate)
+
+        uo2so434minus_tailings = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(raffinate)',
+                                          atoms=['U', '2*O', '3*S', '12*O'],
+                                          info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_tailings)
+
+        h2o_tailings = Species(name='H2O', formula_name='H2O(tailings)',
+                                atoms=['2*H', 'O'],
+                                info='H2O')
+        species.append(h2o_tailings)
+
+        h2so4_tailings = Species(name='H2SO4', formula_name='H2SO4(tailings)',
+                                  atoms=['2*H', 'S', '4*O'],
+                                  info='H2SO4')
+        species.append(h2so4_tailings)
+        self.tailings_aqueous_phase = Phase(time_stamp=self.initial_time,
+                                             time_unit='s', quantities=quantities, species=species)
 
         # Aqueous feed filtration history
+        # Same as Decantation aqueous raffinate
 
         # Solid feed filtration history
+        # Same as Decantation solid raffinate
 
         # Aqueous raffinate filtration history
+        quantities = list()
+        species = list()
+
+        filtration_raffinate_aqueous_flowrate = Quantity(name='flowrate',
+                                              formal_name='mdot', unit='kg/s',
+                                              value=self.filtration_raffinate_aqueous_mass_flowrate,
+                                              latex_name=r'$\dot{m}_3$',
+                                              info='Filtration Raffinate Aqueous Mass Flowrate')
+        quantities.append(filtration_raffinate_aqueous_flowrate)
+
+        uo2so434minus_filtration_raffinate = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(filtration raffinate)',
+                                          atoms=['U', '2*O', '3*S', '12*O'],
+                                          info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_filtration_raffinate)
+
+        h2o_filtration_raffinate = Species(name='H2O', formula_name='H2O(filtration raffinate)',
+                                atoms=['2*H', 'O'],
+                                info='H2O')
+        species.append(h2o_filtration_raffinate)
+
+        h2so4_filtration_raffinate = Species(name='H2SO4', formula_name='H2SO4(filtration raffinate)',
+                                  atoms=['2*H', 'S', '4*O'],
+                                  info='H2SO4')
+        species.append(h2so4_filtration_raffinate)
+        self.filtration_raffinate_aqueous_phase = Phase(time_stamp=self.initial_time,
+                                             time_unit='s', quantities=quantities, species=species)
 
         # Solid raffinate filtration history
         # Essentially 0% wt
 
-        # Aqueous waste filtration history
+        # Aqueous tailings filtration history
+        quantities = list()
+        species = list()
 
-        # Solid waste filtration history
+        filtration_tailings_aqueous_flowrate = Quantity(name='flowrate',
+                                                         formal_name='mdot', unit='kg/s',
+                                                         value=self.filtration_tailings_aqueous_mass_flowrate,
+                                                         latex_name=r'$\dot{m}_3$',
+                                                         info='Filtration tailings Aqueous Mass Flowrate')
+        quantities.append(filtration_tailings_aqueous_flowrate)
+
+        uo2so434minus_filtration_tailings = Species(name='UO2-(SO4)3^4-',
+                                                     formula_name='UO2(SO4)3^4-(filtration tailings)',
+                                                     atoms=['U', '2*O', '3*S', '12*O'],
+                                                     info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_filtration_tailings)
+
+        h2o_filtration_tailings = Species(name='H2O', formula_name='H2O(filtration tailings)',
+                                           atoms=['2*H', 'O'],
+                                           info='H2O')
+        species.append(h2o_filtration_tailings)
+
+        h2so4_filtration_tailings = Species(name='H2SO4', formula_name='H2SO4(filtration tailings)',
+                                             atoms=['2*H', 'S', '4*O'],
+                                             info='H2SO4')
+        species.append(h2so4_filtration_tailings)
+        self.filtration_tailings_aqueous_phase = Phase(time_stamp=self.initial_time,
+                                                        time_unit='s', quantities=quantities, species=species)
+
+        # Solid tailings filtration history
+        quantities = list()
+        species = list()  # Is it proper to rest the species list too?
+
+        filtration_tailings_solid_flowrate = Quantity(name='flowrate',
+                                           formal_name='mdot', unit='kg/s',
+                                           value=self.filtration_tailings_solid_mass_flowrate,
+                                           latex_name=r'$\dot{m}_4$',
+                                           info='Filtration tailings Solid Mass Flowrate')
+        quantities.append(filtration_tailings_solid_flowrate)
+
+        iron_filtration_tailings = Species(name='Fe', formula_name='Fe(filtration tailings)',
+                                atoms=['Fe'],
+                                info='Fe')
+        species.append(iron_filtration_tailings)
+
+        copper_filtration_tailings = Species(name='Cu', formula_name='Cu(filtration tailings)',
+                                  atoms=['Cu'],
+                                  info='Cu')
+        species.append(copper_filtration_tailings)
+
+        gold_filtration_tailings = Species(name='Au', formula_name='Au(filtration tailings)',
+                                atoms=['Au'],
+                                info='Au')
+        species.append(gold_filtration_tailings)
+        self.filtration_tailings_solid_phase = Phase(time_stamp=self.initial_time,
+                                          time_unit='s', quantities=quantities, species=species)
 
         '''
         quantities = list()
