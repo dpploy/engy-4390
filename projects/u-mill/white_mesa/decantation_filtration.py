@@ -6,16 +6,18 @@
    Decantation/Filtration process in the White Mesa Uranium Milling Plant.
    Add info here:...
 
+   Mass fraction in ppm.
+
    + Decantation:
-       - feed concentration of solids:       100000 ppm
-       - wash water concentration of solids: 500 ppm
-       - overflow concentration of solids:   100 ppm
        - # of thickeners:                    4
-       - underflow concentration of solids:  99000 ppm
+       - volume per thickener:               0.988 m^3
+       - wash water volumetric flowrate:     1067 gallons/min
+       - feed mass fraction of solids:       100000 ppm
+       - wash water mass fraction of solids: 500 ppm
+       - overflow mass fraction of solids:   100 ppm
+       - underflow mass fraction of solids:  99000 ppm
 
-
-   + Wash water (volume? mass?) flowrate:
-   + Feed (aqueous/solids) (volume? mass?) flow rate:
+   + Filtration:
 
    Source of info:
 """
@@ -54,8 +56,7 @@ class DecantationFiltration(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['decantation-inflow', 'decantation-outflow',
-                                     'drum-inflow', 'drum-outflow'] #Need to define these
+        self.port_names_expected = ['feed', 'filtrate']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -71,99 +72,35 @@ class DecantationFiltration(Module):
         # Domain attributes
 
         # Configuration parameters
-        self.wash_water_flowrate = 1.0 * unit.liter/unit.minute
-
-        '''
-        Example
-
-        self.discard_tau_recording_before = 2*unit.minute
-        self.heat_transfer_area = 1665.57*unit.meter**2
-
-        self.helicoil_outer_radius = 16/2*unit.milli*unit.meter
-        self.helicoil_tube_wall = 0.9*unit.milli*unit.meter
-        self.helicoil_inner_radius = self.helicoil_outer_radius - self.helicoil_tube_wall
-        self.helicoil_length = 22.3*unit.meter
-        self.n_helicoil_tubes = 1380
-
-        self.wall_temp_delta_primary = 1.5*unit.K
-        self.wall_temp_delta_secondary = 1.5*unit.K
-
-        self.iconel690_k = 12.1*unit.watt/unit.meter/unit.kelvin
-
-        self.helix_to_cylinder = 1./.928
-
-        self.secondary_volume = math.pi * self.helicoil_inner_radius**2 * \
-                                self.helicoil_length * self.n_helicoil_tubes *\
-                                self.helix_to_cylinder
-
-        self.primary_volume = 0.5 * self.secondary_volume
-
-        # Ratio of the tube bundle pithc transverse to flow to parallel to flow
-        self.tube_bundle_pitch_ratio = 1.5  # st/sl
-        '''
+        self.thickener_volume = 0.988 * unit.meter**3
+        self.wash_water_vol_flowrate = 1067 * unit.gallon/unit.minute
+        self.decantation_relaxation_time = 20 * unit.minute
 
         # Initialization
 
-        # Decantation          
+        # Decantation
         self.decantation_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
-        self.decantation_feed_solids_conc = 100 * unit.ppm
+        self.decantation_feed_mass_density = 7.8 * unit.kg/unit.liter
+        self.decantation_feed_solids_massfrac = 100 * unit.ppm
 
         self.decantation_underflow_mass_flowrate = 1.0 * unit.liter/unit.minute
-        self.decantation_underflow_solids_conc = 100 * unit.ppm
+        self.decantation_underflow_solids_massfrac = 100 * unit.ppm
 
         self.decantation_overflow_mass_flowrate = 1.0 * unit.liter/unit.minute
-        self.decantation_overflow_solids_conc = 100 * unit.ppm
+        self.decantation_overflow_solids_massfrac = 100 * unit.ppm
 
         # Filtration
+        self.filtration_slurry_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.filtration_slurry_solids_massfrac = 100 * unit.ppm
 
-        self.filtration_underflow_mass_flowrate = 1.0 * unit.liter/unit.minute
-        self.filtration_underflow_solids_conc = 100 * unit.ppm
+        self.filtration_filtrate_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.filtration_filtrate_solids_massfrac = 100 * unit.ppm
 
-
-
-        '''
-        Example
-
-        self.primary_inflow_temp = primary_inflow_temp
-
-        self.primary_pressure = 127.6*unit.bar
-
-        self.primary_mass_flowrate = 4.66e6*unit.lb/unit.hour
-
-        self.primary_outflow_temp = self.primary_inflow_temp #- 2*unit.K
-
-        self.secondary_inflow_temp = secondary_inflow_temp
-
-        self.secondary_pressure = 34*unit.bar
-        self.secondary_mass_flowrate = 67*unit.kg/unit.second
-
-        self.secondary_outflow_temp = self.secondary_inflow_temp #- 2*unit.K
-
-        self.secondary_outflow_quality = 0 # running value of quality
-        '''
-        '''
         # Derived quantities
-        self.rho_p = 0.0
-        self.cp_p = 0.0
-        self.mu_p = 0.0
-        self.k_p = 0.0
-        self.prtl_p = 0.0
-        self.rey_p = 0.0
-        self.nusselt_p = 0.0
-
-        self.rho_s = 0.0
-        self.cp_s = 0.0
-        self.mu_s = 0.0
-        self.k_s = 0.0
-        self.prtl_s = 0.0
-        self.rey_s = 0.0
-        self.nusselt_s = 0.0
-
-        self.heat_sink_pwr = 0.0
-        '''
+        # self.xxxx
 
         #***************************************************************************************
-        # D E C A N T A T I O N 
+        # D E C A N T A T I O N
         #***************************************************************************************
 
         # Decantation Feed Phase History (leaching outflow)
@@ -173,17 +110,24 @@ class DecantationFiltration(Module):
         feed_mass_flowrate = Quantity(name='mass_flowrate',
                         formal_name='mdot', unit='kg/s',
                         value=self.decantation_feed_mass_flowrate,
-                        latex_name=r'$\dot{m}_1$',
+                        latex_name=r'$\dot{m}$',
                         info='Decantation Feed Mass Flowrate')
         quantities.append(feed_mass_flowrate)
 
-        feed_solids_conc = Quantity(name='solids_conc',
-                        formal_name='solids_conc', unit='ppm',
-                        value=self.decantation_feed_solids_conc,
-                        latex_name=r'$C_1$',
-                        info='Decantation Feed Solids Concentration')
+        feed_mass_density = Quantity(name='mass_density',
+                        formal_name='rho', unit='kg/m^3',
+                        value=self.decantation_feed_mass_density,
+                        latex_name=r'$\rho$',
+                        info='Decantation Feed Mass Density')
+        quantities.append(feed_mass_density)
 
-        quantities.append(feed_solids_conc)
+        feed_solids_massfrac = Quantity(name='solids_massfrac',
+                        formal_name='solids_massfrac', unit='ppm',
+                        value=self.decantation_feed_solids_massfrac,
+                        latex_name=r'$C_1$',
+                        info='Decantation Feed Solids Mass Fraction')
+
+        quantities.append(feed_solids_massfrac)
 
         uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(aq)',
                            atoms=['U','2*O','3*S','12*O'],
@@ -215,8 +159,8 @@ class DecantationFiltration(Module):
                            info='Au')
         species.append(gold_feed)
 
-        self.feed_phase = Phase(time_stamp=self.initial_time,
-                                time_unit='s', quantities=quantities, species=species)
+        self.decantation_feed_phase = Phase(time_stamp=self.initial_time,
+                                            time_unit='s', quantities=quantities, species=species)
 
         # Decantation Underflow Phase History (internal state/external)
         quantities = list()
@@ -229,13 +173,13 @@ class DecantationFiltration(Module):
                                        info='Decantation Underflow Mass Flowrate')
         quantities.append(underflow_mass_flowrate)
 
-        underflow_solids_conc = Quantity(name='solids_conc',
-                        formal_name='solids_conc', unit='ppm',
-                        value=self.decantation_underflow_solids_conc,
+        underflow_solids_massfrac = Quantity(name='solids_massfrac',
+                        formal_name='solids_massfrac', unit='ppm',
+                        value=self.decantation_underflow_solids_massfrac,
                         latex_name=r'$C_1$',
-                        info='Decantation Underflow Solids Concentration')
+                        info='Decantation Underflow Solids Mass Fraction')
 
-        quantities.append(underflow_solids_conc)
+        quantities.append(underflow_solids_massfrac)
 
         uo2so434minus_underflow = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(aq)',
                            atoms=['U','2*O','3*S','12*O'],
@@ -267,8 +211,8 @@ class DecantationFiltration(Module):
                            info='Au')
         species.append(gold_underflow)
 
-        self.underflow_phase = Phase(time_stamp=self.initial_time,
-                                     time_unit='s', quantities=quantities, species=species)
+        self.decantation_underflow_phase = Phase(time_stamp=self.initial_time,
+                                                 time_unit='s', quantities=quantities, species=species)
 
         # Decantation Overflow Phase History (internal state)
         quantities = list()
@@ -281,13 +225,13 @@ class DecantationFiltration(Module):
                         info='Decantation Overflow Mass Flowrate')
         quantities.append(overflow_mass_flowrate)
 
-        overflow_solids_conc = Quantity(name='solids_conc',
-                        formal_name='solids_conc', unit='ppm',
-                        value=self.decantation_overflow_solids_conc,
+        overflow_solids_massfrac = Quantity(name='solids_massfrac',
+                        formal_name='solids_massfrac', unit='ppm',
+                        value=self.decantation_overflow_solids_massfrac,
                         latex_name=r'$C_1$',
-                        info='Decantation Overflow Solids Concentration')
+                        info='Decantation Overflow Solids Mass Fraction')
 
-        quantities.append(overflow_solids_conc)
+        quantities.append(overflow_solids_massfrac)
 
         uo2so434minus_overflow = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(aq)',
                            atoms=['U','2*O','3*S','12*O'],
@@ -319,8 +263,8 @@ class DecantationFiltration(Module):
                            info='Au')
         species.append(gold_overflow)
 
-        self.overflow_phase = Phase(time_stamp=self.initial_time,
-                                    time_unit='s', quantities=quantities, species=species)
+        self.decantation_overflow_phase = Phase(time_stamp=self.initial_time,
+                                                time_unit='s', quantities=quantities, species=species)
 
 
         #***************************************************************************************
@@ -328,7 +272,6 @@ class DecantationFiltration(Module):
         #***************************************************************************************
 
         # Filtration Slurry Phase History (internal state/external)
-
         quantities = list()
         species = list()  # Is it proper to rest the species list too?
 
@@ -339,13 +282,13 @@ class DecantationFiltration(Module):
                                        info='Filtration Slurry Mass Flowrate')
         quantities.append(slurry_mass_flowrate)
 
-        slurry_solids_conc = Quantity(name='solids_conc',
-                        formal_name='solids_conc', unit='ppm',
-                        value=self.filtration_slurry_solids_conc,
+        slurry_solids_massfrac = Quantity(name='solids_massfrac',
+                        formal_name='solids_massfrac', unit='ppm',
+                        value=self.filtration_slurry_solids_massfrac,
                         latex_name=r'$C_1$',
-                        info='Filtration Slurry Solids Concentration')
+                        info='Filtration Slurry Solids Mass Fraction')
 
-        quantities.append(slurry_solids_conc)
+        quantities.append(slurry_solids_massfrac)
 
         uo2so434minus_slurry = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(aq)',
                            atoms=['U','2*O','3*S','12*O'],
@@ -377,140 +320,60 @@ class DecantationFiltration(Module):
                            info='Au')
         species.append(gold_slurry)
 
-        self.slurry_phase = Phase(time_stamp=self.initial_time,
+        self.filtration_slurry_phase = Phase(time_stamp=self.initial_time,
                                   time_unit='s', quantities=quantities, species=species)
 
-
-
-
-
-        '''
+        # Filtration Filtrate Phase History (internal state/external)
         quantities = list()
-        temp = Quantity(name='temp',
-                        formal_name='T_1', unit='K',
-                        value=self.primary_outflow_temp,
-                        latex_name=r'$T_1$',
-                        info='Steamer Primary Outflow Temperature')
+        species = list()  # Is it proper to rest the species list too?
 
-        quantities.append(temp)
+        filtrate_mass_flowrate = Quantity(name='mass_flowrate',
+                                       formal_name='mdot', unit='kg/s',
+                                       value=self.filtration_filtrate_mass_flowrate,
+                                       latex_name=r'$\dot{m}_4$',
+                                       info='Filtration Filtrate Mass Flowrate')
+        quantities.append(filtrate_mass_flowrate)
 
-        flowrate = Quantity(name='flowrate',
-                        formal_name='mdot', unit='kg/s',
-                        value=self.primary_mass_flowrate,
-                        latex_name=r'$\dot{m}_1$',
-                        info='Steamer Primary Mass Flowrate')
+        filtrate_solids_massfrac = Quantity(name='solids_massfrac',
+                        formal_name='solids_massfrac', unit='ppm',
+                        value=self.filtration_filtrate_solids_massfrac,
+                        latex_name=r'$C_1$',
+                        info='Filtration Filtrate Solids Mass Fraction')
 
-        quantities.append(flowrate)
+        quantities.append(filtrate_solids_massfrac)
 
-        self.primary_outflow_phase = Phase(time_stamp=self.initial_time,
-                                           time_unit='s', quantities=quantities)
+        uo2so434minus_filtrate = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(aq)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_filtrate)
 
-        # Secondary inflow phase history
-        quantities = list()
+        h2o_filtrate = Species(name='H2O',formula_name='H2O(aq)',
+                           atoms=['2*H','O'],
+                           info='H2O')
+        species.append(h2o_filtrate)
 
-        flowrate = Quantity(name='flowrate',
-                            formal_name='m2i', unit='kg/s',
-                            value=self.secondary_mass_flowrate,
-                            latex_name=r'$\dot{m}_{2,in}$',
-                            info='Steamer Secondary Inflow Mass Flowrate')
+        h2so4_filtrate = Species(name='H2SO4',formula_name='H2SO4(aq)',
+                           atoms=['2*H','S','4*O'],
+                           info='H2SO4')
+        species.append(h2so4_filtrate)
 
-        quantities.append(flowrate)
+        iron_filtrate = Species(name='Fe', formula_name='Fe(s)',
+                           atoms=['Fe'],
+                           info='Fe')
+        species.append(iron_filtrate)
 
-        temp = Quantity(name='temp',
-                        formal_name='T2i', unit='K',
-                        value=self.secondary_inflow_temp,
-                        latex_name=r'$T_{2,in}$',
-                        info='Steamer Secondary Inflow Temperature')
+        copper_filtrate = Species(name='Cu', formula_name='Cu(s)',
+                           atoms=['Cu'],
+                           info='Cu')
+        species.append(copper_filtrate)
 
-        quantities.append(temp)
+        gold_filtrate = Species(name='Au', formula_name='Au(s)',
+                           atoms=['Au'],
+                           info='Au')
+        species.append(gold_filtrate)
 
-        self.secondary_inflow_phase = Phase(time_stamp=self.initial_time,
-                                            time_unit='s', quantities=quantities)
-
-        # Secondary outflow phase history
-        quantities = list()
-
-        flowrate = Quantity(name='flowrate',
-                            formal_name='m_2', unit='kg/s',
-                            value=self.secondary_mass_flowrate,
-                            latex_name=r'$\dot{m}_2$',
-                            info='Steamer Secondary Outflow Mass Flowrate')
-
-        quantities.append(flowrate)
-
-        temp = Quantity(name='temp',
-                        formal_name='T_2', unit='K',
-                        value=self.secondary_outflow_temp,
-                        latex_name=r'$T_2$',
-                        info='Steamer Secondary Outflow Temperature')
-
-        quantities.append(temp)
-
-        press = Quantity(name='pressure',
-                         formal_name='P_2', unit='Pa',
-                         value=self.secondary_pressure,
-                         latex_name=r'$P_2$',
-                         info='Steamer Secondary Outflow Pressure')
-
-        quantities.append(press)
-
-        quality = Quantity(name='quality',
-                         formal_name='X', unit='',
-                         value=self.secondary_outflow_quality,
-                         latex_name=r'$\chi$',
-                         info='Steamer Secondary Outflow Quality')
-
-        quantities.append(quality)
-
-        self.secondary_outflow_phase = Phase(time_stamp=self.initial_time,
-                                             time_unit='s', quantities=quantities)
-
-        # State phase history
-        quantities = list()
-
-        tau_p = Quantity(name='tau_p',
-                        formal_name='Tau_p', unit='s',
-                        value=0.0,
-                        latex_name=r'$\tau_{p}$',
-                        info='Steamer Primary Residence Time')
-
-        quantities.append(tau_p)
-
-        tau_s = Quantity(name='tau_s',
-                        formal_name='Tau_s', unit='s',
-                        value=0.0,
-                        latex_name=r'$\tau_{s}$',
-                        info='Steamer Secondary Residence Time')
-
-        quantities.append(tau_s)
-
-        heatflux = Quantity(name='heatflux',
-                        formal_name="q''", unit='W/m$^2$',
-                        value=0.0,
-                        latex_name=r"$q''$",
-                        info='Steamer Heat Flux')
-
-        quantities.append(heatflux)
-
-        nusselt_p = Quantity(name='nusselt_p',
-                        formal_name='Nu_p', unit='',
-                        value=0.0,
-                        latex_name=r'$Nu_p$',
-                        info='Steamer Primary Nusselt Number')
-
-        quantities.append(nusselt_p)
-
-        nusselt_s = Quantity(name='nusselt_s',
-                        formal_name='Nu_s', unit='',
-                        value=0.0,
-                        latex_name=r'$Nu_s$',
-                        info='Steamer Secondary Nusselt Number')
-
-        quantities.append(nusselt_s)
-
-        self.state_phase = Phase(time_stamp=self.initial_time,
-                                 time_unit='s', quantities=quantities)
-        '''
+        self.filtration_filtrate_phase = Phase(time_stamp=self.initial_time,
+                                  time_unit='s', quantities=quantities, species=species)
 
     def run(self, *args):
 
@@ -547,158 +410,113 @@ class DecantationFiltration(Module):
 
             # Communicate information
             #------------------------
-            #self.__call_ports(time)
+
+            self.__call_ports(time)
 
         self.end_time = time # correct the final time if needed
 
-
-
-    '''
     def __call_ports(self, time):
 
-        # Interactions in the decantation-inflow port
-        #----------------------------------------
-        # One way "from" decantation-inflow
+        # Interactions in the feed port
+        #------------------------------
+        # One way "from" feed port
 
         # Receive from
-        if self.get_port('decantation-inflow').connected_port:
+        if self.get_port('feed').connected_port:
 
-            self.send(time, 'decantation-inflow')
+            self.send(time, 'feed')
 
-            (check_time, primary_inflow) = self.recv('decantation-inflow')
+            (check_time, feed_phase) = self.recv('feed')
             assert abs(check_time-time) <= 1e-6
 
-            self.primary_inflow_temp = primary_inflow['temperature']
-            self.primary_ressure = primary_inflow['pressure']
-            self.primary_mass_flowrate = primary_inflow['mass_flowrate']
+            # insert data from feed_phase into decantation_feed_phase history
 
-        # Interactions in the secondary-inflow port
-        #----------------------------------------
-        # One way "from" secondary-inflow
-
-        # Receive from
-        if self.get_port('secondary-inflow').connected_port:
-
-            self.send(time, 'secondary-inflow')
-
-            (check_time, secondary_inflow) = self.recv('secondary-inflow')
-            assert abs(check_time-time) <= 1e-6
-
-            self.secondary_inflow_temp = secondary_inflow['temperature']
-            self.secondary_pressure = secondary_inflow['pressure']
-            self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
-
-        # Interactions in the primary-outflow port
-        #-----------------------------------------
-        # One way "to" primary-outflow
+        # Interactions in the filtrate port
+        #----------------------------------
+        # One way "to" filtrate port
 
         # Send to
-        if self.get_port('primary-outflow').connected_port:
+        if self.get_port('filtrate').connected_port:
 
-            msg_time = self.recv('primary-outflow')
+            msg_time = self.recv('filtrate')
 
+            '''
             temp = self.primary_outflow_phase.get_value('temp', msg_time)
-
             primary_outflow = dict()
             primary_outflow['temperature'] = temp
             primary_outflow['pressure'] = self.primary_pressure
             primary_outflow['mass_flowrate'] = self.primary_mass_flowrate
             primary_outflow['quality'] = 0.0
+            '''
+            # extract filtration_filtrate_phase data at msg_time to send 
 
-            self.send((msg_time, primary_outflow), 'primary-outflow')
+            self.send((msg_time, filtrate_phase), 'filtrate')
 
-        # Interactions in the secondary-outflow port
-        #-----------------------------------------
-        # One way "to" secondary-outflow
+    def __step(self, time=0.0):
+        """Stepping Decantation-Filtration in time
+        """
 
-        # Send to
-        if self.get_port('secondary-outflow').connected_port:
+        '''
+        # Get state values
+        u_0 = self.__get_state_vector(time)
 
-            msg_time = self.recv('secondary-outflow')
+        t_interval_sec = np.linspace(time, time+self.time_step, num=2)
 
-            temp = self.secondary_outflow_phase.get_value('temp', msg_time)
-            press = self.secondary_outflow_phase.get_value('pressure', msg_time)
-            flowrate = self.secondary_outflow_phase.get_value('flowrate', msg_time)
+        max_n_steps_per_time_step = 1500 # max number of nonlinear algebraic solver
+                                         # iterations per time step
 
-            secondary_outflow = dict()
-            secondary_outflow['temperature'] = temp
-            secondary_outflow['pressure'] = press
-            secondary_outflow['mass_flowrate'] = flowrate
-            secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
+        (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
+                                         rtol=1e-7, atol=1e-8,
+                                         mxstep=max_n_steps_per_time_step,
+                                         full_output=True, tfirst=False)
 
-            self.send((msg_time, secondary_outflow), 'secondary-outflow')
-    '''
+        assert info_dict['message'] == 'Integration successful.', info_dict['message']
 
-    def __call_ports(self, time):
+        u_vec = u_vec_hist[1, :]  # solution vector at final time step
 
-        # Interactions in the decantation-inflow port
-        #----------------------------------------
-        # One way "from" decantation-inflow
+        temp_p = u_vec[0] # primary outflow temp
+        temp_s = u_vec[1] # secondary outflow temp
 
-        # Receive from
-        if self.get_port('decantation-inflow').connected_port:
+        # Update phases
+        primary_outflow = self.primary_outflow_phase.get_row(time)
+        secondary_inflow = self.secondary_inflow_phase.get_row(time)
+        secondary_outflow = self.secondary_outflow_phase.get_row(time)
+        steamer = self.state_phase.get_row(time)
+        '''
 
-            self.send(time, 'decantation-inflow')
+        time += self.time_step
 
-            (check_time, primary_inflow) = self.recv('decantation-inflow')
-            assert abs(check_time-time) <= 1e-6
+        '''
+        self.primary_outflow_phase.add_row(time, primary_outflow)
+        self.primary_outflow_phase.set_value('temp', temp_p, time)
+        self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
 
-            self.primary_inflow_temp = primary_inflow['temperature']
-            self.primary_ressure = primary_inflow['pressure']
-            self.primary_mass_flowrate = primary_inflow['mass_flowrate']
+        self.secondary_inflow_phase.add_row(time, secondary_inflow)
+        self.secondary_inflow_phase.set_value('temp', self.secondary_inflow_temp, time)
+        self.secondary_inflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
 
-        # Interactions in the secondary-inflow port
-        #----------------------------------------
-        # One way "from" secondary-inflow
+        self.secondary_outflow_phase.add_row(time, secondary_outflow)
+        self.secondary_outflow_phase.set_value('temp', temp_s, time)
+        self.secondary_outflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
+        self.secondary_outflow_phase.set_value('pressure', self.secondary_pressure, time)
+        self.secondary_outflow_phase.set_value('quality', self.secondary_outflow_quality, time)
 
-        # Receive from
-        if self.get_port('secondary-inflow').connected_port:
+        self.state_phase.add_row(time, steamer)
 
-            self.send(time, 'secondary-inflow')
+        # Primary residence time
+        self.state_phase.set_value('tau_p', self.tau_p, time)
 
-            (check_time, secondary_inflow) = self.recv('secondary-inflow')
-            assert abs(check_time-time) <= 1e-6
+        # Secondary residence time
+        self.state_phase.set_value('tau_s', self.tau_s, time)
 
-            self.secondary_inflow_temp = secondary_inflow['temperature']
-            self.secondary_pressure = secondary_inflow['pressure']
-            self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
+        # Heat flux and Nusselt number
+        heatflux = -self.heat_sink_pwr/self.heat_transfer_area
+        self.state_phase.set_value('heatflux', heatflux, time)
 
-        # Interactions in the primary-outflow port
-        #-----------------------------------------
-        # One way "to" primary-outflow
+        self.state_phase.set_value('nusselt_p', self.nusselt_p, time)
 
-        # Send to
-        if self.get_port('primary-outflow').connected_port:
+        self.state_phase.set_value('nusselt_s', self.nusselt_s, time)
+        '''
 
-            msg_time = self.recv('primary-outflow')
+        return time
 
-            temp = self.primary_outflow_phase.get_value('temp', msg_time)
-
-            primary_outflow = dict()
-            primary_outflow['temperature'] = temp
-            primary_outflow['pressure'] = self.primary_pressure
-            primary_outflow['mass_flowrate'] = self.primary_mass_flowrate
-            primary_outflow['quality'] = 0.0
-
-            self.send((msg_time, primary_outflow), 'primary-outflow')
-
-        # Interactions in the secondary-outflow port
-        #-----------------------------------------
-        # One way "to" secondary-outflow
-
-        # Send to
-        if self.get_port('secondary-outflow').connected_port:
-
-            msg_time = self.recv('secondary-outflow')
-
-            temp = self.secondary_outflow_phase.get_value('temp', msg_time)
-            press = self.secondary_outflow_phase.get_value('pressure', msg_time)
-            flowrate = self.secondary_outflow_phase.get_value('flowrate', msg_time)
-
-            secondary_outflow = dict()
-            secondary_outflow['temperature'] = temp
-            secondary_outflow['pressure'] = press
-            secondary_outflow['mass_flowrate'] = flowrate
-            secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
-
-            self.send((msg_time, secondary_outflow), 'secondary-outflow')
