@@ -14,6 +14,8 @@ pascal = 1.0
 watt = 1.0
 kelvin = 1.0
 
+ppm = 1.0
+
 cm = centi*meter
 ft = foot
 cc = (centi*meter)**3
