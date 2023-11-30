@@ -5,24 +5,35 @@
 """Cortix Module.
    Decantation/Filtration process in the White Mesa Uranium Milling Plant.
 
-                   v
-                   |  Feed (from leaching)
-                   |
-                   |
- Decant.   |-----------------|
- overflow  |                 |
-           |   Decantation   |<-------- Wash water (internal)
-    <------|                 |
-           |   Filtration    |
-           |_________________|
-                |       |
-                |       |
-                |       |
-                v       v
-             Filtrate  Slurry (internal)
+
+          Acid-Leach Feed
+                |            |
+                |            | Pre-Leach Feed
+                |            |
+                v            v
+ STD         |-----------------|
+ underflow   |                 |
+    <--------|   Decantation   |<-------- Wash water (internal)
+             |                 |
+    <--------|   Filtration    |
+ CCD         |                 |
+ overflow    |_________________|<-------- Raffinate Feed
+                  |       |
+                  |       |
+                  |       |
+                  v       v
+               Filtrate  Slurry Waste (TBD)
+
+ NB. STD underflow goes to acid leaching
+ NB. CCD overflow goes to pre-leaching
+ NB. Filtrate goes to solvent extraction
+
 
    + Decantation:
-       - # of thickeners:                    4
+     1) Single-Tank Decantation  (STD)
+
+     2) Counter-Current Decantation Bank (CCD)
+       - # of thickeners:                    7
        - volume per thickener:               0.988 m^3
        - wash water volumetric flowrate:     1067 gallons/min
        - feed mass fraction of solids:       100000 ppm
@@ -69,7 +80,8 @@ class DecantationFiltration(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['feed', 'filtrate']
+        self.port_names_expected = ['pre-leach-feed', 'acid-leach-feed', 'raffinate-feed',
+                                    'filtrate']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -92,9 +104,17 @@ class DecantationFiltration(Module):
         # Initialization
 
         # Decantation
-        self.decantation_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
-        self.decantation_feed_mass_density = 7.8 * unit.kg/unit.liter
-        self.decantation_feed_solids_massfrac = 100 * unit.ppm
+        self.decantation_preleach_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.decantation_preleach_feed_mass_density = 7.8 * unit.kg/unit.liter
+        self.decantation_preleach_feed_solids_massfrac = 100 * unit.ppm
+
+        self.decantation_acidleach_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.decantation_acidleach_feed_mass_density = 7.8 * unit.kg/unit.liter
+        self.decantation_acidleach_feed_solids_massfrac = 100 * unit.ppm
+
+        self.decantation_raffinate_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.decantation_raffinate_feed_mass_density = 7.8 * unit.kg/unit.liter
+        self.decantation_raffinate_feed_solids_massfrac = 100 * unit.ppm
 
         self.decantation_underflow_mass_flowrate = 1.0 * unit.liter/unit.minute
         self.decantation_underflow_solids_massfrac = 100 * unit.ppm
@@ -116,29 +136,29 @@ class DecantationFiltration(Module):
         # D E C A N T A T I O N
         #***************************************************************************************
 
-        # Decantation Feed Phase History (leaching outflow)
+        # Decantation Pre-Leach Feed Phase History (from Leaching module port)
         quantities = list()
         species = list()
 
         feed_mass_flowrate = Quantity(name='mass_flowrate',
                         formal_name='mdot', unit='kg/s',
-                        value=self.decantation_feed_mass_flowrate,
+                        value=self.decantation_preleach_feed_mass_flowrate,
                         latex_name=r'$\dot{m}$',
                         info='Decantation Feed Mass Flowrate')
         quantities.append(feed_mass_flowrate)
 
         feed_mass_density = Quantity(name='mass_density',
                         formal_name='rho', unit='kg/m^3',
-                        value=self.decantation_feed_mass_density,
+                        value=self.decantation_preleach_feed_mass_density,
                         latex_name=r'$\rho$',
-                        info='Decantation Feed Mass Density')
+                        info='Decantation Pre-Leach Feed Mass Density')
         quantities.append(feed_mass_density)
 
         feed_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
-                        value=self.decantation_feed_solids_massfrac,
+                        value=self.decantation_preleach_feed_solids_massfrac,
                         latex_name=r'$C_1$',
-                        info='Decantation Feed Solids Mass Fraction')
+                        info='Decantation Pre-Leach Feed Solids Mass Fraction')
 
         quantities.append(feed_solids_massfrac)
 
@@ -172,7 +192,117 @@ class DecantationFiltration(Module):
                            info='Au')
         species.append(gold_feed)
 
-        self.decantation_feed_phase = Phase(time_stamp=self.initial_time,
+        self.decantation_preleach_feed_phase = Phase(time_stamp=self.initial_time,
+                                            time_unit='s', quantities=quantities, species=species)
+
+        # Decantation Acid-Leach Feed Phase History (from Leaching module port)
+        quantities = list()
+        species = list()
+
+        feed_mass_flowrate = Quantity(name='mass_flowrate',
+                        formal_name='mdot', unit='kg/s',
+                        value=self.decantation_acidleach_feed_mass_flowrate,
+                        latex_name=r'$\dot{m}$',
+                        info='Decantation Feed Mass Flowrate')
+        quantities.append(feed_mass_flowrate)
+
+        feed_mass_density = Quantity(name='mass_density',
+                        formal_name='rho', unit='kg/m^3',
+                        value=self.decantation_acidleach_feed_mass_density,
+                        latex_name=r'$\rho$',
+                        info='Decantation Acid-Leach Feed Mass Density')
+        quantities.append(feed_mass_density)
+
+        feed_solids_massfrac = Quantity(name='solids_massfrac',
+                        formal_name='solids_massfrac', unit='ppm',
+                        value=self.decantation_acidleach_feed_solids_massfrac,
+                        latex_name=r'$C_1$',
+                        info='Decantation Acid-Leach Feed Solids Mass Fraction')
+
+        quantities.append(feed_solids_massfrac)
+
+        uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(aq)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_feed)
+
+        h2o_feed = Species(name='H2O',formula_name='H2O(aq)',
+                           atoms=['2*H','O'],
+                           info='H2O')
+        species.append(h2o_feed)
+
+        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(aq)',
+                           atoms=['2*H','S','4*O'],
+                           info='H2SO4')
+        species.append(h2so4_feed)
+
+        iron_feed = Species(name='Fe', formula_name='Fe(s)',
+                           atoms=['Fe'],
+                           info='Fe')
+        species.append(iron_feed)
+
+        copper_feed = Species(name='Cu', formula_name='Cu(s)',
+                           atoms=['Cu'],
+                           info='Cu')
+        species.append(copper_feed)
+
+        gold_feed = Species(name='Au', formula_name='Au(s)',
+                           atoms=['Au'],
+                           info='Au')
+        species.append(gold_feed)
+
+        self.decantation_acidleach_feed_phase = Phase(time_stamp=self.initial_time,
+                                            time_unit='s', quantities=quantities, species=species)
+
+        # Decantation Raffinate Feed Phase History (from Leaching module port)
+        quantities = list()
+        species = list()
+
+        feed_mass_flowrate = Quantity(name='mass_flowrate',
+                        formal_name='mdot', unit='kg/s',
+                        value=self.decantation_raffinate_feed_mass_flowrate,
+                        latex_name=r'$\dot{m}$',
+                        info='Decantation Feed Mass Flowrate')
+        quantities.append(feed_mass_flowrate)
+
+        feed_mass_density = Quantity(name='mass_density',
+                        formal_name='rho', unit='kg/m^3',
+                        value=self.decantation_raffinate_feed_mass_density,
+                        latex_name=r'$\rho$',
+                        info='Decantation Raffinate Feed Mass Density')
+        quantities.append(feed_mass_density)
+
+        uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(aq)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_feed)
+
+        h2o_feed = Species(name='H2O',formula_name='H2O(aq)',
+                           atoms=['2*H','O'],
+                           info='H2O')
+        species.append(h2o_feed)
+
+        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(aq)',
+                           atoms=['2*H','S','4*O'],
+                           info='H2SO4')
+        species.append(h2so4_feed)
+
+        iron_feed = Species(name='Fe', formula_name='Fe(s)',
+                           atoms=['Fe'],
+                           info='Fe')
+        species.append(iron_feed)
+
+        copper_feed = Species(name='Cu', formula_name='Cu(s)',
+                           atoms=['Cu'],
+                           info='Cu')
+        species.append(copper_feed)
+
+        gold_feed = Species(name='Au', formula_name='Au(s)',
+                           atoms=['Au'],
+                           info='Au')
+        species.append(gold_feed)
+
+        self.decantation_raffinate_feed_phase = Phase(time_stamp=self.initial_time,
                                             time_unit='s', quantities=quantities, species=species)
 
         # Decantation Underflow Phase History (internal state/external)
@@ -435,11 +565,11 @@ class DecantationFiltration(Module):
         # One way "from" feed port
 
         # Receive from
-        if self.get_port('feed').connected_port:
+        if self.get_port('pre-leach-feed').connected_port:
 
-            self.send(time, 'feed')
+            self.send(time, 'pre-leach-feed')
 
-            (check_time, feed_phase) = self.recv('feed')
+            (check_time, feed_phase) = self.recv('pre-leach-feed')
             assert abs(check_time-time) <= 1e-6
 
             # insert data from feed_phase into decantation_feed_phase history
