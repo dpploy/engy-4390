@@ -5,6 +5,25 @@
 """
 Cortix Module
 This module is a model of the Solvent Extraction process in the White Mesa Uranium Milling Plant
+
+
+                   v
+                   |  Feed (from Decantation-Filtration)
+                   |
+                   |
+           |-----------------|
+           |     Solvent     |--------> Barren Solution (to Decantation-Filtration)
+           |   Extraction    |
+           |                 |
+           |   Stripping     |<-------- Wash Water (internal)
+           |_________________|
+                |       v
+                |       |
+                |       |
+                v       |
+            Pregnant  Barren
+            Strip     Strip
+(to Precipitation)    (from Precipitation)
 """
 
 import logging
@@ -21,18 +40,17 @@ from cortix import Species
 import unit
 
 class Solvex(Module):
-    """Steam generator.
+    """Solvent Extraction system.
 
     Notes
     -----
     These are the `port` names available in this module to connect to respective
-    modules: Filtration, Precipitation.
+    modules: Decantation_Filtration, Precipitation.
     See instance attribute `port_names_expected`.
 
     """
     
     def __init__(self):
-        #Original: def __init__(self, primary_inflow_temp=20+273.15, secondary_inflow_temp=20+273.15):
         """Constructor.
 
         Parameters
