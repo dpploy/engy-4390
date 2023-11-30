@@ -4,9 +4,22 @@
 # https://cortix.org
 """Cortix Module.
    Decantation/Filtration process in the White Mesa Uranium Milling Plant.
-   Add info here:...
 
-   Mass fraction in ppm.
+                   v
+                   |  Feed (from leaching)
+                   |
+                   |
+ Decant.   |-----------------|
+ overflow  |                 |
+           |   Decantation   |<-------- Wash water (internal)
+    <------|                 |
+           |   Filtration    |
+           |_________________|
+                |       |
+                |       |
+                |       |
+                v       v
+             Filtrate  Slurry (internal)
 
    + Decantation:
        - # of thickeners:                    4
