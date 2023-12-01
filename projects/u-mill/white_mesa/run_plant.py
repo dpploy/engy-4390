@@ -4,97 +4,91 @@
 # https://cortix.org
 """Cortix Run File"""
 
-import unit
 import matplotlib.pyplot as plt
 
 from cortix import Cortix
 from cortix import Network
 
-from reactor import SMPWR
-from steamer import Steamer
-from turbine import Turbine
-from condenser import Condenser
-from water_heater import WaterHeater
+import unit
+
+from decantation_filtration import DecantationFiltration
+from solvex import Solvex
 
 def main():
 
     # Debugging
-    make_plots = True
-    make_run   = True
+    make_run   = False
+    make_plots = False
 
     # Preamble
-    end_time = 75*unit.minute
-    time_step = 1.5*unit.second
-    show_time = (True, 5*unit.minute)
+    end_time = 10*unit.minute
+    time_step = 1*unit.second
+    show_time = (True, 1*unit.minute)
 
-    plant = Cortix(use_mpi=False, splash=True) # System top level
+    whte_mesa = Cortix(use_mpi=False, splash=True) # System top level
 
-    plant_net = plant.network = Network() # Network
+    white_mesa_network = whte_mesa.network = Network() # Network
 
-    # Reactor
-    reactor = SMPWR()  # Create reactor module
-    reactor.name = "SM-PWR"
+    # Leaching
 
-    reactor.shutdown = (True, 60*unit.minute)
+    #reactor = SMPWR()  # Create reactor module
+    #reactor.name = "SM-PWR"
 
-    plant_net.module(reactor)  # Add reactor module to network
+    #reactor.shutdown = (True, 60*unit.minute)
 
-    # Steamer
+    #white_mesa_network.module(reactor)  # Add reactor module to network
 
-    steamer = Steamer()  # Create reactor module
+    # Decantation-Filtration
 
-    plant_net.module(steamer)  # Add steamer module to network
+    decant_filt = DecantationFiltration()  # Create decantation/filtration module
 
-    # Turbine
+    decant_filt.name = 'Decantation-Filtration'
+    decant_filt.save = True
+    decant_filt.time_step = time_step
+    decant_filt.end_time = end_time
+    decant_filt.show_time = show_time
 
-    turbine = Turbine()  # Create reactor module
+    white_mesa_network.module(decant_filt)  # Add filtration module to network
 
-    plant_net.module(turbine)  # Add steamer module to network
+    # Solvent extraction
 
-    '''Condenser'''
+    solvex = Solvex()  # Create solvent extraction module
 
-    condenser = Condenser()  # Create condenser module
+    solvex = Solvex()  # Create reactor module
+    solvex.name = 'Solvex'
+    solvex.save = True
+    solvex.time_step = time_step
+    solvex.end_time = end_time
+    solvex.show_time = show_time
 
-    plant_net.module(condenser)  # Add condenser module to network`
+    white_mesa_network.module(solvex)  # Add solvex module to network
 
-    '''Feedwater Heating system'''
+    # White Mesa Network Connectivity
 
-    water_heater = WaterHeater()  # Create water_heater module
+    white_mesa_network.connect([solvex, 'raffinate'], [decant_filt, 'raffinate-feed'])
+    white_mesa_network.connect([decant_filt, 'filtrate'], [solvex, 'extraction-feed'])
 
-    water_heater.malfunction = (True, 30*unit.minute, 45*unit.minute)
-
-    plant_net.module(water_heater)  # Add water_heater module to network
-
-    # Balance of Plant Network Connectivity
-
-    plant_net.connect([reactor, 'coolant-outflow'], [steamer, 'primary-inflow'])
-    plant_net.connect([steamer, 'primary-outflow'], [reactor, 'coolant-inflow'])
-    plant_net.connect([steamer, 'secondary-outflow'], [turbine, 'inflow'])
-    plant_net.connect([turbine, 'outflow'], [condenser, 'inflow'])
-    plant_net.connect([turbine, 'process-heat'], [water_heater, 'external-heat'])
-    plant_net.connect([condenser, 'outflow'], [water_heater, 'inflow'])
-    plant_net.connect([water_heater, 'outflow'], [steamer, 'secondary-inflow'])
-
-    plant_net.draw(engine='circo', node_shape='folder')
+    #white_mesa_network.draw(engine='circo', node_shape='folder')
+    white_mesa_network.draw()
 
     # Run
     if make_run:
 
-        for module in plant_net.modules:
+        for module in white_mesa_network.modules:
             module.time_step = time_step
             module.end_time = end_time
             module.show_time = show_time
 
-        plant.run()  # Run network dynamics simulation
+        whte_mesa.run()  # Run network dynamics simulation
 
     # Cortix run closure
-    plant.close()  # Properly shutdow plant
+    whte_mesa.close()  # Properly shutdow whte_mesa
 
     # Plots
-    if make_plots and plant.use_multiprocessing or plant.rank == 0:
+    if make_plots and whte_mesa.use_multiprocessing or whte_mesa.rank == 0:
 
         # Reactor plots
-        reactor = plant_net.modules[0]
+        reactor = white_mesa_network.modules[0]
 
         (quant, time_unit) = reactor.neutron_phase.get_quantity_history('neutron-dens')
         quant.plot(x_scaling=1/unit.minute, y_scaling=1/max(quant.value),
@@ -189,7 +183,7 @@ def main():
         plt.savefig('reactor-coolant-outflow-quality.png', dpi=300)
 
         # Steamer plots
-        steamer = plant_net.modules[1]
+        steamer = white_mesa_network.modules[1]
 
         (quant, time_unit) = steamer.primary_outflow_phase.get_quantity_history('temp')
 
@@ -269,7 +263,7 @@ def main():
         plt.savefig('steamer-nusselt_s.png', dpi=300)
 
         # Turbine plots
-        turbine = plant_net.modules[2]
+        turbine = white_mesa_network.modules[2]
 
         (quant, time_unit) = turbine.state_phase.get_quantity_history('power')
 
@@ -293,7 +287,7 @@ def main():
         plt.savefig('turbine-rejected-heat.png', dpi=300)
 
         # Condenser plots
-        condenser = plant_net.modules[3]
+        condenser = white_mesa_network.modules[3]
 
         (quant, time_unit) = condenser.inflow_phase.get_quantity_history('temp')
 
@@ -317,7 +311,7 @@ def main():
         plt.savefig('condenser-outflow-temp.png', dpi=300)
 
         # Water heater plots
-        water_heater = plant_net.modules[4]
+        water_heater = white_mesa_network.modules[4]
 
         (quant, time_unit) = water_heater.outflow_phase.get_quantity_history('temp')
 
@@ -346,7 +340,6 @@ def main():
                    y_label=quant.latex_name+r' [M'+quant.unit+']')
         plt.grid()
         plt.savefig('water_heater-rejected-heat.png', dpi=300)
-
 
 if __name__ == '__main__':
     main()

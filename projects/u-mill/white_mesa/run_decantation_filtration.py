@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 from cortix import Cortix
 from cortix import Network
 
-from decantation_filtration import DecantationFiltration
-
 import unit
+
+from decantation_filtration import DecantationFiltration
 
 def main():
 
@@ -31,11 +31,6 @@ def main():
     # Filtration
 
     decant_filt = DecantationFiltration()  # Create decantation/filtration module
-
-    # Steady state conditions for NuSCale case
-    #primary_inflow_temp = (320.9+273.15)*unit.kelvin
-    #secondary_inflow_temp = (149+273.15)*unit.kelvin
-    #filtration = filtration(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
     decant_filt.name = 'Decantation-Filtration'
     decant_filt.save = True
     decant_filt.time_step = time_step

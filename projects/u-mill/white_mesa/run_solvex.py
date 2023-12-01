@@ -16,13 +16,13 @@ from solvex import Solvex
 def main():
 
     # Debugging
+    make_run   = True
     make_plots = False
-    make_run   = False
 
     # Preamble
-    end_time = 10*unit.minute
-    time_step = 1.5*unit.second
-    show_time = (True, 5*unit.minute)
+    end_time = 5*unit.minute
+    time_step = 1*unit.second
+    show_time = (True, 10*unit.second)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -32,11 +32,7 @@ def main():
 
     solvex = Solvex()  # Create solvent extraction module
 
-    # Steady state conditions for NuSCale case
-    #primary_inflow_temp = (320.9+273.15)*unit.kelvin
-    #secondary_inflow_temp = (149+273.15)*unit.kelvin
-    #solvex = Solvex(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
-    '''
+    solvex = Solvex()  # Create reactor module
     solvex.name = 'Solvex'
     solvex.save = True
     solvex.time_step = time_step
@@ -48,7 +44,7 @@ def main():
     # Balance of Plant Network Connectivity
 
     plant_net.draw(engine='circo', node_shape='folder')
-    '''
+
     # Run
     if make_run:
         plant.run()  # Run network dynamics simulation

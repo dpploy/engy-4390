@@ -593,7 +593,7 @@ class DecantationFiltration(Module):
             '''
             # extract filtration_filtrate_phase data at msg_time to send 
 
-            self.send((msg_time, filtrate_phase), 'filtrate')
+            self.send((msg_time, self.filtration_filtrate_phase), 'filtrate')
 
     def __step(self, time=0.0):
         """Stepping Decantation-Filtration in time
