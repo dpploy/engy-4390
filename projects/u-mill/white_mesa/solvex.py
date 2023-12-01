@@ -6,24 +6,29 @@
 Cortix Module
 This module is a model of the Solvent Extraction process in the White Mesa Uranium Milling Plant
 
-
+   Stripping Feed
+(from Precipitation)
+            |             |
+            |             |  Extraction Feed (from Decantation-Filtration)
+            |             |
+            V             v
+           |----------------|
+           |    Solvent     |--------> Raffinate Stream (to Decantation-Filtration)
+           |   Extraction   |
+           |                |
+           |   Scrubbing    |
+           |                |<-------- Organic Feed (internal)
+           |   Stripping    |<-------- Scrub Stream (internal)
+           |________________|
+                   |
+                   |
+                   |
                    v
-                   |  Feed (from Decantation-Filtration)
-                   |
-                   |
-           |-----------------|
-           |     Solvent     |--------> Barren Solution (to Decantation-Filtration)
-           |   Extraction    |
-           |                 |
-           |   Stripping     |<-------- Wash Water (internal)
-           |_________________|
-                |       v
-                |       |
-                |       |
-                v       |
-            Pregnant  Barren
-            Strip     Strip
-(to Precipitation)    (from Precipitation)
+                 Product
+
+ NB. Charged Feed goes to solvent extraction
+ NB. Depleted Feed goes to Stripping
+ NB. Product Stream goes to Precipitation
 """
 
 import logging
@@ -49,7 +54,7 @@ class Solvex(Module):
     See instance attribute `port_names_expected`.
 
     """
-    
+
     def __init__(self):
         """Constructor.
 
@@ -60,8 +65,8 @@ class Solvex(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['primary-inflow', 'primary-outflow',
-                                    'secondary-inflow', 'secondary-outflow']
+        self.port_names_expected = ['extraction-feed', 'stripping-feed',
+                                    'product', 'raffinate']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -103,132 +108,192 @@ class Solvex(Module):
         # Ratio of the tube bundle pithc transverse to flow to parallel to flow
         self.tube_bundle_pitch_ratio = 1.5  # st/sl
         '''
-        
+
         # Initialization
-        '''
-        self.primary_inflow_temp = primary_inflow_temp
 
-        self.primary_pressure = 127.6*unit.bar
+        self.extraction_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
 
-        self.primary_mass_flowrate = 4.66e6*unit.lb/unit.hour
-
-        self.primary_outflow_temp = self.primary_inflow_temp #- 2*unit.K
-
-        self.secondary_inflow_temp = secondary_inflow_temp
-
-        self.secondary_pressure = 34*unit.bar
-        self.secondary_mass_flowrate = 67*unit.kg/unit.second
-
-        self.secondary_outflow_temp = self.secondary_inflow_temp #- 2*unit.K
-
-        self.secondary_outflow_quality = 0 # running value of quality
-        '''
-        
         # Derived quantities
         '''
         self.rho_p = 0.0
-        self.cp_p = 0.0
-        self.mu_p = 0.0
-        self.k_p = 0.0
-        self.prtl_p = 0.0
         self.rey_p = 0.0
         self.nusselt_p = 0.0
 
-        self.rho_s = 0.0
-        self.cp_s = 0.0
-        self.mu_s = 0.0
-        self.k_s = 0.0
-        self.prtl_s = 0.0
-        self.rey_s = 0.0
         self.nusselt_s = 0.0
 
         self.heat_sink_pwr = 0.0
         '''
 
-        # Primary outflow phase history
+        #***************************************************************************************
+        # E X T R A C T I O N
+        #***************************************************************************************
+
+        # Extraction Feed Phase History (internal state/external)
         quantities = list()
+        species = list()  # Is it proper to rest the species list too?
+
+        feed_mass_flowrate = Quantity(name='mass_flowrate',
+                                      formal_name='mdot', unit='kg/s',
+                                      value=self.extraction_feed_mass_flowrate,
+                                      latex_name=r'$\dot{m}_4$',
+                                      info='Extraction Feed Mass Flowrate')
+        quantities.append(feed_mass_flowrate)
+
+        uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_feed)
+
+        h2o_feed = Species(name='H2O',formula_name='H2O(aq)',
+                           atoms=['2*H','O'],
+                           info='H2O')
+        species.append(h2o_feed)
+
+        u6_aqu = Species( name='U-VI',formula_name='UO2^2+(a)',
+                atoms=['U','2*O'],
+                info='UO2$^{2+}$')
+        species.append(u6_aqu)
+
+        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(a)',
+                           atoms=['2*H','S','4*O'],
+                           info='H2SO4')
+        species.append(h2so4_feed)
+
+        hPlus_aqu = Species( name='H+',formula_name='H^+(a)',
+                atoms=['H'],
+                info='H$^+$')
+        species.append(hPlus_aqu)
+
+        self.extraction_feed_phase = Phase(time_stamp=self.initial_time,
+                                           time_unit='s', quantities=quantities, species=species)
+
+        # Extraction Raffinate Phase History (internal state/external)
+
+        quantities = list()
+        species = list()  # Is it proper to rest the species list too?
+
+        feed_mass_flowrate = Quantity(name='mass_flowrate',
+                                      formal_name='mdot', unit='kg/s',
+                                      value=self.extraction_feed_mass_flowrate,
+                                      latex_name=r'$\dot{m}_4$',
+                                      info='Extraction Raffinate Mass Flowrate')
+        quantities.append(feed_mass_flowrate)
+
+        uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_feed)
+
+        h2o_feed = Species(name='H2O',formula_name='H2O(aq)',
+                           atoms=['2*H','O'],
+                           info='H2O')
+        species.append(h2o_feed)
+
+        u6_aqu = Species( name='U-VI',formula_name='UO2^2+(a)',
+                atoms=['U','2*O'],
+                info='UO2$^{2+}$')
+        species.append(u6_aqu)
+
+        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(a)',
+                           atoms=['2*H','S','4*O'],
+                           info='H2SO4')
+        species.append(h2so4_feed)
+
+        hPlus_aqu = Species( name='H+',formula_name='H^+(a)',
+                atoms=['H'],
+                info='H$^+$')
+        species.append(hPlus_aqu)
+
+        self.extraction_raffinate_phase = Phase(time_stamp=self.initial_time,
+                                                time_unit='s', quantities=quantities, species=species)
+
+        #***************************************************************************************
+        # S T R I P P I N G
+        #***************************************************************************************
+
+        # Stripping Feed Phase History (internal state/external)
+        quantities = list()
+        species = list()  # Is it proper to rest the species list too?
+
+        feed_mass_flowrate = Quantity(name='mass_flowrate',
+                                      formal_name='mdot', unit='kg/s',
+                                      value=self.extraction_feed_mass_flowrate,
+                                      latex_name=r'$\dot{m}_4$',
+                                      info='Stripping Feed Mass Flowrate')
+        quantities.append(feed_mass_flowrate)
+
+        uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_feed)
+
+        h2o_feed = Species(name='H2O',formula_name='H2O(aq)',
+                           atoms=['2*H','O'],
+                           info='H2O')
+        species.append(h2o_feed)
+
+        u6_aqu = Species( name='U-VI',formula_name='UO2^2+(a)',
+                atoms=['U','2*O'],
+                info='UO2$^{2+}$')
+        species.append(u6_aqu)
+
+        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(a)',
+                           atoms=['2*H','S','4*O'],
+                           info='H2SO4')
+        species.append(h2so4_feed)
+
+        hPlus_aqu = Species( name='H+',formula_name='H^+(a)',
+                atoms=['H'],
+                info='H$^+$')
+        species.append(hPlus_aqu)
+
+        self.stripping_feed_phase = Phase(time_stamp=self.initial_time,
+                                          time_unit='s', quantities=quantities, species=species)
+
+        # Stripping Product Phase History (internal state/external)
+        quantities = list()
+        species = list()  # Is it proper to rest the species list too?
+
+        feed_mass_flowrate = Quantity(name='mass_flowrate',
+                                      formal_name='mdot', unit='kg/s',
+                                      value=self.extraction_feed_mass_flowrate,
+                                      latex_name=r'$\dot{m}_4$',
+                                      info='Stripping Product Mass Flowrate')
+        quantities.append(feed_mass_flowrate)
+
+        uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_feed)
+
+        h2o_feed = Species(name='H2O',formula_name='H2O(aq)',
+                           atoms=['2*H','O'],
+                           info='H2O')
+        species.append(h2o_feed)
+
+        u6_aqu = Species( name='U-VI',formula_name='UO2^2+(a)',
+                atoms=['U','2*O'],
+                info='UO2$^{2+}$')
+        species.append(u6_aqu)
+
+        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(a)',
+                           atoms=['2*H','S','4*O'],
+                           info='H2SO4')
+        species.append(h2so4_feed)
+
+        hPlus_aqu = Species( name='H+',formula_name='H^+(a)',
+                atoms=['H'],
+                info='H$^+$')
+        species.append(hPlus_aqu)
+
+        self.stripping_product_phase = Phase(time_stamp=self.initial_time,
+                                             time_unit='s', quantities=quantities, species=species)
+
+        #***************************************************************************************
+        # S T A T E  P H A S E
+        #***************************************************************************************
 
         '''
-        temp = Quantity(name='temp',
-                        formal_name='T_1', unit='K',
-                        value=self.primary_outflow_temp,
-                        latex_name=r'$T_1$',
-                        info='Steamer Primary Outflow Temperature')
-
-        quantities.append(temp)
-
-        flowrate = Quantity(name='flowrate',
-                        formal_name='mdot', unit='kg/s',
-                        value=self.primary_mass_flowrate,
-                        latex_name=r'$\dot{m}_1$',
-                        info='Steamer Primary Mass Flowrate')
-
-        quantities.append(flowrate)
-
-        self.primary_outflow_phase = Phase(time_stamp=self.initial_time,
-                                           time_unit='s', quantities=quantities)
-
-        # Secondary inflow phase history
-        quantities = list()
-
-        flowrate = Quantity(name='flowrate',
-                            formal_name='m2i', unit='kg/s',
-                            value=self.secondary_mass_flowrate,
-                            latex_name=r'$\dot{m}_{2,in}$',
-                            info='Steamer Secondary Inflow Mass Flowrate')
-
-        quantities.append(flowrate)
-
-        temp = Quantity(name='temp',
-                        formal_name='T2i', unit='K',
-                        value=self.secondary_inflow_temp,
-                        latex_name=r'$T_{2,in}$',
-                        info='Steamer Secondary Inflow Temperature')
-
-        quantities.append(temp)
-
-        self.secondary_inflow_phase = Phase(time_stamp=self.initial_time,
-                                            time_unit='s', quantities=quantities)
-
-        # Secondary outflow phase history
-        quantities = list()
-
-        flowrate = Quantity(name='flowrate',
-                            formal_name='m_2', unit='kg/s',
-                            value=self.secondary_mass_flowrate,
-                            latex_name=r'$\dot{m}_2$',
-                            info='Steamer Secondary Outflow Mass Flowrate')
-
-        quantities.append(flowrate)
-
-        temp = Quantity(name='temp',
-                        formal_name='T_2', unit='K',
-                        value=self.secondary_outflow_temp,
-                        latex_name=r'$T_2$',
-                        info='Steamer Secondary Outflow Temperature')
-
-        quantities.append(temp)
-
-        press = Quantity(name='pressure',
-                         formal_name='P_2', unit='Pa',
-                         value=self.secondary_pressure,
-                         latex_name=r'$P_2$',
-                         info='Steamer Secondary Outflow Pressure')
-
-        quantities.append(press)
-
-        quality = Quantity(name='quality',
-                         formal_name='X', unit='',
-                         value=self.secondary_outflow_quality,
-                         latex_name=r'$\chi$',
-                         info='Steamer Secondary Outflow Quality')
-
-        quantities.append(quality)
-
-        self.secondary_outflow_phase = Phase(time_stamp=self.initial_time,
-                                             time_unit='s', quantities=quantities)
-
-        # State phase history
         quantities = list()
 
         tau_p = Quantity(name='tau_p',
@@ -318,72 +383,146 @@ class Solvex(Module):
 
         # Interactions in the uranium-inflow port
         #----------------------------------------
-        # One way "from" uranium-inflow
+        # One way "from" extraction-feed
 
         # Receive from
-        if self.get_port('uranium-inflow').connected_port:
+        if self.get_port('extraction-feed').connected_port:
 
-            self.send(time, 'uranium-inflow')
+            self.send(time, 'extraction-feed')
 
-            (check_time, primary_inflow) = self.recv('uranium-inflow')
+            (check_time, extraction_feed) = self.recv('extraction-feed')
             assert abs(check_time-time) <= 1e-6
 
+            '''
             self.primary_inflow_temp = primary_inflow['temperature']
             self.primary_ressure = primary_inflow['pressure']
             self.primary_mass_flowrate = primary_inflow['mass_flowrate']
+            '''
 
         # Interactions in the secondary-inflow port
         #----------------------------------------
-        # One way "from" secondary-inflow
+        # One way "from" stripping-feed
 
         # Receive from
-        if self.get_port('secondary-inflow').connected_port:
+        if self.get_port('stripping-feed').connected_port:
 
-            self.send(time, 'secondary-inflow')
+            self.send(time, 'stripping-feed')
 
-            (check_time, secondary_inflow) = self.recv('secondary-inflow')
+            (check_time, stripping_feed) = self.recv('striping-feed')
             assert abs(check_time-time) <= 1e-6
 
+            '''
             self.secondary_inflow_temp = secondary_inflow['temperature']
             self.secondary_pressure = secondary_inflow['pressure']
             self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
+            '''
 
         # Interactions in the primary-outflow port
         #-----------------------------------------
-        # One way "to" primary-outflow
+        # One way "to" product
 
         # Send to
-        if self.get_port('primary-outflow').connected_port:
+        if self.get_port('product').connected_port:
 
-            msg_time = self.recv('primary-outflow')
+            msg_time = self.recv('product')
 
-            temp = self.primary_outflow_phase.get_value('temp', msg_time)
+            temp = self.stripping_product_phase.get_value('temp', msg_time)
 
-            primary_outflow = dict()
-            primary_outflow['temperature'] = temp
-            primary_outflow['pressure'] = self.primary_pressure
-            primary_outflow['mass_flowrate'] = self.primary_mass_flowrate
-            primary_outflow['quality'] = 0.0
+            product = dict()
+            '''
+            product['temperature'] = temp
+            product['pressure'] = self.primary_pressure
+            product['mass_flowrate'] = self.primary_mass_flowrate
+            product['quality'] = 0.0
+            '''
 
-            self.send((msg_time, primary_outflow), 'primary-outflow')
+            self.send((msg_time, product), 'product')
 
         # Interactions in the secondary-outflow port
         #-----------------------------------------
-        # One way "to" secondary-outflow
+        # One way "to" raffinate
 
         # Send to
-        if self.get_port('secondary-outflow').connected_port:
+        if self.get_port('raffinate').connected_port:
 
-            msg_time = self.recv('secondary-outflow')
+            msg_time = self.recv('raffinate')
 
-            temp = self.secondary_outflow_phase.get_value('temp', msg_time)
-            press = self.secondary_outflow_phase.get_value('pressure', msg_time)
-            flowrate = self.secondary_outflow_phase.get_value('flowrate', msg_time)
+            temp = self.extraction_raffinate_phase.get_value('temp', msg_time)
 
-            secondary_outflow = dict()
-            secondary_outflow['temperature'] = temp
-            secondary_outflow['pressure'] = press
-            secondary_outflow['mass_flowrate'] = flowrate
-            secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
+            raffinate = dict()
+            '''
+            raffinate['temperature'] = temp
+            raffinate['pressure'] = press
+            raffinate['mass_flowrate'] = flowrate
+            raffinate['total_heat_power'] = -self.heat_sink_pwr
+            '''
 
-            self.send((msg_time, secondary_outflow), 'secondary-outflow')
+            self.send((msg_time, raffinate), 'raffinate')
+
+    def __step(self, time=0.0):
+        """Stepping Decantation-Filtration in time
+        """
+
+        '''
+        # Get state values
+        u_0 = self.__get_state_vector(time)
+
+        t_interval_sec = np.linspace(time, time+self.time_step, num=2)
+
+        max_n_steps_per_time_step = 1500 # max number of nonlinear algebraic solver
+                                         # iterations per time step
+
+        (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
+                                         rtol=1e-7, atol=1e-8,
+                                         mxstep=max_n_steps_per_time_step,
+                                         full_output=True, tfirst=False)
+
+        assert info_dict['message'] == 'Integration successful.', info_dict['message']
+
+        u_vec = u_vec_hist[1, :]  # solution vector at final time step
+
+        temp_p = u_vec[0] # primary outflow temp
+        temp_s = u_vec[1] # secondary outflow temp
+
+        # Update phases
+        primary_outflow = self.primary_outflow_phase.get_row(time)
+        secondary_inflow = self.secondary_inflow_phase.get_row(time)
+        secondary_outflow = self.secondary_outflow_phase.get_row(time)
+        steamer = self.state_phase.get_row(time)
+        '''
+
+        time += self.time_step
+
+        '''
+        self.primary_outflow_phase.add_row(time, primary_outflow)
+        self.primary_outflow_phase.set_value('temp', temp_p, time)
+        self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
+
+        self.secondary_inflow_phase.add_row(time, secondary_inflow)
+        self.secondary_inflow_phase.set_value('temp', self.secondary_inflow_temp, time)
+        self.secondary_inflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
+
+        self.secondary_outflow_phase.add_row(time, secondary_outflow)
+        self.secondary_outflow_phase.set_value('temp', temp_s, time)
+        self.secondary_outflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
+        self.secondary_outflow_phase.set_value('pressure', self.secondary_pressure, time)
+        self.secondary_outflow_phase.set_value('quality', self.secondary_outflow_quality, time)
+
+        self.state_phase.add_row(time, steamer)
+
+        # Primary residence time
+        self.state_phase.set_value('tau_p', self.tau_p, time)
+
+        # Secondary residence time
+        self.state_phase.set_value('tau_s', self.tau_s, time)
+
+        # Heat flux and Nusselt number
+        heatflux = -self.heat_sink_pwr/self.heat_transfer_area
+        self.state_phase.set_value('heatflux', heatflux, time)
+
+        self.state_phase.set_value('nusselt_p', self.nusselt_p, time)
+
+        self.state_phase.set_value('nusselt_s', self.nusselt_s, time)
+        '''
+
+        return time
