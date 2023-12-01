@@ -19,7 +19,7 @@ from evaporation_calcination import EvaporationCalcination
 def main():
 
     # Debugging
-    make_run   = True
+    make_run   = False
     make_plots = False
 
     # Preamble
