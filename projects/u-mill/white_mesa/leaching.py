@@ -72,8 +72,7 @@ class Leaching(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['ore-inflow', 'pregnantSolution-outflow',
-                                    'liquor-inflow']
+        self.port_names_expected = ['feed']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -499,7 +498,7 @@ class Leaching(Module):
 
             self.send(time, 'feed')
 
-            (check_time, primary_inflow) = self.recv('feed')
+            (check_time, preleach_output_phase) = self.recv('feed')
             assert abs(check_time-time) <= 1e-6
 
             #Insert data from phase history
@@ -570,5 +569,5 @@ class Leaching(Module):
 
         self.state_phase.set_value('nusselt_s', self.nusselt_s, time)
         '''
-        print('This works')
+
         return time

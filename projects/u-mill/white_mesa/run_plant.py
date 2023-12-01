@@ -11,13 +11,14 @@ from cortix import Network
 
 import unit
 
+from leaching import Leaching
 from decantation_filtration import DecantationFiltration
 from solvex import Solvex
 
 def main():
 
     # Debugging
-    make_run   = False
+    make_run   = True
     make_plots = False
 
     # Preamble
@@ -37,6 +38,18 @@ def main():
     #reactor.shutdown = (True, 60*unit.minute)
 
     #white_mesa_network.module(reactor)  # Add reactor module to network
+
+    #Leaching
+
+    leaching = Leaching() # Create a Leaching module
+
+    leaching.name = 'Leaching'
+    leaching.save = True
+    leaching.time_step = time_step
+    leaching.end_time = end_time
+    leaching.show_time = show_time
+
+    white_mesa_network.module(leaching)
 
     # Decantation-Filtration
 
@@ -68,8 +81,12 @@ def main():
     white_mesa_network.connect([solvex, 'raffinate'], [decant_filt, 'raffinate-feed'])
     white_mesa_network.connect([decant_filt, 'filtrate'], [solvex, 'extraction-feed'])
 
-    #white_mesa_network.draw(engine='circo', node_shape='folder')
-    white_mesa_network.draw()
+    #These two need to be connected in the .py files
+    #white_mesa_network.connect([leaching, 'feed'], [decant_filt, 'pre-leach-feed'])
+    #white_mesa_network.connect([decant_filt, 'pre-leach-feed'], [leaching, 'feed'])
+
+    white_mesa_network.draw(engine='circo', node_shape='folder')
+    #white_mesa_network.draw()
 
     # Run
     if make_run:
