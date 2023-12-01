@@ -518,6 +518,10 @@ class DecantationFiltration(Module):
         self.filtration_filtrate_phase = Phase(time_stamp=self.initial_time,
                                   time_unit='s', quantities=quantities, species=species)
 
+        #***************************************************************************************
+        # S T A T E  P H A S E
+        #***************************************************************************************
+
     def run(self, *args):
 
         # Some logic for logging time stamps

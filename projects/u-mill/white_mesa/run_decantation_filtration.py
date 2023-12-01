@@ -28,7 +28,7 @@ def main():
 
     plant_net = plant.network = Network() # Network
 
-    # Filtration
+    # Decantation-filtration
 
     decant_filt = DecantationFiltration()  # Create decantation/filtration module
     decant_filt.name = 'Decantation-Filtration'

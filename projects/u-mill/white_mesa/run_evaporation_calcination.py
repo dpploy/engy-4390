@@ -2,55 +2,48 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
-#Cortix module.
-#Calciner evaporation Tank used in Uranium Purification.
-
+"""Cortix Run File"""
 
 import matplotlib.pyplot as plt
-
-import unit
 
 from cortix import Cortix
 from cortix import Network
 
-from evaporation import Evaporator
+import unit
+
+from evaporation_calcination import EvaporationCalcination
 
 def main():
 
     # Debugging
+    make_run   = True
     make_plots = False
-    make_run   = False
 
     # Preamble
-    end_time = 10*unit.minute
-    time_step = 1.5*unit.second
-    show_time = (True, 5*unit.minute)
+    end_time = 1.0*unit.minute
+    time_step = 1.0*unit.second
+    show_time = (True, 20*unit.second)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
     plant_net = plant.network = Network() # Network
 
-    # Evaporator
+    # Evaporation-calcination
 
-    evaporation = Evaporator()  # Create reactor module
+    evap_calc = EvaporationCalcination()  # Create reactor module
 
-    # Steady state conditions for NuSCale case
-    #primary_inflow_temp = (320.9+273.15)*unit.kelvin
-    #secondary_inflow_temp = (149+273.15)*unit.kelvin
-    #steamer = Steamer(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
-    '''
-    evaporation.name = 'Evaporator'
-    evaporation.save = True
-    evaporation.time_step = time_step
-    evaporation.end_time = end_time
-    evaporation.show_time = show_time
+    evap_calc.name = 'Evaporation-Calcination'
+    evap_calc.save = True
+    evap_calc.time_step = time_step
+    evap_calc.end_time = end_time
+    evap_calc.show_time = show_time
 
-    plant_net.module(evaporation)  # Add steamer module to network
+    plant_net.module(evap_calc)  # Add steamer module to network
 
     # Balance of Plant Network Connectivity
 
     plant_net.draw(engine='circo', node_shape='folder')
-    '''
+
     # Run
     if make_run:
         plant.run()  # Run network dynamics simulation
@@ -146,7 +139,6 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('steamer-nusselt_s.png', dpi=300)
-
 
 if __name__ == '__main__':
     main()
