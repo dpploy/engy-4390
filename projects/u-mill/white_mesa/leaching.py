@@ -4,6 +4,26 @@
 # https://cortix.org
 """Cortix Module.
    Leaching process in the White Mesa Milling Plant.
+
+
+          Wet Ore
+                |            |
+                |            | CCD overflow (from Decantation Module)
+                |            |
+                v            v
+             |-----------------|
+             |                 |
+              |   Pre-leaching  |<-------- Acids (H2S04, NaCI03, Steam)
+             |                 |
+             |   Acid-leaching |
+             |                 |<--------- STD Underflow (from Decantation Module)
+             |_________________|
+                  |       |
+                  |       |
+                  |       |
+                  v       v Pre-leach output
+    Acid-leach output
+
    Add info here... what ore mineral (brannerite)?
                     what oxidation process?
 
@@ -69,198 +89,251 @@ class Leaching(Module):
         # Domain attributes
 
         # Configuration parameters
-        '''
-        self.discard_tau_recording_before = 2*unit.minute
-        self.heat_transfer_area = 1665.57*unit.meter**2
-
-        self.helicoil_outer_radius = 16/2*unit.milli*unit.meter
-        self.helicoil_tube_wall = 0.9*unit.milli*unit.meter
-        self.helicoil_inner_radius = self.helicoil_outer_radius - self.helicoil_tube_wall
-        self.helicoil_length = 22.3*unit.meter
-        self.n_helicoil_tubes = 1380
-
-        self.wall_temp_delta_primary = 1.5*unit.K
-        self.wall_temp_delta_secondary = 1.5*unit.K
-
-        self.iconel690_k = 12.1*unit.watt/unit.meter/unit.kelvin
-
-        self.helix_to_cylinder = 1./.928
-
-        self.secondary_volume = math.pi * self.helicoil_inner_radius**2 * \
-                                self.helicoil_length * self.n_helicoil_tubes *\
-                                self.helix_to_cylinder
-
-        self.primary_volume = 0.5 * self.secondary_volume
-        '''
-        # Ratio of the tube bundle pithc transverse to flow to parallel to flow
-        '''
-        self.tube_bundle_pitch_ratio = 1.5  # st/sl
 
         # Initialization
-        self.primary_inflow_temp = primary_inflow_temp
 
-        self.primary_pressure = 127.6*unit.bar
+        # Pre-leaching [These values are temporary, real ones will have to be added]
+        self.wet_ore_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.wet_ore_mass_density = 1.0 * unit.kg / unit.liter
+        self.wet_ore_solids_massfrac = 100 * unit.ppm
 
-        self.primary_mass_flowrate = 4.66e6*unit.lb/unit.hour
+        self.ccd_overflow_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.ccd_overflow_mass_density = 1.0 * unit.kg / unit.liter
+        self.ccd_overflow_solids_massfrac = 100 * unit.ppm
 
-        self.primary_outflow_temp = self.primary_inflow_temp #- 2*unit.K
+        self.preleach_output_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.preleach_output_mass_density = 1.0 * unit.kg / unit.liter
+        self.preleach_output_solids_massfrac = 100 * unit.ppm
 
-        self.secondary_inflow_temp = secondary_inflow_temp
+        # Acid-leaching
+        self.std_underflow_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.std_underflow_mass_density = 1.0 * unit.kg / unit.liter
+        self.std_underflow_solids_massfrac = 100 * unit.ppm
 
-        self.secondary_pressure = 34*unit.bar
-        self.secondary_mass_flowrate = 67*unit.kg/unit.second
+        self.acids_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.acids_mass_density = 1.0 * unit.kg / unit.liter
 
-        self.secondary_outflow_temp = self.secondary_inflow_temp #- 2*unit.K
+        self.acid_leach_output_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.acid_leach_output_mass_density = 1.0 * unit.kg / unit.liter
+        self.acid_leach_output_solids_massfrac = 100 * unit.ppm
 
-        self.secondary_outflow_quality = 0 # running value of quality
-        '''
-        # Derived quantities
-        self.rho_p = 0.0
-        self.cp_p = 0.0
-        self.mu_p = 0.0
-        self.k_p = 0.0
-        self.prtl_p = 0.0
-        self.rey_p = 0.0
-        self.nusselt_p = 0.0
+        # ***************************************************************************************
+        # R A W - O R E - L E A C H I N G
+        # ***************************************************************************************
 
-        self.rho_s = 0.0
-        self.cp_s = 0.0
-        self.mu_s = 0.0
-        self.k_s = 0.0
-        self.prtl_s = 0.0
-        self.rey_s = 0.0
-        self.nusselt_s = 0.0
+        # Wet ore input phase history (internal)
 
-        self.heat_sink_pwr = 0.0
-
-        # Primary outflow phase history
+        # CCD Overflow phase history (from Decantation Module)
         quantities = list()
-        '''
-        temp = Quantity(name='temp',
-                        formal_name='T_1', unit='K',
-                        value=self.primary_outflow_temp,
-                        latex_name=r'$T_1$',
-                        info='Steamer Primary Outflow Temperature')
+        species = list()
 
-        quantities.append(temp)
+        overflow_mass_flowrate = Quantity(name='mass_flowrate',
+                                          formal_name='mdot', unit='kg/s',
+                                          value=self.ccd_overflow_mass_flowrate,
+                                          latex_name=r'$\dot{m}_1$',
+                                          info='Decantation Overflow Mass Flowrate')
+        quantities.append(overflow_mass_flowrate)
 
-        flowrate = Quantity(name='flowrate',
-                        formal_name='mdot', unit='kg/s',
-                        value=self.primary_mass_flowrate,
-                        latex_name=r'$\dot{m}_1$',
-                        info='Steamer Primary Mass Flowrate')
+        overflow_mass_density = Quantity(name='mass_density',
+                                     formal_name='rho', unit='kg/m^3',
+                                     value=self.ccd_overflow_mass_density,
+                                     latex_name=r'$\rho$',
+                                     info='Decantation Pre-Leach Feed Mass Density')
+        quantities.append(overflow_mass_density)
 
-        quantities.append(flowrate)
+        overflow_solids_massfrac = Quantity(name='solids_massfrac',
+                                            formal_name='solids_massfrac', unit='ppm',
+                                            value=self.ccd_overflow_solids_massfrac,
+                                            latex_name=r'$C_1$',
+                                            info='Decantation Overflow Solids Mass Fraction')
 
-        self.primary_outflow_phase = Phase(time_stamp=self.initial_time,
-                                           time_unit='s', quantities=quantities)
+        quantities.append(overflow_solids_massfrac)
 
-        # Secondary inflow phase history
+        uo2so434minus_overflow = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
+                                         atoms=['U', '2*O', '3*S', '12*O'],
+                                         info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_overflow)
+
+        h2o_overflow = Species(name='H2O', formula_name='H2O(aq)',
+                               atoms=['2*H', 'O'],
+                               info='H2O')
+        species.append(h2o_overflow)
+
+        h2so4_overflow = Species(name='H2SO4', formula_name='H2SO4(aq)',
+                                 atoms=['2*H', 'S', '4*O'],
+                                 info='H2SO4')
+        species.append(h2so4_overflow)
+
+        iron_overflow = Species(name='Fe', formula_name='Fe(s)',
+                                atoms=['Fe'],
+                                info='Fe')
+        species.append(iron_overflow)
+
+        copper_overflow = Species(name='Cu', formula_name='Cu(s)',
+                                  atoms=['Cu'],
+                                  info='Cu')
+        species.append(copper_overflow)
+
+        gold_overflow = Species(name='Au', formula_name='Au(s)',
+                                atoms=['Au'],
+                                info='Au')
+        species.append(gold_overflow)
+
+        self.ccd_overflow_phase = Phase(time_stamp=self.initial_time,
+                                                time_unit='s', quantities=quantities, species=species)
+
+        # Pre-leach output phase history
         quantities = list()
+        species = list()
 
-        flowrate = Quantity(name='flowrate',
-                            formal_name='m2i', unit='kg/s',
-                            value=self.secondary_mass_flowrate,
-                            latex_name=r'$\dot{m}_{2,in}$',
-                            info='Steamer Secondary Inflow Mass Flowrate')
+        preleach_output_mass_flowrate = Quantity(name='mass_flowrate',
+                                          formal_name='mdot', unit='kg/s',
+                                          value=self.preleach_output_mass_flowrate,
+                                          latex_name=r'$\dot{m}_1$',
+                                          info='Preleach Output Mass Flowrate')
+        quantities.append(preleach_output_mass_flowrate)
 
-        quantities.append(flowrate)
+        preleach_output_mass_density = Quantity(name='mass_density',
+                                     formal_name='rho', unit='kg/m^3',
+                                     value=self.preleach_output_mass_density,
+                                     latex_name=r'$\rho$',
+                                     info='Pre-Leach Output Mass Density')
+        quantities.append(preleach_output_mass_density)
 
-        temp = Quantity(name='temp',
-                        formal_name='T2i', unit='K',
-                        value=self.secondary_inflow_temp,
-                        latex_name=r'$T_{2,in}$',
-                        info='Steamer Secondary Inflow Temperature')
+        preleach_output_solids_massfrac = Quantity(name='solids_massfrac',
+                                            formal_name='solids_massfrac', unit='ppm',
+                                            value=self.preleach_output_solids_massfrac,
+                                            latex_name=r'$C_1$',
+                                            info='Preleach Output Solids Mass Fraction')
 
-        quantities.append(temp)
+        quantities.append(preleach_output_solids_massfrac)
 
-        self.secondary_inflow_phase = Phase(time_stamp=self.initial_time,
-                                            time_unit='s', quantities=quantities)
+        uo2so434minus_preleach_output = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
+                                         atoms=['U', '2*O', '3*S', '12*O'],
+                                         info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_preleach_output)
 
-        # Secondary outflow phase history
+        h2o_preleach_output = Species(name='H2O', formula_name='H2O(aq)',
+                               atoms=['2*H', 'O'],
+                               info='H2O')
+        species.append(h2o_preleach_output)
+
+        h2so4_preleach_output = Species(name='H2SO4', formula_name='H2SO4(aq)',
+                                 atoms=['2*H', 'S', '4*O'],
+                                 info='H2SO4')
+        species.append(h2so4_preleach_output)
+
+        iron_preleach_output = Species(name='Fe', formula_name='Fe(s)',
+                                atoms=['Fe'],
+                                info='Fe')
+        species.append(iron_preleach_output)
+
+        copper_preleach_output = Species(name='Cu', formula_name='Cu(s)',
+                                  atoms=['Cu'],
+                                  info='Cu')
+        species.append(copper_preleach_output)
+
+        gold_preleach_output = Species(name='Au', formula_name='Au(s)',
+                                atoms=['Au'],
+                                info='Au')
+        species.append(gold_preleach_output)
+
+        self.preleach_output_phase = Phase(time_stamp=self.initial_time,
+                                        time_unit='s', quantities=quantities, species=species)
+
+        # STD underflow phase history
         quantities = list()
+        species = list()
 
-        flowrate = Quantity(name='flowrate',
-                            formal_name='m_2', unit='kg/s',
-                            value=self.secondary_mass_flowrate,
-                            latex_name=r'$\dot{m}_2$',
-                            info='Steamer Secondary Outflow Mass Flowrate')
+        underflow_mass_flowrate = Quantity(name='mass_flowrate',
+                                           formal_name='mdot', unit='kg/s',
+                                           value=self.std_underflow_mass_flowrate,
+                                           latex_name=r'$\dot{m}_4$',
+                                           info='STD Underflow Mass Flowrate')
+        quantities.append(underflow_mass_flowrate)
 
-        quantities.append(flowrate)
+        std_underflow_mass_density = Quantity(name='mass_density',
+                                     formal_name='rho', unit='kg/m^3',
+                                     value=self.std_underflow_mass_density,
+                                     latex_name=r'$\rho$',
+                                     info='STD Underflow Feed Mass Density')
+        quantities.append(std_underflow_mass_density)
 
-        temp = Quantity(name='temp',
-                        formal_name='T_2', unit='K',
-                        value=self.secondary_outflow_temp,
-                        latex_name=r'$T_2$',
-                        info='Steamer Secondary Outflow Temperature')
+        underflow_solids_massfrac = Quantity(name='solids_massfrac',
+                                             formal_name='solids_massfrac', unit='ppm',
+                                             value=self.std_underflow_solids_massfrac,
+                                             latex_name=r'$C_1$',
+                                             info='STD Underflow Solids Mass Fraction')
+        quantities.append(underflow_solids_massfrac)
 
-        quantities.append(temp)
+        uo2so434minus_underflow = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
+                                          atoms=['U', '2*O', '3*S', '12*O'],
+                                          info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_underflow)
 
-        press = Quantity(name='pressure',
-                         formal_name='P_2', unit='Pa',
-                         value=self.secondary_pressure,
-                         latex_name=r'$P_2$',
-                         info='Steamer Secondary Outflow Pressure')
+        h2o_underflow = Species(name='H2O', formula_name='H2O(aq)',
+                                atoms=['2*H', 'O'],
+                                info='H2O')
+        species.append(h2o_underflow)
 
-        quantities.append(press)
+        h2so4_underflow = Species(name='H2SO4', formula_name='H2SO4(aq)',
+                                  atoms=['2*H', 'S', '4*O'],
+                                  info='H2SO4')
+        species.append(h2so4_underflow)
 
-        quality = Quantity(name='quality',
-                         formal_name='X', unit='',
-                         value=self.secondary_outflow_quality,
-                         latex_name=r'$\chi$',
-                         info='Steamer Secondary Outflow Quality')
+        iron_underflow = Species(name='Fe', formula_name='Fe(s)',
+                                 atoms=['Fe'],
+                                 info='Fe')
+        species.append(iron_underflow)
 
-        quantities.append(quality)
+        copper_underflow = Species(name='Cu', formula_name='Cu(s)',
+                                   atoms=['Cu'],
+                                   info='Cu')
+        species.append(copper_underflow)
 
-        self.secondary_outflow_phase = Phase(time_stamp=self.initial_time,
-                                             time_unit='s', quantities=quantities)
+        gold_underflow = Species(name='Au', formula_name='Au(s)',
+                                 atoms=['Au'],
+                                 info='Au')
+        species.append(gold_underflow)
 
-        # State phase history
+        self.std_underflow_phase = Phase(time_stamp=self.initial_time,
+                                                 time_unit='s', quantities=quantities, species=species)
+
+        # Acids feed phase history
         quantities = list()
+        species = list()
 
-        tau_p = Quantity(name='tau_p',
-                        formal_name='Tau_p', unit='s',
-                        value=0.0,
-                        latex_name=r'$\tau_{p}$',
-                        info='Steamer Primary Residence Time')
+        acids_mass_flowrate = Quantity(name='mass_flowrate',
+                                           formal_name='mdot', unit='kg/s',
+                                           value=self.acids_mass_flowrate,
+                                           latex_name=r'$\dot{m}_4$',
+                                           info='Acid Feed Mass Flowrate')
+        quantities.append(acids_mass_flowrate)
 
-        quantities.append(tau_p)
+        acids_mass_density = Quantity(name='mass_density',
+                                              formal_name='rho', unit='kg/m^3',
+                                              value=self.acids_mass_density,
+                                              latex_name=r'$\rho$',
+                                              info='Acids Feed Mass Density')
+        quantities.append(acids_mass_density)
 
-        tau_s = Quantity(name='tau_s',
-                        formal_name='Tau_s', unit='s',
-                        value=0.0,
-                        latex_name=r'$\tau_{s}$',
-                        info='Steamer Secondary Residence Time')
+        nacio3_acids = Species(name='NaCIO3', formula_name='NaCIO3(aq)',
+                                          atoms=['Na', 'C', 'I', '3*O'],
+                                          info='NaCIO3')
+        species.append(nacio3_acids)
 
-        quantities.append(tau_s)
+        h2o_acids = Species(name='H2O', formula_name='H2O(g)',
+                                atoms=['2*H', 'O'],
+                                info='H2O')
+        species.append(h2o_acids)
 
-        heatflux = Quantity(name='heatflux',
-                        formal_name="q''", unit='W/m$^2$',
-                        value=0.0,
-                        latex_name=r"$q''$",
-                        info='Steamer Heat Flux')
+        h2so4_acids = Species(name='H2SO4', formula_name='H2SO4(aq)',
+                                  atoms=['2*H', 'S', '4*O'],
+                                  info='H2SO4')
+        species.append(h2so4_acids)
 
-        quantities.append(heatflux)
-
-        nusselt_p = Quantity(name='nusselt_p',
-                        formal_name='Nu_p', unit='',
-                        value=0.0,
-                        latex_name=r'$Nu_p$',
-                        info='Steamer Primary Nusselt Number')
-
-        quantities.append(nusselt_p)
-
-        nusselt_s = Quantity(name='nusselt_s',
-                        formal_name='Nu_s', unit='',
-                        value=0.0,
-                        latex_name=r'$Nu_s$',
-                        info='Steamer Secondary Nusselt Number')
-
-        quantities.append(nusselt_s)
-
-        self.state_phase = Phase(time_stamp=self.initial_time,
-                                 time_unit='s', quantities=quantities)
-      '''  
+        self.acids_phase = Phase(time_stamp=self.initial_time,
+                                         time_unit='s', quantities=quantities, species=species)
 
     def run(self, *args):
 
