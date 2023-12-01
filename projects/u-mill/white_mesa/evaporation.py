@@ -5,6 +5,28 @@
 """
 Cortix Module
 This module is a model of the Evaporation/Calcination process
+
+
+Diuranate Feed
+                                 |
+                                 |
+                                 v
+                     ___________________________
+                    |                          |
+                    |       Evaporation        | <----- Calciner Additional 
+                    |                          |              Heat
+                    |                          |
+                    |       Calcination        |
+                    |                          |
+                    |__________________________|
+                         |               |
+                         |               |
+                         |               |
+                         v               v
+                    Triuranium        Ammonia
+                     Octoxide           Gas
+                     Extract          Extract
+
 """
 
 import logging
@@ -31,7 +53,7 @@ class Evaporator(Module):
 
     """
 
-    def __init__(self, primary_inflow_temp=20+273.15, secondary_inflow_temp=20+273.15):
+    def __init__(self):
         """Constructor.
 
         Parameters
@@ -60,6 +82,30 @@ class Evaporator(Module):
         # Domain attributes
 
         # Configuration parameters
+        self.diuranate_volume = 0.988 * unit.meter**3
+        self.entering_DUO_flowrate = 0.04 * unit.gallon/unit.minute
+        self.calcination_flash_time = 80 * unit.minute
+        
+        #Evaporation
+        
+        #Calcination
+        self.calcination_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.calcination_feed_mass_density = 7.8 * unit.kg/unit.liter
+        self.calcination_feed_solids_massfrac = 100 * unit.ppm
+
+        self.calcination_inletflow_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.calcination_inletflow_solids_massfrac = 100 * unit.ppm
+
+        self.calcination_outflow_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.calcination_outflow_solids_massfrac = 100 * unit.ppm
+        
+        #Scrubber
+        self.calcination_slurry_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.calcination_slurry_solids_massfrac = 100 * unit.ppm
+
+        self.fcalcination_filtrate_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.calcination_filtrate_solids_massfrac = 100 * unit.ppm
+        
         '''
         self.discard_tau_recording_before = 2*unit.minute
         self.heat_transfer_area = 1665.57*unit.meter**2
@@ -127,7 +173,41 @@ class Evaporator(Module):
 
         self.heat_sink_pwr = 0.0
         '''
+        #***************************************************************************************
+        # C A L C I N A T I O N
+        #***************************************************************************************
 
+        # Calcination Feed Phase History (precipitation outflow)
+        quantities = list()
+        species = list()
+
+        feed_mass_flowrate = Quantity(name='mass_flowrate',
+                        formal_name='mdot', unit='kg/s',
+                        value=self.decantation_feed_mass_flowrate,
+                        latex_name=r'$\dot{m}$',
+                        info='Calcination Feed Mass Flowrate')
+        quantities.append(feed_mass_flowrate)
+
+        feed_mass_density = Quantity(name='mass_density',
+                        formal_name='rho', unit='kg/m^3',
+                        value=self.decantation_feed_mass_density,
+                        latex_name=r'$\rho$',
+                        info='Calcination Feed Mass Density')
+        quantities.append(feed_mass_density)
+
+        feed_solids_massfrac = Quantity(name='solids_massfrac',
+                        formal_name='solids_massfrac', unit='ppm',
+                        value=self.decantation_feed_solids_massfrac,
+                        latex_name=r'$C_1$',
+                        info='Calcination Feed Solids Mass Fraction')
+
+        quantities.append(feed_solids_massfrac)
+        
+        diuranate_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(aq)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_feed)
+        
         # Primary outflow phase history
         quantities = list()
 
