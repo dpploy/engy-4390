@@ -46,9 +46,9 @@ def main():
     plant_net.module(leaching)  # Add leaching module to network
 
     # Balance of Plant Network Connectivity
-
-    plant_net.draw(engine='circo', node_shape='folder')
     '''
+    #plant_net.draw(engine='circo', node_shape='folder')
+
     # Run
     if make_run:
         plant.run()  # Run network dynamics simulation

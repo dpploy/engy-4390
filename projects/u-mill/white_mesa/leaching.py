@@ -122,6 +122,63 @@ class Leaching(Module):
         # ***************************************************************************************
 
         # Wet ore input phase history (internal)
+        quantities = list()
+        species = list()
+
+        wet_ore_mass_flowrate = Quantity(name='mass_flowrate',
+                                          formal_name='mdot', unit='kg/s',
+                                          value=self.ccd_overflow_mass_flowrate,
+                                          latex_name=r'$\dot{m}_1$',
+                                          info='Wet Ore Mass Flowrate')
+        quantities.append(wet_ore_mass_flowrate)
+
+        wet_ore_mass_density = Quantity(name='mass_density',
+                                         formal_name='rho', unit='kg/m^3',
+                                         value=self.wet_ore_mass_density,
+                                         latex_name=r'$\rho$',
+                                         info='Wet Ore Feed Mass Density')
+        quantities.append(wet_ore_mass_density)
+
+        wet_ore_solids_massfrac = Quantity(name='solids_massfrac',
+                                            formal_name='solids_massfrac', unit='ppm',
+                                            value=self.wet_ore_solids_massfrac,
+                                            latex_name=r'$C_1$',
+                                            info='Wet Ore Solids Mass Fraction')
+
+        quantities.append(wet_ore_solids_massfrac)
+
+        uo2so434minus_wet_ore = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
+                                         atoms=['U', '2*O', '3*S', '12*O'],
+                                         info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_wet_ore)
+
+        h2o_wet_ore = Species(name='H2O', formula_name='H2O(aq)',
+                               atoms=['2*H', 'O'],
+                               info='H2O')
+        species.append(h2o_wet_ore)
+
+        h2so4_wet_ore = Species(name='H2SO4', formula_name='H2SO4(aq)',
+                                 atoms=['2*H', 'S', '4*O'],
+                                 info='H2SO4')
+        species.append(h2so4_wet_ore)
+
+        iron_wet_ore = Species(name='Fe', formula_name='Fe(s)',
+                                atoms=['Fe'],
+                                info='Fe')
+        species.append(iron_wet_ore)
+
+        copper_wet_ore = Species(name='Cu', formula_name='Cu(s)',
+                                  atoms=['Cu'],
+                                  info='Cu')
+        species.append(copper_wet_ore)
+
+        gold_wet_ore = Species(name='Au', formula_name='Au(s)',
+                                atoms=['Au'],
+                                info='Au')
+        species.append(gold_wet_ore)
+
+        self.wet_ore_phase = Phase(time_stamp=self.initial_time,
+                                        time_unit='s', quantities=quantities, species=species)
 
         # CCD Overflow phase history (from Decantation Module)
         quantities = list()
@@ -333,6 +390,64 @@ class Leaching(Module):
         species.append(h2so4_acids)
 
         self.acids_phase = Phase(time_stamp=self.initial_time,
+                                         time_unit='s', quantities=quantities, species=species)
+
+        # Acid Leach Output phase history
+        quantities = list()
+        species = list()
+
+        acid_leach_output_mass_flowrate = Quantity(name='mass_flowrate',
+                                           formal_name='mdot', unit='kg/s',
+                                           value=self.acid_leach_output_mass_flowrate,
+                                           latex_name=r'$\dot{m}_4$',
+                                           info='Acid Leach Output Mass Flowrate')
+        quantities.append(acid_leach_output_mass_flowrate)
+
+        acid_leach_output_mass_density = Quantity(name='mass_density',
+                                              formal_name='rho', unit='kg/m^3',
+                                              value=self.acid_leach_output_mass_density,
+                                              latex_name=r'$\rho$',
+                                              info='Acid Leach Output Mass Density')
+        quantities.append(acid_leach_output_mass_density)
+
+        acid_leach_output_solids_massfrac = Quantity(name='solids_massfrac',
+                                             formal_name='solids_massfrac', unit='ppm',
+                                             value=self.acid_leach_output_solids_massfrac,
+                                             latex_name=r'$C_1$',
+                                             info='Acid Leach Output Solids Mass Fraction')
+        quantities.append(acid_leach_output_solids_massfrac)
+
+        uo2so434minus_acid_leach_output = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
+                                          atoms=['U', '2*O', '3*S', '12*O'],
+                                          info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_acid_leach_output)
+
+        h2o_acid_leach_output = Species(name='H2O', formula_name='H2O(aq)',
+                                atoms=['2*H', 'O'],
+                                info='H2O')
+        species.append(h2o_acid_leach_output)
+
+        h2so4_acid_leach_output = Species(name='H2SO4', formula_name='H2SO4(aq)',
+                                  atoms=['2*H', 'S', '4*O'],
+                                  info='H2SO4')
+        species.append(h2so4_acid_leach_output)
+
+        iron_acid_leach_output = Species(name='Fe', formula_name='Fe(s)',
+                                 atoms=['Fe'],
+                                 info='Fe')
+        species.append(iron_acid_leach_output)
+
+        copper_acid_leach_output = Species(name='Cu', formula_name='Cu(s)',
+                                   atoms=['Cu'],
+                                   info='Cu')
+        species.append(copper_acid_leach_output)
+
+        gold_acid_leach_output = Species(name='Au', formula_name='Au(s)',
+                                 atoms=['Au'],
+                                 info='Au')
+        species.append(gold_acid_leach_output)
+
+        self.std_underflow_phase = Phase(time_stamp=self.initial_time,
                                          time_unit='s', quantities=quantities, species=species)
 
     def run(self, *args):
