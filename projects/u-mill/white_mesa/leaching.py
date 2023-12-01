@@ -491,74 +491,84 @@ class Leaching(Module):
 
     def __call_ports(self, time):
 
-        # Interactions in the primary-inflow port
+        # Interactions in the feed port
         #----------------------------------------
-        # One way "from" primary-inflow
 
-        # Receive from
-        if self.get_port('primary-inflow').connected_port:
+        # Send to and Receive from Decantation Module
+        if self.get_port('feed').connected_port:
 
-            self.send(time, 'primary-inflow')
+            self.send(time, 'feed')
 
-            (check_time, primary_inflow) = self.recv('primary-inflow')
+            (check_time, primary_inflow) = self.recv('feed')
             assert abs(check_time-time) <= 1e-6
 
-            self.primary_inflow_temp = primary_inflow['temperature']
-            self.primary_ressure = primary_inflow['pressure']
-            self.primary_mass_flowrate = primary_inflow['mass_flowrate']
+            #Insert data from phase history
 
-        # Interactions in the secondary-inflow port
-        #----------------------------------------
-        # One way "from" secondary-inflow
 
-        # Receive from
-        if self.get_port('secondary-inflow').connected_port:
+    def __step(self, time=0.0):
+        """Stepping Decantation-Filtration in time
+        """
 
-            self.send(time, 'secondary-inflow')
+        '''
+        # Get state values
+        u_0 = self.__get_state_vector(time)
 
-            (check_time, secondary_inflow) = self.recv('secondary-inflow')
-            assert abs(check_time-time) <= 1e-6
+        t_interval_sec = np.linspace(time, time+self.time_step, num=2)
 
-            self.secondary_inflow_temp = secondary_inflow['temperature']
-            self.secondary_pressure = secondary_inflow['pressure']
-            self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
+        max_n_steps_per_time_step = 1500 # max number of nonlinear algebraic solver
+                                         # iterations per time step
 
-        # Interactions in the primary-outflow port
-        #-----------------------------------------
-        # One way "to" primary-outflow
+        (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
+                                         rtol=1e-7, atol=1e-8,
+                                         mxstep=max_n_steps_per_time_step,
+                                         full_output=True, tfirst=False)
 
-        # Send to
-        if self.get_port('primary-outflow').connected_port:
+        assert info_dict['message'] == 'Integration successful.', info_dict['message']
 
-            msg_time = self.recv('primary-outflow')
+        u_vec = u_vec_hist[1, :]  # solution vector at final time step
 
-            temp = self.primary_outflow_phase.get_value('temp', msg_time)
+        temp_p = u_vec[0] # primary outflow temp
+        temp_s = u_vec[1] # secondary outflow temp
 
-            primary_outflow = dict()
-            primary_outflow['temperature'] = temp
-            primary_outflow['pressure'] = self.primary_pressure
-            primary_outflow['mass_flowrate'] = self.primary_mass_flowrate
-            primary_outflow['quality'] = 0.0
+        # Update phases
+        primary_outflow = self.primary_outflow_phase.get_row(time)
+        secondary_inflow = self.secondary_inflow_phase.get_row(time)
+        secondary_outflow = self.secondary_outflow_phase.get_row(time)
+        steamer = self.state_phase.get_row(time)
+        '''
 
-            self.send((msg_time, primary_outflow), 'primary-outflow')
+        time += self.time_step
 
-        # Interactions in the secondary-outflow port
-        #-----------------------------------------
-        # One way "to" secondary-outflow
+        '''
+        self.primary_outflow_phase.add_row(time, primary_outflow)
+        self.primary_outflow_phase.set_value('temp', temp_p, time)
+        self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
 
-        # Send to
-        if self.get_port('secondary-outflow').connected_port:
+        self.secondary_inflow_phase.add_row(time, secondary_inflow)
+        self.secondary_inflow_phase.set_value('temp', self.secondary_inflow_temp, time)
+        self.secondary_inflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
 
-            msg_time = self.recv('secondary-outflow')
+        self.secondary_outflow_phase.add_row(time, secondary_outflow)
+        self.secondary_outflow_phase.set_value('temp', temp_s, time)
+        self.secondary_outflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
+        self.secondary_outflow_phase.set_value('pressure', self.secondary_pressure, time)
+        self.secondary_outflow_phase.set_value('quality', self.secondary_outflow_quality, time)
 
-            temp = self.secondary_outflow_phase.get_value('temp', msg_time)
-            press = self.secondary_outflow_phase.get_value('pressure', msg_time)
-            flowrate = self.secondary_outflow_phase.get_value('flowrate', msg_time)
+        self.state_phase.add_row(time, steamer)
 
-            secondary_outflow = dict()
-            secondary_outflow['temperature'] = temp
-            secondary_outflow['pressure'] = press
-            secondary_outflow['mass_flowrate'] = flowrate
-            secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
+        # Primary residence time
+        self.state_phase.set_value('tau_p', self.tau_p, time)
 
-            self.send((msg_time, secondary_outflow), 'secondary-outflow')
+        # Secondary residence time
+        self.state_phase.set_value('tau_s', self.tau_s, time)
+
+        # Heat flux and Nusselt number
+        heatflux = -self.heat_sink_pwr/self.heat_transfer_area
+        self.state_phase.set_value('heatflux', heatflux, time)
+
+        self.state_phase.set_value('nusselt_p', self.nusselt_p, time)
+
+        self.state_phase.set_value('nusselt_s', self.nusselt_s, time)
+        '''
+        print('This works')
+        return time

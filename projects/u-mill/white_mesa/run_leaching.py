@@ -17,12 +17,12 @@ def main():
 
     # Debugging
     make_plots = False
-    make_run   = False
+    make_run   = True
 
     # Preamble
-    end_time = 10*unit.minute
-    time_step = 1.5*unit.second
-    show_time = (True, 5*unit.minute)
+    end_time = 1.0 * unit.minute
+    time_step = 1.0 * unit.second
+    show_time = (True, 20 * unit.second)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -36,8 +36,8 @@ def main():
     #primary_inflow_temp = (320.9+273.15)*unit.kelvin
     #secondary_inflow_temp = (149+273.15)*unit.kelvin
     #leaching = leaching(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
-    '''
-    leaching.name = 'leaching'
+
+    leaching.name = 'Leaching'
     leaching.save = True
     leaching.time_step = time_step
     leaching.end_time = end_time
@@ -46,8 +46,8 @@ def main():
     plant_net.module(leaching)  # Add leaching module to network
 
     # Balance of Plant Network Connectivity
-    '''
-    #plant_net.draw(engine='circo', node_shape='folder')
+
+    plant_net.draw(engine='circo', node_shape='folder')
 
     # Run
     if make_run:
