@@ -14,6 +14,7 @@ import unit
 from leaching import Leaching
 from decantation_filtration import DecantationFiltration
 from solvex import Solvex
+from evaporation_calcination import EvaporationCalcination
 
 def main():
 
@@ -76,10 +77,23 @@ def main():
 
     white_mesa_network.module(solvex)  # Add solvex module to network
 
+    # Evaporation-Calcination
+
+    evap_calc = EvaporationCalcination()  # Create solvent extraction module
+
+    evap_calc.name = 'Evaporation-Calcination'
+    evap_calc.save = True
+    evap_calc.time_step = time_step
+    evap_calc.end_time = end_time
+    evap_calc.show_time = show_time
+
+    white_mesa_network.module(evap_calc)  # Add solvex module to network
+
     # White Mesa Network Connectivity
 
     white_mesa_network.connect([solvex, 'raffinate'], [decant_filt, 'raffinate-feed'])
     white_mesa_network.connect([decant_filt, 'filtrate'], [solvex, 'extraction-feed'])
+    #white_mesa_network.connect([decant_filt, 'filtrate'], [solvex, 'extraction-feed'])
 
     #These two need to be connected in the .py files
     #white_mesa_network.connect([leaching, 'feed'], [decant_filt, 'pre-leach-feed'])
