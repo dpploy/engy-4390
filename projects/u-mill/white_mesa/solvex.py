@@ -24,7 +24,7 @@ This module is a model of the Solvent Extraction process in the White Mesa Urani
                    |
                    |
                    v
-                 Product
+                 Product (Precipitation feed)
 
  NB. Extraction Feed (from decantation-filtration) goes to solvent extraction
  NB. Stripping Feed (from precipitation) goes to Stripping
@@ -168,7 +168,6 @@ class Solvex(Module):
                                            time_unit='s', quantities=quantities, species=species)
 
         # Extraction Raffinate Phase History (internal state/external)
-
         quantities = list()
         species = list()  # Is it proper to rest the species list too?
 

@@ -7,6 +7,26 @@ Cortix Module
 This module is a model of the Precipitation process in the White Mesa Uranium Milling Plant Project
 
 
+          Feed (Stripping product from SolvEx)
+             |
+             |
+             V
+   ----------------------
+   |                    |
+   |   Precipitation    |<------ NH4 (anhydrous)
+   |                    |
+   | Thickening/Washing |<------ wash water centrifuge
+   |                    |
+   ----------------------
+
+
+   + Precipitation
+     Continuous precipitation with anhydrous ammonia
+
+
+   + Thickening (2 solid bowl centrifuges in series)
+     - Wash water volumetric flowrate
+
 
 
 """
