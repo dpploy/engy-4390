@@ -31,19 +31,23 @@
 
    + Decantation:
      1) Single-Tank Decantation  (STD)
+       - volume of thickener:                3402.33 m^3
+       -
 
      2) Counter-Current Decantation Bank (CCD)
        - # of thickeners:                    7
-       - volume per thickener:               0.988 m^3
-       - wash water volumetric flowrate:     1067 gallons/min
+       - volume per thickener:               339.29 m^3
+       - wash water volumetric flowrate:     1067 gallons/min(@ S.S.) or 2.5(feed flow rate)
        - feed mass fraction of solids:       100000 ppm
        - wash water mass fraction of solids: 500 ppm
        - overflow mass fraction of solids:   100 ppm
        - underflow mass fraction of solids:  99000 ppm
+       - wash water ratio (R):               2.5
 
    + Filtration:
 
    Source of info:
+   https://www.911metallurgist.com/blog/uranium-extraction-process
 """
 
 import logging
