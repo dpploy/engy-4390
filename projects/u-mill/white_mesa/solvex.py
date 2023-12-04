@@ -26,8 +26,8 @@ This module is a model of the Solvent Extraction process in the White Mesa Urani
                    v
                  Product
 
- NB. Charged Feed goes to solvent extraction
- NB. Depleted Feed goes to Stripping
+ NB. Extraction Feed (from decantation-filtration) goes to solvent extraction
+ NB. Stripping Feed (from precipitation) goes to Stripping
  NB. Product Stream goes to Precipitation
 """
 
