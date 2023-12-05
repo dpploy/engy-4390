@@ -6,18 +6,18 @@
 
 import matplotlib.pyplot as plt
 
-import unit
-
 from cortix import Cortix
 from cortix import Network
+
+import unit
 
 from leaching import Leaching #Will have to add a leaching class in leaching.py file
 
 def main():
 
     # Debugging
-    make_plots = False
     make_run   = True
+    make_plots = False
 
     # Preamble
     end_time = 1.0 * unit.minute
@@ -29,20 +29,15 @@ def main():
     plant_net = plant.network = Network() # Network
 
     # Leaching
-    
+
     leaching = Leaching()  # Create reactor module
-    
-    # Steady state conditions for NuSCale case
-    #primary_inflow_temp = (320.9+273.15)*unit.kelvin
-    #secondary_inflow_temp = (149+273.15)*unit.kelvin
-    #leaching = leaching(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
 
     leaching.name = 'Leaching'
     leaching.save = True
     leaching.time_step = time_step
     leaching.end_time = end_time
     leaching.show_time = show_time
-    
+
     plant_net.module(leaching)  # Add leaching module to network
 
     # Balance of Plant Network Connectivity
@@ -144,7 +139,6 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-nusselt_s.png', dpi=300)
-
 
 if __name__ == '__main__':
     main()
