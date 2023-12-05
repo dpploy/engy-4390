@@ -504,7 +504,6 @@ class Leaching(Module):
 
         self.end_time = time # correct the final time if needed
 
-
     def __call_ports(self, time):
 
         # Interactions in the pre-leach-feed port
@@ -584,7 +583,6 @@ class Leaching(Module):
             '''
 
             self.send((msg_time, raffinate), 'acid-leach-product')
-
 
     def __step(self, time=0.0):
         """Stepping Decantation-Filtration in time
