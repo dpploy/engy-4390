@@ -29,17 +29,17 @@ This module is a model of the Solvent Extraction process in the White Mesa Urani
  NB. Extraction Feed (from decantation-filtration) goes to solvent extraction
  NB. Stripping Feed (from precipitation) goes to Stripping
  NB. Product Stream goes to Precipitation
- 
- 
+
+
    + Solvent Extraction
       0.1M Alamine 336 (TOA)
       Dilutent is Kerosene modified with 5% Isodecanol
       Aqueous/Organic = 3.0
-      
+
    + Scrubbing
-      
+
    + Stripping
-      
+
    Source of info:
       https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf
 """
@@ -176,18 +176,18 @@ class Solvex(Module):
                 atoms=['H'],
                 info='H$^+$')
         species.append(hPlus_aqu)
-        
+
         toaso4 = Species(name='C24H51NSO4',formula_name='C24H51NSO4(org)',
                          atoms=['24*C','51*H','N','S','4*O'],
                          info='C24H51NSO4')
         species.append(toaso4)
-        
+
         toauo2so43 = Species(name='C24H51NUO2SO43',
                              formula_name='C24H51NUO2SO43(org)',
                              atoms=['24*C','51*H','N','U','3*S','14*O'],
                              info='C24H51NUO2SO43')
         species.append(toauo2so43)
-        
+
         self.extraction_feed_phase = Phase(time_stamp=self.initial_time,
                                            time_unit='s', quantities=quantities, species=species)
 
@@ -226,8 +226,7 @@ class Solvex(Module):
                 atoms=['H'],
                 info='H$^+$')
         species.append(hPlus_aqu)
-        
-        
+
 
         self.extraction_raffinate_phase = Phase(time_stamp=self.initial_time,
                                                 time_unit='s', quantities=quantities, species=species)
