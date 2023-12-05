@@ -45,11 +45,10 @@
        - wash water ratio (R):               2.5
 
    + Filtration:
+
+Source:
+ https://www.911metallurgist.com/blog/uranium-extraction-process
 """
-
-   Source of info:
-   https://www.911metallurgist.com/blog/uranium-extraction-process
-
 
 import logging
 
@@ -740,4 +739,3 @@ class DecantationFiltration(Module):
         '''
 
         return time
-
