@@ -14,6 +14,7 @@ import unit
 from leaching import Leaching
 from decantation_filtration import DecantationFiltration
 from solvex import Solvex
+from precipitation import Precipitation
 from evaporation_calcination import EvaporationCalcination
 
 def main():
@@ -68,7 +69,6 @@ def main():
 
     solvex = Solvex()  # Create solvent extraction module
 
-    solvex = Solvex()  # Create reactor module
     solvex.name = 'Solvex'
     solvex.save = True
     solvex.time_step = time_step
@@ -76,6 +76,18 @@ def main():
     solvex.show_time = show_time
 
     white_mesa_network.module(solvex)  # Add solvex module to network
+
+    # Precipitation
+
+    precipt = Precipitation()  # Create solvent extraction module
+
+    precipt.name = 'Precipitation'
+    precipt.save = True
+    precipt.time_step = time_step
+    precipt.end_time = end_time
+    precipt.show_time = show_time
+
+    white_mesa_network.module(precipt)  # Add solvex module to network
 
     # Evaporation-Calcination
 
@@ -91,13 +103,12 @@ def main():
 
     # White Mesa Network Connectivity
 
-    white_mesa_network.connect([solvex, 'raffinate'], [decant_filt, 'raffinate-feed'])
-    white_mesa_network.connect([decant_filt, 'filtrate'], [solvex, 'extraction-feed'])
-    #white_mesa_network.connect([decant_filt, 'filtrate'], [solvex, 'extraction-feed'])
-
-    #These two need to be connected in the .py files
     #white_mesa_network.connect([leaching, 'feed'], [decant_filt, 'pre-leach-feed'])
     #white_mesa_network.connect([decant_filt, 'pre-leach-feed'], [leaching, 'feed'])
+    white_mesa_network.connect([decant_filt, 'filtrate'], [solvex, 'extraction-feed'])
+    white_mesa_network.connect([solvex, 'raffinate'], [decant_filt, 'raffinate-feed'])
+    white_mesa_network.connect([solvex, 'product'], [precipt, 'uts-feed'])
+    white_mesa_network.connect([precipt, 'adu-product'], [evap_calc, 'adu-feed'])
 
     white_mesa_network.draw(engine='circo', node_shape='folder')
     #white_mesa_network.draw()
