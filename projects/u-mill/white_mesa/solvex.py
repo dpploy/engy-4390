@@ -167,9 +167,9 @@ class Solvex(Module):
                 info='UO2$^{2+}$')
         species.append(u6_aqu)
 
-        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(a)',
+        h2so4_feed = Species(name='H2-SO4',formula_name='H2SO4(a)',
                            atoms=['2*H','S','4*O'],
-                           info='H2SO4')
+                           info='H2-SO4')
         species.append(h2so4_feed)
 
         hPlus_aqu = Species( name='H+',formula_name='H^+(a)',
@@ -177,15 +177,15 @@ class Solvex(Module):
                 info='H$^+$')
         species.append(hPlus_aqu)
         
-        toaso4 = Species(name='C24H51NSO4',formula_name='C24H51NSO4(org)',
+        toaso4 = Species(name='C24H51N-SO4',formula_name='C24H51NSO4(org)',
                          atoms=['24*C','51*H','N','S','4*O'],
-                         info='C24H51NSO4')
+                         info='C24H51N-SO4')
         species.append(toaso4)
         
-        toauo2so43 = Species(name='C24H51NUO2SO43',
-                             formula_name='C24H51NUO2SO43(org)',
+        toauo2so43 = Species(name='C24H51N-UO2-(SO4)3',
+                             formula_name='C24H51NUO2(SO4)3(org)',
                              atoms=['24*C','51*H','N','U','3*S','14*O'],
-                             info='C24H51NUO2SO43')
+                             info='C24H51N-UO2-(SO4)3')
         species.append(toauo2so43)
         
         self.extraction_feed_phase = Phase(time_stamp=self.initial_time,
