@@ -22,29 +22,29 @@ This module is a model of the Evaporation/Calcination process
                 v            v
              Product      Off-Gas
               (U3O8)
-
- + Evaporation:
+"" 
++ Evaporation:
      1) Evaporator Base Parameters
-       - # of Evaporator Columsns:
-       - volume per Evaporator:                 1.42 m^3
+       - # of Evaporator Columns:                 
+       - Volume per Evaporator:                 1.42 m^3
        - Temperature Setpoint per Evaporator:   351.85 C
        - Feed Flowrate Entering Evaporator:    0.09 gallons/min
-       - feed mass fraction of solids:
-       - wash water mass fraction of solids:
-       - overflow mass fraction of solids:
-       - underflow mass fraction of solids:
+       - feed mass fraction of solids:           
+       - wash water mass fraction of solids: 
+       - overflow mass fraction of solids:   
+       - underflow mass fraction of solids:  
 
- + Calcination:
++ Calcination:
      1) Calciner Heat Parameters
        - # of Rotary Calciners:                    2
-       - volume per Calciner:                    m^3
-       - Temperature Setpoint per Calciner:     850.0 C
+       - Volume per Calciner:                    m^3
+       - Temperature Setpoint per Calciner:     850.0 C 
        - Feed Flowrate Entering Evaporator:    0.07 gallons/min
-       - feed mass fraction of solids:
-       - wash water mass fraction of solids:
-       - overflow mass fraction of solids:
-       - underflow mass fraction of solids:
-
+       - feed mass fraction of solids:             
+       - wash water mass fraction of solids:      
+       - overflow mass fraction of solids:   
+       - underflow mass fraction of solids:  
+      
    Source of info:
 """
 
