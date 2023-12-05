@@ -7,13 +7,13 @@ Cortix Module
 This module is a model of the Precipitation process in the White Mesa Uranium Milling Plant Project
 
 
-          Feed (Stripping product from SolvEx)
+          Feed (Uranyl Tri-Sulfate Stripping product from SolvEx)
              |
              |
              V
    ----------------------
    |                    |
-   |   Precipitation    |<------ NH4 (anhydrous)
+   |   Precipitation    |<------ NH4 (anhydrous) + air
    |                    |
    | Thickening/Washing |<------ wash water centrifuge
    |                    |
@@ -41,7 +41,9 @@ This module is a model of the Precipitation process in the White Mesa Uranium Mi
 
 Source:
  1993 Uranium Extraction Technology, IAEA Technical Reports Series No. 359
-  p. 338 (White Mesa), p. 240 (Precipitation: the ammonia system)
+  p. 338 (White Mesa),
+  p. 240 (Precipitation: the ammonia system)
+ URL: https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf
 
 """
 
@@ -80,8 +82,7 @@ class Precipitation(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['uranium-inflow', 'solids-outflow',
-                                    'nucleation-agent-inflow', 'liquid-outflow']
+        self.port_names_expected = ['uts-feed', 'adu-product']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -166,135 +167,32 @@ class Precipitation(Module):
         self.heat_sink_pwr = 0.0
         '''
 
-        # Primary outflow phase history
+        #***************************************************************************************
+        # P R E C I P I T A T I O N
+        #***************************************************************************************
+
+        # Precipitation Feed Phase History (solvent extraction stripping product)
         quantities = list()
+        species = list()
 
-        '''
-        temp = Quantity(name='temp',
-                        formal_name='T_1', unit='K',
-                        value=self.primary_outflow_temp,
-                        latex_name=r'$T_1$',
-                        info='Steamer Primary Outflow Temperature')
+        self.precipitation_feed_phase = Phase(time_stamp=self.initial_time,
+                                              time_unit='s', quantities=quantities, species=species)
 
-        quantities.append(temp)
+        #***************************************************************************************
+        # T H I C K N E N I N G
+        #***************************************************************************************
 
-        flowrate = Quantity(name='flowrate',
-                        formal_name='mdot', unit='kg/s',
-                        value=self.primary_mass_flowrate,
-                        latex_name=r'$\dot{m}_1$',
-                        info='Steamer Primary Mass Flowrate')
-
-        quantities.append(flowrate)
-
-        self.primary_outflow_phase = Phase(time_stamp=self.initial_time,
-                                           time_unit='s', quantities=quantities)
-
-        # Secondary inflow phase history
+        # Thickening/Centrifuge Product Phase History (thickening/centrifuge outflow)
         quantities = list()
+        species = list()
 
-        flowrate = Quantity(name='flowrate',
-                            formal_name='m2i', unit='kg/s',
-                            value=self.secondary_mass_flowrate,
-                            latex_name=r'$\dot{m}_{2,in}$',
-                            info='Steamer Secondary Inflow Mass Flowrate')
+        self.thickening_product_phase = Phase(time_stamp=self.initial_time,
+                                              time_unit='s', quantities=quantities, species=species)
 
-        quantities.append(flowrate)
+        #***************************************************************************************
+        # S T A T E  P H A S E
+        #***************************************************************************************
 
-        temp = Quantity(name='temp',
-                        formal_name='T2i', unit='K',
-                        value=self.secondary_inflow_temp,
-                        latex_name=r'$T_{2,in}$',
-                        info='Steamer Secondary Inflow Temperature')
-
-        quantities.append(temp)
-
-        self.secondary_inflow_phase = Phase(time_stamp=self.initial_time,
-                                            time_unit='s', quantities=quantities)
-
-        # Secondary outflow phase history
-        quantities = list()
-
-        flowrate = Quantity(name='flowrate',
-                            formal_name='m_2', unit='kg/s',
-                            value=self.secondary_mass_flowrate,
-                            latex_name=r'$\dot{m}_2$',
-                            info='Steamer Secondary Outflow Mass Flowrate')
-
-        quantities.append(flowrate)
-
-        temp = Quantity(name='temp',
-                        formal_name='T_2', unit='K',
-                        value=self.secondary_outflow_temp,
-                        latex_name=r'$T_2$',
-                        info='Steamer Secondary Outflow Temperature')
-
-        quantities.append(temp)
-
-        press = Quantity(name='pressure',
-                         formal_name='P_2', unit='Pa',
-                         value=self.secondary_pressure,
-                         latex_name=r'$P_2$',
-                         info='Steamer Secondary Outflow Pressure')
-
-        quantities.append(press)
-
-        quality = Quantity(name='quality',
-                         formal_name='X', unit='',
-                         value=self.secondary_outflow_quality,
-                         latex_name=r'$\chi$',
-                         info='Steamer Secondary Outflow Quality')
-
-        quantities.append(quality)
-
-        self.secondary_outflow_phase = Phase(time_stamp=self.initial_time,
-                                             time_unit='s', quantities=quantities)
-
-        # State phase history
-        quantities = list()
-
-        tau_p = Quantity(name='tau_p',
-                        formal_name='Tau_p', unit='s',
-                        value=0.0,
-                        latex_name=r'$\tau_{p}$',
-                        info='Steamer Primary Residence Time')
-
-        quantities.append(tau_p)
-
-        tau_s = Quantity(name='tau_s',
-                        formal_name='Tau_s', unit='s',
-                        value=0.0,
-                        latex_name=r'$\tau_{s}$',
-                        info='Steamer Secondary Residence Time')
-
-        quantities.append(tau_s)
-
-        heatflux = Quantity(name='heatflux',
-                        formal_name="q''", unit='W/m$^2$',
-                        value=0.0,
-                        latex_name=r"$q''$",
-                        info='Steamer Heat Flux')
-
-        quantities.append(heatflux)
-
-        nusselt_p = Quantity(name='nusselt_p',
-                        formal_name='Nu_p', unit='',
-                        value=0.0,
-                        latex_name=r'$Nu_p$',
-                        info='Steamer Primary Nusselt Number')
-
-        quantities.append(nusselt_p)
-
-        nusselt_s = Quantity(name='nusselt_s',
-                        formal_name='Nu_s', unit='',
-                        value=0.0,
-                        latex_name=r'$Nu_s$',
-                        info='Steamer Secondary Nusselt Number')
-
-        quantities.append(nusselt_s)
-
-        self.state_phase = Phase(time_stamp=self.initial_time,
-                                 time_unit='s', quantities=quantities)
-        '''
 
     def run(self, *args):
 
@@ -327,84 +225,119 @@ class Precipitation(Module):
             # Evolve one time step
             #---------------------
 
-            # time = self.__step(time)
+            time = self.__step(time)
 
             # Communicate information
             #------------------------
-            # self.__call_ports(time)
+            self.__call_ports(time)
 
         self.end_time = time # correct the final time if needed
 
     def __call_ports(self, time):
 
-        # Interactions in the uranium-inflow port
-        #----------------------------------------
-        # One way "from" uranium-inflow
+        # Interactions in the uts-feed port
+        #----------------------------------
+        # One way "from" uts-feed
 
         # Receive from
-        if self.get_port('uranium-inflow').connected_port:
+        if self.get_port('uts-feed').connected_port:
 
-            self.send(time, 'uranium-inflow')
+            self.send(time, 'uts-feed')
 
-            (check_time, primary_inflow) = self.recv('uranium-inflow')
+            (check_time, uts_feed) = self.recv('uts-feed')
             assert abs(check_time-time) <= 1e-6
 
+            '''
             self.primary_inflow_temp = primary_inflow['temperature']
             self.primary_ressure = primary_inflow['pressure']
             self.primary_mass_flowrate = primary_inflow['mass_flowrate']
+            '''
 
-        # Interactions in the secondary-inflow port
-        #----------------------------------------
-        # One way "from" secondary-inflow
-
-        # Receive from
-        if self.get_port('secondary-inflow').connected_port:
-
-            self.send(time, 'secondary-inflow')
-
-            (check_time, secondary_inflow) = self.recv('secondary-inflow')
-            assert abs(check_time-time) <= 1e-6
-
-            self.secondary_inflow_temp = secondary_inflow['temperature']
-            self.secondary_pressure = secondary_inflow['pressure']
-            self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
-
-        # Interactions in the primary-outflow port
+        # Interactions in the adu-port
         #-----------------------------------------
-        # One way "to" primary-outflow
+        # One way "to" adu-port
 
         # Send to
-        if self.get_port('primary-outflow').connected_port:
+        if self.get_port('adu-product').connected_port:
 
-            msg_time = self.recv('primary-outflow')
+            msg_time = self.recv('adu-product')
 
-            temp = self.primary_outflow_phase.get_value('temp', msg_time)
+            #temp = self.primary_outflow_phase.get_value('temp', msg_time)
 
-            primary_outflow = dict()
+            product = dict()
+            '''
             primary_outflow['temperature'] = temp
             primary_outflow['pressure'] = self.primary_pressure
             primary_outflow['mass_flowrate'] = self.primary_mass_flowrate
             primary_outflow['quality'] = 0.0
+            '''
 
-            self.send((msg_time, primary_outflow), 'primary-outflow')
+            self.send((msg_time, product), 'adu-product')
 
-        # Interactions in the secondary-outflow port
-        #-----------------------------------------
-        # One way "to" secondary-outflow
+    def __step(self, time=0.0):
+        """Stepping Decantation-Filtration in time
+        """
 
-        # Send to
-        if self.get_port('secondary-outflow').connected_port:
+        '''
+        # Get state values
+        u_0 = self.__get_state_vector(time)
 
-            msg_time = self.recv('secondary-outflow')
+        t_interval_sec = np.linspace(time, time+self.time_step, num=2)
 
-            temp = self.secondary_outflow_phase.get_value('temp', msg_time)
-            press = self.secondary_outflow_phase.get_value('pressure', msg_time)
-            flowrate = self.secondary_outflow_phase.get_value('flowrate', msg_time)
+        max_n_steps_per_time_step = 1500 # max number of nonlinear algebraic solver
+                                         # iterations per time step
 
-            secondary_outflow = dict()
-            secondary_outflow['temperature'] = temp
-            secondary_outflow['pressure'] = press
-            secondary_outflow['mass_flowrate'] = flowrate
-            secondary_outflow['total_heat_power'] = -self.heat_sink_pwr
+        (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
+                                         rtol=1e-7, atol=1e-8,
+                                         mxstep=max_n_steps_per_time_step,
+                                         full_output=True, tfirst=False)
 
-            self.send((msg_time, secondary_outflow), 'secondary-outflow')
+        assert info_dict['message'] == 'Integration successful.', info_dict['message']
+
+        u_vec = u_vec_hist[1, :]  # solution vector at final time step
+
+        temp_p = u_vec[0] # primary outflow temp
+        temp_s = u_vec[1] # secondary outflow temp
+
+        # Update phases
+        primary_outflow = self.primary_outflow_phase.get_row(time)
+        secondary_inflow = self.secondary_inflow_phase.get_row(time)
+        secondary_outflow = self.secondary_outflow_phase.get_row(time)
+        steamer = self.state_phase.get_row(time)
+        '''
+
+        time += self.time_step
+
+        '''
+        self.primary_outflow_phase.add_row(time, primary_outflow)
+        self.primary_outflow_phase.set_value('temp', temp_p, time)
+        self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
+
+        self.secondary_inflow_phase.add_row(time, secondary_inflow)
+        self.secondary_inflow_phase.set_value('temp', self.secondary_inflow_temp, time)
+        self.secondary_inflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
+
+        self.secondary_outflow_phase.add_row(time, secondary_outflow)
+        self.secondary_outflow_phase.set_value('temp', temp_s, time)
+        self.secondary_outflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
+        self.secondary_outflow_phase.set_value('pressure', self.secondary_pressure, time)
+        self.secondary_outflow_phase.set_value('quality', self.secondary_outflow_quality, time)
+
+        self.state_phase.add_row(time, steamer)
+
+        # Primary residence time
+        self.state_phase.set_value('tau_p', self.tau_p, time)
+
+        # Secondary residence time
+        self.state_phase.set_value('tau_s', self.tau_s, time)
+
+        # Heat flux and Nusselt number
+        heatflux = -self.heat_sink_pwr/self.heat_transfer_area
+        self.state_phase.set_value('heatflux', heatflux, time)
+
+        self.state_phase.set_value('nusselt_p', self.nusselt_p, time)
+
+        self.state_phase.set_value('nusselt_s', self.nusselt_s, time)
+        '''
+
+        return time
