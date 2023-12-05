@@ -30,8 +30,6 @@ def main():
 
     # Precipitation
 
-    precipt = Precipitation() # Create precipitation module
-
     # Steady state conditions for NuSCale case
     #primary_inflow_temp = (320.9+273.15)*unit.kelvin
     #secondary_inflow_temp = (149+273.15)*unit.kelvin

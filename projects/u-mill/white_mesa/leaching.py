@@ -6,17 +6,20 @@
    Leaching process in the White Mesa Milling Plant.
 
 
-             Wet Ore     CCD overflow (from Decantation Module)
-                |            |
-                |            |
-                |            |
-                v            v
+                  Wet Ore
+                 (internal)
+                     |
+                     |
+                     |
+                     v
              |----------------|
              |                |
-             |  Pre-leaching  |<--------- STD Underflow (from single-tank Decantation Module)
+             |  Pre-leaching  |<-------- CCD overflow (from Decantation Module)
              |                |
-             |  Acid-leaching |<-------- Acids (internal) H2S04, NaCI03, Steam)
              |                |
+             |                |<-------- STD Underflow (from single-tank Decantation Module)
+             |  Acid-leaching |
+             |                |<-------- Acids (internal) H2S04, NaCI03, Steam)
              |________________|
                   |       |
                   |       |
@@ -76,7 +79,6 @@ class Leaching(Module):
     These are the `port` names available in this module to connect to respective
     modules: Filtration/Decantation.
     See instance attribute `port_names_expected`.
-
     """
 
     def __init__(self):
@@ -89,8 +91,10 @@ class Leaching(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['pre-leach-product', 'acid-leach-product','pre-leach-feed','acid-leach-feed']
 
+        self.port_names_expected = ['pre-leach-feed', 'acid-leach-feed',
+                                    'pre-leach-product', 'acid-leach-product']
+        
         # General attributes
         self.initial_time = 0.0*unit.second
         self.end_time = 1.0*unit.hour
@@ -134,10 +138,10 @@ class Leaching(Module):
         self.acid_leach_output_solids_massfrac = 100 * unit.ppm
 
         # ***************************************************************************************
-        # R A W - O R E - L E A C H I N G
+        # P R E - L E A C H I N G
         # ***************************************************************************************
 
-        # Wet ore input phase history (internal)
+        # Wet Ore Feed Phase History (internal)
         quantities = list()
         species = list()
 
@@ -193,10 +197,10 @@ class Leaching(Module):
                                 info='Au')
         species.append(gold_wet_ore)
 
-        self.wet_ore_phase = Phase(time_stamp=self.initial_time,
+        self.wet_ore_feed_phase = Phase(time_stamp=self.initial_time,
                                         time_unit='s', quantities=quantities, species=species)
 
-        # CCD Overflow phase history (from Decantation Module)
+        # Pre-Leach Feed Phase (from Decantation Overflow Module)
         quantities = list()
         species = list()
 
@@ -255,7 +259,7 @@ class Leaching(Module):
         self.ccd_overflow_phase = Phase(time_stamp=self.initial_time,
                                                 time_unit='s', quantities=quantities, species=species)
 
-        # Pre-leach output phase history
+        # Pre-Leach Product Phase History (Single-Tank Decantation)
         quantities = list()
         species = list()
 
@@ -311,10 +315,14 @@ class Leaching(Module):
                                 info='Au')
         species.append(gold_preleach_output)
 
-        self.preleach_output_phase = Phase(time_stamp=self.initial_time,
-                                        time_unit='s', quantities=quantities, species=species)
+        self.preleach_product_phase = Phase(time_stamp=self.initial_time,
+                                            time_unit='s', quantities=quantities, species=species)
 
-        # STD underflow phase history
+        # ***************************************************************************************
+        # A C I D - L E A C H I N G
+        # ***************************************************************************************
+
+        # Acid-Leach Feed Phase History (STD underflow)
         quantities = list()
         species = list()
 
@@ -369,8 +377,8 @@ class Leaching(Module):
                                  info='Au')
         species.append(gold_underflow)
 
-        self.std_underflow_phase = Phase(time_stamp=self.initial_time,
-                                                 time_unit='s', quantities=quantities, species=species)
+        self.acidleach_feed_phase = Phase(time_stamp=self.initial_time,
+                                          time_unit='s', quantities=quantities, species=species)
 
         # Acids feed phase history
         quantities = list()
@@ -408,7 +416,7 @@ class Leaching(Module):
         self.acids_phase = Phase(time_stamp=self.initial_time,
                                          time_unit='s', quantities=quantities, species=species)
 
-        # Acid Leach Output phase history
+        # Acid-Leach Product Phase History (Decantation feed)
         quantities = list()
         species = list()
 
@@ -463,8 +471,8 @@ class Leaching(Module):
                                  info='Au')
         species.append(gold_acid_leach_output)
 
-        self.std_underflow_phase = Phase(time_stamp=self.initial_time,
-                                         time_unit='s', quantities=quantities, species=species)
+        self.acidleach_product_phase = Phase(time_stamp=self.initial_time,
+                                             time_unit='s', quantities=quantities, species=species)
 
     def run(self, *args):
 
@@ -507,28 +515,80 @@ class Leaching(Module):
 
     def __call_ports(self, time):
 
-        # Interactions in the pre-leach port
+        # Interactions in the pre-leach-feed port
+        # Receive from
+        if self.get_port('pre-leach-feed').connected_port:
+
+            self.send(time, 'pre-leach-feed')
+
+            (check_time, preleach_feed) = self.recv('pre-leach-feed')
+            assert abs(check_time-time) <= 1e-6
+
+            '''
+            self.primary_inflow_temp = primary_inflow['temperature']
+            self.primary_ressure = primary_inflow['pressure']
+            self.primary_mass_flowrate = primary_inflow['mass_flowrate']
+            '''
+
+        # Interactions in the acid-leach-feed port
         #----------------------------------------
+        # One way "from" acid-leach-feed port
 
-        # Send pre-leach to Decantation Module
-        if self.get_port('pre-leach-out').connected_port:
+        # Receive from
+        if self.get_port('acid-leach-feed').connected_port:
 
-            self.send(time, 'pre-leach-out')
+            self.send(time, 'acid-leach-feed')
 
-            (check_time, preleach_output_phase) = self.recv('pre-leach-out')
+            (check_time, stripping_feed) = self.recv('acid-leach-feed')
             assert abs(check_time-time) <= 1e-6
 
-            #Insert data from phase history
-        # Send pre-leach to Decantation Module
-        if self.get_port('acid-leach-out').connected_port:
+            '''
+            self.secondary_inflow_temp = secondary_inflow['temperature']
+            self.secondary_pressure = secondary_inflow['pressure']
+            self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
+            '''
 
-            self.send(time, 'pre-leach-out')
+        # Interactions in the pre-leach-product port
+        #-----------------------------------------
+        # One way "to" pre-leach-product port
 
-            (check_time, preleach_output_phase) = self.recv('pre-leach-out')
-            assert abs(check_time-time) <= 1e-6
+        # Send to
+        if self.get_port('pre-leach-product').connected_port:
 
-            #Insert data from phase history
-        #Send acid-leach to Decantation module
+            msg_time = self.recv('pre-leach-product')
+
+            temp = self.stripping_product_phase.get_value('temp', msg_time)
+
+            product = dict()
+            '''
+            product['temperature'] = temp
+            product['pressure'] = self.primary_pressure
+            product['mass_flowrate'] = self.primary_mass_flowrate
+            product['quality'] = 0.0
+            '''
+
+            self.send((msg_time, product), 'pre-leach-product')
+
+        # Interactions in the acid-leach-product port
+        #-----------------------------------------
+        # One way "to" acid-leach-product-port
+
+        # Send to
+        if self.get_port('acid-leach-product').connected_port:
+
+            msg_time = self.recv('acid-leach-product')
+
+            #temp = self.xxxx.get_value('temp', msg_time)
+
+            raffinate = dict()
+            '''
+            raffinate['temperature'] = temp
+            raffinate['pressure'] = press
+            raffinate['mass_flowrate'] = flowrate
+            raffinate['total_heat_power'] = -self.heat_sink_pwr
+            '''
+
+            self.send((msg_time, raffinate), 'acid-leach-product')
 
     def __step(self, time=0.0):
         """Stepping Decantation-Filtration in time
