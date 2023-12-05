@@ -45,11 +45,10 @@
        - wash water ratio (R):               2.5
 
    + Filtration:
-"""
 
    Source of info:
    https://www.911metallurgist.com/blog/uranium-extraction-process
-
+"""
 
 import logging
 
