@@ -18,10 +18,18 @@ This module is a model of the Precipitation process in the White Mesa Uranium Mi
    | Thickening/Washing |<------ wash water centrifuge
    |                    |
    ----------------------
+             |
+             |
+             |
+             |
+             v
 
 
    + Precipitation
-     Continuous precipitation with anhydrous ammonia
+     Continuous precipitation with anhydrous ammonia.
+     Forms ammonium diuranate (NH4)2U2O7) but has a diuranate anion U2O7^2-
+
+
 
 
    + Thickening (2 solid bowl centrifuges in series)
