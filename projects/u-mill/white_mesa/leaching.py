@@ -39,9 +39,12 @@
                     3000 ppm uranium (0.3%), 150 ppm Zinc. These concentrations can vary from 0.2-2% (20000-2000 ppm)
                     The original mill design planned for 0.2-0.9% uranium. This is a relatively high concentration
                     compared to many mines but is well within the averages/usuals for most mines.
-
+                    Uranium typically exists in the ores in the form of U3O8.
    + Acid-Leaching
-
+      -Chemistry EQNS
+          UO3(s)+2H^+(aq) --> UO2^2+(aq) + H2O(aq)
+          UO2(2+)(aq) + 3(SO4^2-)(aq) --> UO2(SO4)3^4-     
+          
       - Capacity: 1 t of ore
       - Acid (H2SO4) amount: 20 kg/t ore
       - Temperature:
@@ -71,7 +74,7 @@ class Leaching(Module):
     Notes
     -----
     These are the `port` names available in this module to connect to respective
-    modules: Filtration.
+    modules: Filtration/Decantation.
     See instance attribute `port_names_expected`.
 
     """
@@ -86,7 +89,7 @@ class Leaching(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['feed']
+        self.port_names_expected = ['pre-leach-product', 'acid-leach-product','pre-leach-feed','acid-leach-feed']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -504,19 +507,28 @@ class Leaching(Module):
 
     def __call_ports(self, time):
 
-        # Interactions in the feed port
+        # Interactions in the pre-leach port
         #----------------------------------------
 
-        # Send to and Receive from Decantation Module
-        if self.get_port('feed').connected_port:
+        # Send pre-leach to Decantation Module
+        if self.get_port('pre-leach-out').connected_port:
 
-            self.send(time, 'feed')
+            self.send(time, 'pre-leach-out')
 
-            (check_time, preleach_output_phase) = self.recv('feed')
+            (check_time, preleach_output_phase) = self.recv('pre-leach-out')
             assert abs(check_time-time) <= 1e-6
 
             #Insert data from phase history
+        # Send pre-leach to Decantation Module
+        if self.get_port('acid-leach-out').connected_port:
 
+            self.send(time, 'pre-leach-out')
+
+            (check_time, preleach_output_phase) = self.recv('pre-leach-out')
+            assert abs(check_time-time) <= 1e-6
+
+            #Insert data from phase history
+        #Send acid-leach to Decantation module
 
     def __step(self, time=0.0):
         """Stepping Decantation-Filtration in time
