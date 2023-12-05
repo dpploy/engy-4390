@@ -25,8 +25,8 @@ This module is a model of the Evaporation/Calcination process
 "" 
 + Evaporation:
      1) Evaporator Base Parameters
-       - # of Evaporator Columns:                 
-       - Volume per Evaporator:                 1.42 m^3
+       - # of Evaporator Columns:                 5
+       - Volume per Evaporator:                 200 m^3
        - Temperature Setpoint per Evaporator:   351.85 C
        - Feed Flowrate Entering Evaporator:    0.09 gallons/min
        - feed mass fraction of solids:           
@@ -37,7 +37,7 @@ This module is a model of the Evaporation/Calcination process
 + Calcination:
      1) Calciner Heat Parameters
        - # of Rotary Calciners:                    2
-       - Volume per Calciner:                    m^3
+       - Volume per Calciner:                    1000 m^3
        - Temperature Setpoint per Calciner:     850.0 C 
        - Feed Flowrate Entering Evaporator:    0.07 gallons/min
        - feed mass fraction of solids:             
