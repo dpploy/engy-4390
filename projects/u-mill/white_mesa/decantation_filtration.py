@@ -43,7 +43,7 @@
 
    + Filtration:
 
-   Source of info: 
+   Source of info:
 """
 
 import logging
