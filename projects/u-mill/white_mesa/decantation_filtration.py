@@ -46,8 +46,8 @@
 
    + Filtration:
 
-Source:
- https://www.911metallurgist.com/blog/uranium-extraction-process
+   Source of info:
+   https://www.911metallurgist.com/blog/uranium-extraction-process
 """
 
 import logging

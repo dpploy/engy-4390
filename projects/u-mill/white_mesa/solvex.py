@@ -143,13 +143,63 @@ class Solvex(Module):
 
         # Extraction Feed Phase History (internal state/external)
         quantities = list()
-        species = list()  # Is it proper to rest the species list too?
+        species = list()
 
         feed_mass_flowrate = Quantity(name='mass_flowrate',
                                       formal_name='mdot', unit='kg/s',
                                       value=self.extraction_feed_mass_flowrate,
                                       latex_name=r'$\dot{m}_4$',
                                       info='Extraction Feed Mass Flowrate')
+        quantities.append(feed_mass_flowrate)
+
+        uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_feed)
+
+        h2o_feed = Species(name='H2O',formula_name='H2O(a)',
+                           atoms=['2*H','O'],
+                           info='H2O')
+        species.append(h2o_feed)
+
+        u6_aqu = Species( name='U-VI',formula_name='UO2^2+(a)',
+                atoms=['U','2*O'],
+                info='UO2$^{2+}$')
+        species.append(u6_aqu)
+
+        h2so4_feed = Species(name='H2-SO4',formula_name='H2SO4(a)',
+                           atoms=['2*H','S','4*O'],
+                           info='H2-SO4')
+        species.append(h2so4_feed)
+
+        hPlus_aqu = Species( name='H+',formula_name='H^+(a)',
+                atoms=['H'],
+                info='H$^+$')
+        species.append(hPlus_aqu)
+        
+        toaso4 = Species(name='C24H51N-SO4',formula_name='C24H51NSO4(org)',
+                         atoms=['24*C','51*H','N','S','4*O'],
+                         info='C24H51N-SO4')
+        species.append(toaso4)
+
+        toauo2so43 = Species(name='C24H51N-UO2-(SO4)3',
+                             formula_name='C24H51NUO2(SO4)3(org)',
+                             atoms=['24*C','51*H','N','U','3*S','14*O'],
+                             info='C24H51N-UO2-(SO4)3')
+        species.append(toauo2so43)
+        
+        self.extraction_feed_phase = Phase(time_stamp=self.initial_time,
+                                           time_unit='s', quantities=quantities, species=species)
+
+        # Extraction Raffinate Phase History (internal state/external)
+        quantities = list()
+        species = list()
+
+        feed_mass_flowrate = Quantity(name='mass_flowrate',
+                                      formal_name='mdot', unit='kg/s',
+                                      value=self.extraction_feed_mass_flowrate,
+                                      latex_name=r'$\dot{m}_4$',
+                                      info='Extraction Raffinate Mass Flowrate')
         quantities.append(feed_mass_flowrate)
 
         uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
@@ -177,29 +227,18 @@ class Solvex(Module):
                 info='H$^+$')
         species.append(hPlus_aqu)
 
-        toaso4 = Species(name='C24H51NSO4',formula_name='C24H51NSO4(org)',
-                         atoms=['24*C','51*H','N','S','4*O'],
-                         info='C24H51NSO4')
-        species.append(toaso4)
+        self.extraction_raffinate_phase = Phase(time_stamp=self.initial_time,
+                                                time_unit='s', quantities=quantities, species=species)
 
-        toauo2so43 = Species(name='C24H51NUO2SO43',
-                             formula_name='C24H51NUO2SO43(org)',
-                             atoms=['24*C','51*H','N','U','3*S','14*O'],
-                             info='C24H51NUO2SO43')
-        species.append(toauo2so43)
-
-        self.extraction_feed_phase = Phase(time_stamp=self.initial_time,
-                                           time_unit='s', quantities=quantities, species=species)
-
-        # Extraction Raffinate Phase History (internal state/external)
+        # Extraction Product Phase History (internal state/external)
         quantities = list()
-        species = list()  # Is it proper to rest the species list too?
+        species = list()
 
         feed_mass_flowrate = Quantity(name='mass_flowrate',
                                       formal_name='mdot', unit='kg/s',
                                       value=self.extraction_feed_mass_flowrate,
                                       latex_name=r'$\dot{m}_4$',
-                                      info='Extraction Raffinate Mass Flowrate')
+                                      info='Extraction Feed Mass Flowrate')
         quantities.append(feed_mass_flowrate)
 
         uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
@@ -207,7 +246,7 @@ class Solvex(Module):
                            info='UO2-(SO4)3^4-')
         species.append(uo2so434minus_feed)
 
-        h2o_feed = Species(name='H2O',formula_name='H2O(aq)',
+        h2o_feed = Species(name='H2O',formula_name='H2O(a)',
                            atoms=['2*H','O'],
                            info='H2O')
         species.append(h2o_feed)
@@ -217,19 +256,29 @@ class Solvex(Module):
                 info='UO2$^{2+}$')
         species.append(u6_aqu)
 
-        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(a)',
+        h2so4_feed = Species(name='H2-SO4',formula_name='H2SO4(a)',
                            atoms=['2*H','S','4*O'],
-                           info='H2SO4')
+                           info='H2-SO4')
         species.append(h2so4_feed)
 
         hPlus_aqu = Species( name='H+',formula_name='H^+(a)',
                 atoms=['H'],
                 info='H$^+$')
         species.append(hPlus_aqu)
+        
+        toaso4 = Species(name='C24H51N-SO4',formula_name='C24H51NSO4(org)',
+                         atoms=['24*C','51*H','N','S','4*O'],
+                         info='C24H51N-SO4')
+        species.append(toaso4)
+ 
+        toauo2so43 = Species(name='C24H51N-UO2-(SO4)3',
+                             formula_name='C24H51NUO2(SO4)3(org)',
+                             atoms=['24*C','51*H','N','U','3*S','14*O'],
+                             info='C24H51N-UO2-(SO4)3')
+        species.append(toauo2so43)
 
-
-        self.extraction_raffinate_phase = Phase(time_stamp=self.initial_time,
-                                                time_unit='s', quantities=quantities, species=species)
+        self.extraction_product_phase = Phase(time_stamp=self.initial_time,
+                                              time_unit='s', quantities=quantities, species=species)
 
         #***************************************************************************************
         # S T R I P P I N G
@@ -237,21 +286,15 @@ class Solvex(Module):
 
         # Stripping Feed Phase History (internal state/external)
         quantities = list()
-        species = list()  # Is it proper to rest the species list too?
+        species = list()
 
-        feed_mass_flowrate = Quantity(name='mass_flowrate',
-                                      formal_name='mdot', unit='kg/s',
-                                      value=self.extraction_feed_mass_flowrate,
-                                      latex_name=r'$\dot{m}_4$',
-                                      info='Stripping Feed Mass Flowrate')
-        quantities.append(feed_mass_flowrate)
 
         uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
                            atoms=['U','2*O','3*S','12*O'],
                            info='UO2-(SO4)3^4-')
         species.append(uo2so434minus_feed)
 
-        h2o_feed = Species(name='H2O',formula_name='H2O(aq)',
+        h2o_feed = Species(name='H2O',formula_name='H2O(a)',
                            atoms=['2*H','O'],
                            info='H2O')
         species.append(h2o_feed)
@@ -261,22 +304,41 @@ class Solvex(Module):
                 info='UO2$^{2+}$')
         species.append(u6_aqu)
 
-        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(a)',
+        h2so4_feed = Species(name='H2-SO4',formula_name='H2SO4(a)',
                            atoms=['2*H','S','4*O'],
-                           info='H2SO4')
+                           info='H2-SO4')
         species.append(h2so4_feed)
 
         hPlus_aqu = Species( name='H+',formula_name='H^+(a)',
                 atoms=['H'],
                 info='H$^+$')
         species.append(hPlus_aqu)
+        
+        toaso4 = Species(name='C24H51N-SO4',formula_name='C24H51NSO4(org)',
+                         atoms=['24*C','51*H','N','S','4*O'],
+                         info='C24H51N-SO4')
+        species.append(toaso4)
+        
+        toauo2so43 = Species(name='C24H51N-UO2-(SO4)3',
+                             formula_name='C24H51NUO2(SO4)3(org)',
+                             atoms=['24*C','51*H','N','U','3*S','14*O'],
+                             info='C24H51N-UO2-(SO4)3')
+        species.append(toauo2so43)
 
+        nh4oh = Species(name='NH4-OH',formula_name='NH4OH',
+                        atoms=['N','5*H','O'],info='NH4-OH')
+        species.append(nh4oh)
+        
+        toa = Species(name='C24H51N',formula_name='C24H51N',
+                       atoms=['24*C','51*H','N'],info='C24H51N')
+        species.append(toa)
+        
         self.stripping_feed_phase = Phase(time_stamp=self.initial_time,
                                           time_unit='s', quantities=quantities, species=species)
 
         # Stripping Product Phase History (internal state/external)
         quantities = list()
-        species = list()  # Is it proper to rest the species list too?
+        species = list()
 
         feed_mass_flowrate = Quantity(name='mass_flowrate',
                                       formal_name='mdot', unit='kg/s',
@@ -290,7 +352,7 @@ class Solvex(Module):
                            info='UO2-(SO4)3^4-')
         species.append(uo2so434minus_feed)
 
-        h2o_feed = Species(name='H2O',formula_name='H2O(aq)',
+        h2o_feed = Species(name='H2O',formula_name='H2O(a)',
                            atoms=['2*H','O'],
                            info='H2O')
         species.append(h2o_feed)
