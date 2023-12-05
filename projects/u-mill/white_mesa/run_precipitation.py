@@ -6,17 +6,17 @@
 
 import matplotlib.pyplot as plt
 
-import unit
-
 from cortix import Cortix
 from cortix import Network
+
+import unit
 
 from precipitation import Precipitation
 
 def main():
 
     # Debugging
-    make_run   = False
+    make_run   = True
     make_plots = False
 
     # Preamble
@@ -35,9 +35,9 @@ def main():
     # Steady state conditions for NuSCale case
     #primary_inflow_temp = (320.9+273.15)*unit.kelvin
     #secondary_inflow_temp = (149+273.15)*unit.kelvin
-    #precipt = Precipitation(primary_inflow_temp, secondary_inflow_temp)  # Create reactor module
 
-    '''
+    precipt = Precipitation()  # Create precipitation module
+
     precipt.name = 'Precipitation'
     precipt.save = True
     precipt.time_step = time_step
@@ -49,7 +49,6 @@ def main():
     # Balance of Plant Network Connectivity
 
     plant_net.draw(engine='circo', node_shape='folder')
-    '''
 
     # Run
     if make_run:
