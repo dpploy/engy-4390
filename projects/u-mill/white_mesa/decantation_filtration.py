@@ -49,7 +49,7 @@
 
    Source of info:
    https://www.911metallurgist.com/blog/uranium-extraction-process
-
+"""
 
 import logging
 
@@ -740,4 +740,3 @@ class DecantationFiltration(Module):
         '''
 
         return time
-
