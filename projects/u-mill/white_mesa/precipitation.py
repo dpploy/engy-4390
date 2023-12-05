@@ -23,19 +23,25 @@ This module is a model of the Precipitation process in the White Mesa Uranium Mi
              |
              |
              v
+     Ammonium Diuranate Product
 
 
-   + Precipitation
-     Continuous precipitation with anhydrous ammonia.
-     Forms ammonium diuranate (NH4)2U2O7) but has a diuranate anion U2O7^2-
+ + Precipitation
+   Continuous precipitation with anhydrous ammonia.
+   Receives UO2(SO4)3^4- solution from SolvEx; sparge with 1:3 NH4/Air; kept at 30 to 50 C and
+   terminal 7 <= pH <= 8:.
+
+       2 UO2(SO4)3^4- + 6 NH3 -> (NH4)2U2O7 + 4 SO4^2-
+
+   Ammonium diuranate (NH4)2U2O7) has a diuranate anion U2O7^2-.
+
+ + Thickening (2 solid bowl centrifuges in series)
+   - Wash water volumetric flowrate
 
 
-
-
-   + Thickening (2 solid bowl centrifuges in series)
-     - Wash water volumetric flowrate
-
-
+Source:
+ 1993 Uranium Extraction Technology, IAEA Technical Reports Series No. 359
+  p. 338 (White Mesa), p. 240 (Precipitation: the ammonia system)
 
 """
 
