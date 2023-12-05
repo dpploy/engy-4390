@@ -17,7 +17,7 @@
              |                 |
     <--------|   Filtration    |
  CCD         |                 |
- overflow    |_________________|<-------- Raffinate Feed
+ overflow    |_________________|<-------- Raffinate Feed (from solvent extraction)
                   |       |
                   |       |
                   |       |
@@ -46,10 +46,9 @@
 
    + Filtration:
 
-
-   Source of info:
-   https://www.911metallurgist.com/blog/uranium-extraction-process
-
+Source:
+ https://www.911metallurgist.com/blog/uranium-extraction-process
+"""
 
 import logging
 
@@ -72,8 +71,8 @@ class DecantationFiltration(Module):
     These are the `port` names available in this module to connect to respective
     modules: Leaching, Solvex
     See instance attribute `port_names_expected`.
-
     """
+
 
     def __init__(self):
         """Constructor.
@@ -85,8 +84,8 @@ class DecantationFiltration(Module):
 
         super().__init__()
 
-        self.port_names_expected = ['pre-leach-feed', 'acid-leach-feed', 'raffinate-feed',
-                                    'filtrate']
+        self.port_names_expected = ['std-feed', 'ccd-feed', 'raffinate-feed',
+                                    'filtrate', 'std_underflow', 'ccd_overflow']
 
         # General attributes
         self.initial_time = 0.0*unit.second
@@ -569,19 +568,47 @@ class DecantationFiltration(Module):
 
     def __call_ports(self, time):
 
-        # Interactions in the feed port
+        # Interactions in the std feed port
+        #------------------------------
+        # One way "from" std feed port
+
+        # Receive from
+        if self.get_port('std-feed').connected_port:
+
+            self.send(time, 'std-feed')
+
+            (check_time, feed_phase) = self.recv('std-feed')
+            assert abs(check_time-time) <= 1e-6
+
+            # insert data from std-feed_phase into decantation_feed_phase history
+
+        # Interactions in the ccd feed port
         #------------------------------
         # One way "from" feed port
 
         # Receive from
-        if self.get_port('pre-leach-feed').connected_port:
+        if self.get_port('ccd-feed').connected_port:
 
-            self.send(time, 'pre-leach-feed')
+            self.send(time, 'ccd-feed')
 
-            (check_time, feed_phase) = self.recv('pre-leach-feed')
+            (check_time, feed_phase) = self.recv('ccd-feed')
             assert abs(check_time-time) <= 1e-6
 
-            # insert data from feed_phase into decantation_feed_phase history
+            # insert data from ccd-feed_phase into decantation_feed_phase history
+
+        # Interactions in the raffinate feed port
+        #------------------------------
+        # One way "from" raffinate feed port
+
+        # Receive from
+        if self.get_port('raffinate-feed').connected_port:
+
+            self.send(time, 'raffinate-feed')
+
+            (check_time, feed_phase) = self.recv('raffinate-feed')
+            assert abs(check_time-time) <= 1e-6
+
+            # insert data from raffinate-feed_phase into decantation_feed_phase history
 
         # Interactions in the filtrate port
         #----------------------------------
@@ -603,6 +630,47 @@ class DecantationFiltration(Module):
             # extract filtration_filtrate_phase data at msg_time to send 
 
             self.send((msg_time, self.filtration_filtrate_phase), 'filtrate')
+
+            # Interactions in the ccd overflow port
+            # ----------------------------------
+            # One way "to" ccd overflow port
+
+            # Send to
+            if self.get_port('ccd-overflow').connected_port:
+                msg_time = self.recv('ccd-overflow')
+
+                '''
+                temp = self.primary_outflow_phase.get_value('temp', msg_time)
+                primary_outflow = dict()
+                primary_outflow['temperature'] = temp
+                primary_outflow['pressure'] = self.primary_pressure
+                primary_outflow['mass_flowrate'] = self.primary_mass_flowrate
+                primary_outflow['quality'] = 0.0
+                '''
+                # extract filtration_filtrate_phase data at msg_time to send
+
+                #this is not filtration filtrate phase v
+                self.send((msg_time, self.filtration_filtrate_phase), 'ccd-overflow')
+
+            # Interactions in the std-underflow port
+            # ----------------------------------
+            # One way "to" std underflow port
+
+            # Send to
+            if self.get_port('std-underflow').connected_port:
+                msg_time = self.recv('std-underflow')
+
+                '''
+                temp = self.primary_outflow_phase.get_value('temp', msg_time)
+                primary_outflow = dict()
+                primary_outflow['temperature'] = temp
+                primary_outflow['pressure'] = self.primary_pressure
+                primary_outflow['mass_flowrate'] = self.primary_mass_flowrate
+                primary_outflow['quality'] = 0.0
+                '''
+                # extract filtration_filtrate_phase data at msg_time to send
+
+                self.send((msg_time, self.filtration_filtrate_phase), 'std-underflow')
 
     def __step(self, time=0.0):
         """Stepping Decantation-Filtration in time
@@ -671,4 +739,3 @@ class DecantationFiltration(Module):
         '''
 
         return time
-
