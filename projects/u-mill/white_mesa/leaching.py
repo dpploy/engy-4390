@@ -36,9 +36,9 @@
                     Arizona Strip breccia pipe 0.5-0.9% U3O8
                     Example of Breccia Pipe Ore Metal Concentrations: 3000 ppm Arsenic, 200 ppm Cobalt, 
                     8000 ppm copper, 6 ppm mercury, 260 ppm molybdenum, 500 ppm nickel, 1% lead,
-                    3000 ppm uranium (0.3%), 150 ppm Zinc. These concentrations can vary up to 1.28% (12800 ppm)
+                    3000 ppm uranium (0.3%), 150 ppm Zinc. These concentrations can vary from 0.2-2% (20000-2000 ppm)
                     The original mill design planned for 0.2-0.9% uranium. This is a relatively high concentration
-                    compared to many mines.
+                    compared to many mines but is well within the averages/usuals for most mines.
 
    + Acid-Leaching
 
@@ -48,6 +48,8 @@
       - Residual H2SO4: 50 g/L free acid
 
    Source of info:
+       https://pubs.usgs.gov/sir/2010/5025/pdf/sir2010-5025_availability.pdf
+       https://www-pub.iaea.org/MTCD/publications/PDF/TE_1629_web.pdf
 """
 
 import logging
