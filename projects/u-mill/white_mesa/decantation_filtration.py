@@ -739,4 +739,3 @@ class DecantationFiltration(Module):
         '''
 
         return time
-
