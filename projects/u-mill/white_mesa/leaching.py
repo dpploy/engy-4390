@@ -45,12 +45,23 @@
                     Uranium typically exists in the ores in the form of U3O8.
    + Acid-Leaching
       -Chemistry EQNS
-          UO3(s)+2H^+(aq) --> UO2^2+(aq) + H2O(aq)
-          UO2(2+)(aq) + 3(SO4^2-)(aq) --> UO2(SO4)3^4-     
-          
+          Uranium
+              UO3(s)+2Fe^3+(aq) --> UO2^2+(aq) + 2Fe^2+(aq)
+              OR UO2(s) +2Fe^3+(sq) --> UO2^2+(aq) + 2Fe^2+(aq)
+              UO2^2+(aq) + 3(SO4^2-)(aq) --> UO2(SO4)3^4-
+              OR UO2^2+(aq) + 3SO4(2-) --> UO2(SO4)2^2-
+          Gold/Au
+              Inert
+          Iron
+              NaClO3(aq) --> ClO3^-(aq) + Na+(aq)
+              Fe3O4 + H2SO4 --> FeSO4 + Fe2O3 +H2O
+              2Fe^2+(aq) + 1/3ClO3^2-(aq) + 2H^+(aq) --> 2Fe^3+(aq) + 1/3Cl^-(aq) + H2O(aq)
+          Copper
       - Capacity: 1 t of ore
       - Acid (H2SO4) amount: 20 kg/t ore
-      - Temperature:
+          Optimal concentration for selectivity seems to be 10-48% for the aqueous solution
+      - Temperature: 40C
+          Research paper showed that 40C was preferred to 50C, 60C, and 80C for selectivity purposes
       - Residual H2SO4: 50 g/L free acid
 
    Source of info:
@@ -63,7 +74,7 @@ import logging
 import math
 from scipy.integrate import odeint
 import numpy as np
-
+    
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
