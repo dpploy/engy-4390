@@ -29,25 +29,34 @@
  NB. Filtrate goes to solvent extraction
 
 
-   + Decantation:
+   + Decantation Steady-State Operation:
      1) Single-Tank Decantation  (STD)
        - volume of thickener:                3402.33 m^3
-       -
+       - preleach feed mass flowrate:        4540 kg/hr
+       - wash water volumetric flowrate:     118735 gallons/min or 99(feed flow rate)
+       - overflow volumetric flowrate:       38 gallons/min
+       - overflow mass fraction of solids:   100 ppm
+       - feed mass fraction of solids:       10000 ppm
+       - wash water mass fraction of solids: 0 ppm
+       - underflow mass fraction of solids:  9900 ppm
+       - wash water ratio (R):               99
 
-     2) Counter-Current Decantation Bank (CCD)
+     2) Counter-Current Decantation (CCD)
        - # of thickeners:                    7
        - volume per thickener:               339.29 m^3
-       - wash water volumetric flowrate:     1067 gallons/min(@ S.S.) or 2.5(feed flow rate)
-       - feed mass fraction of solids:       100000 ppm
+       - wash water volumetric flowrate:     gallons/min or 2.5(feed flow rate)
+       - feed mass fraction of solids:       10000 ppm
        - wash water mass fraction of solids: 500 ppm
        - overflow mass fraction of solids:   100 ppm
-       - underflow mass fraction of solids:  99000 ppm
+       - underflow mass fraction of solids:  9900 ppm
        - wash water ratio (R):               2.5
 
-   + Filtration:
+   + Filtration Steady-State Operation:
 
    Source of info:
-   https://www.911metallurgist.com/blog/uranium-extraction-process
+   -https://www.911metallurgist.com/blog/uranium-extraction-process
+   Filtration/Thickeners Section
+
 """
 
 import logging
@@ -108,23 +117,23 @@ class DecantationFiltration(Module):
         # Initialization
 
         # Decantation
-        self.decantation_preleach_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
-        self.decantation_preleach_feed_mass_density = 7.8 * unit.kg/unit.liter
-        self.decantation_preleach_feed_solids_massfrac = 100 * unit.ppm
+        self.single_tank_decantation_preleach_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.single_tank_decantation_preleach_feed_mass_density = 7.8 * unit.kg/unit.liter
+        self.single_tank_decantation_preleach_feed_solids_massfrac = 100 * unit.ppm
 
-        self.decantation_acidleach_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
-        self.decantation_acidleach_feed_mass_density = 7.8 * unit.kg/unit.liter
-        self.decantation_acidleach_feed_solids_massfrac = 100 * unit.ppm
+        self.ccd_acidleach_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.ccd_acidleach_feed_mass_density = 7.8 * unit.kg/unit.liter
+        self.ccd_acidleach_feed_solids_massfrac = 100 * unit.ppm
 
-        self.decantation_raffinate_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
-        self.decantation_raffinate_feed_mass_density = 7.8 * unit.kg/unit.liter
-        self.decantation_raffinate_feed_solids_massfrac = 100 * unit.ppm
+        self.single_tank_decantation_raffinate_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.single_tank_decantation_raffinate_feed_mass_density = 7.8 * unit.kg/unit.liter
+        self.single_tank_decantation_raffinate_feed_solids_massfrac = 100 * unit.ppm
 
-        self.decantation_underflow_mass_flowrate = 1.0 * unit.liter/unit.minute
-        self.decantation_underflow_solids_massfrac = 100 * unit.ppm
+        self.ccd_underflow_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.ccd_underflow_solids_massfrac = 100 * unit.ppm
 
-        self.decantation_overflow_mass_flowrate = 1.0 * unit.liter/unit.minute
-        self.decantation_overflow_solids_massfrac = 100 * unit.ppm
+        self.ccd_overflow_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.ccd_overflow_solids_massfrac = 100 * unit.ppm
 
         # Filtration
         self.filtration_slurry_mass_flowrate = 1.0 * unit.liter/unit.minute
@@ -140,27 +149,27 @@ class DecantationFiltration(Module):
         # D E C A N T A T I O N
         #***************************************************************************************
 
-        # Decantation Pre-Leach Feed Phase History (from Leaching module port)
+        # Single Tank Decantation Pre-Leach Feed Phase History (from pre-Leaching module port)
         quantities = list()
         species = list()
 
         feed_mass_flowrate = Quantity(name='mass_flowrate',
                         formal_name='mdot', unit='kg/s',
-                        value=self.decantation_preleach_feed_mass_flowrate,
+                        value=self.single_tank_decantation_preleach_feed_mass_flowrate,
                         latex_name=r'$\dot{m}$',
                         info='Decantation Feed Mass Flowrate')
         quantities.append(feed_mass_flowrate)
 
         feed_mass_density = Quantity(name='mass_density',
                         formal_name='rho', unit='kg/m^3',
-                        value=self.decantation_preleach_feed_mass_density,
+                        value=self.single_tank_decantation_preleach_feed_mass_density,
                         latex_name=r'$\rho$',
                         info='Decantation Pre-Leach Feed Mass Density')
         quantities.append(feed_mass_density)
 
         feed_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
-                        value=self.decantation_preleach_feed_solids_massfrac,
+                        value=self.single_tank_decantation_preleach_feed_solids_massfrac,
                         latex_name=r'$C_1$',
                         info='Decantation Pre-Leach Feed Solids Mass Fraction')
 
@@ -196,30 +205,30 @@ class DecantationFiltration(Module):
                            info='Au')
         species.append(gold_feed)
 
-        self.decantation_preleach_feed_phase = Phase(time_stamp=self.initial_time,
+        self.single_tank_decantation_preleach_feed_phase = Phase(time_stamp=self.initial_time,
                                             time_unit='s', quantities=quantities, species=species)
 
-        # Decantation Acid-Leach Feed Phase History (from Leaching module port)
+        # Counter Current Decantation Acid-Leach Feed Phase History (from acid-Leaching module port)
         quantities = list()
         species = list()
 
         feed_mass_flowrate = Quantity(name='mass_flowrate',
                         formal_name='mdot', unit='kg/s',
-                        value=self.decantation_acidleach_feed_mass_flowrate,
+                        value=self.ccd_acidleach_feed_mass_flowrate,
                         latex_name=r'$\dot{m}$',
                         info='Decantation Feed Mass Flowrate')
         quantities.append(feed_mass_flowrate)
 
         feed_mass_density = Quantity(name='mass_density',
                         formal_name='rho', unit='kg/m^3',
-                        value=self.decantation_acidleach_feed_mass_density,
+                        value=self.ccd_acidleach_feed_mass_density,
                         latex_name=r'$\rho$',
                         info='Decantation Acid-Leach Feed Mass Density')
         quantities.append(feed_mass_density)
 
         feed_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
-                        value=self.decantation_acidleach_feed_solids_massfrac,
+                        value=self.ccd_acidleach_feed_solids_massfrac,
                         latex_name=r'$C_1$',
                         info='Decantation Acid-Leach Feed Solids Mass Fraction')
 
@@ -255,23 +264,23 @@ class DecantationFiltration(Module):
                            info='Au')
         species.append(gold_feed)
 
-        self.decantation_acidleach_feed_phase = Phase(time_stamp=self.initial_time,
+        self.ccd_acidleach_feed_phase = Phase(time_stamp=self.initial_time,
                                             time_unit='s', quantities=quantities, species=species)
 
-        # Decantation Raffinate Feed Phase History (from Leaching module port)
+        # Single Tank Decantation Overflow Phase History (Interal feed to Filtration)
         quantities = list()
         species = list()
 
         feed_mass_flowrate = Quantity(name='mass_flowrate',
                         formal_name='mdot', unit='kg/s',
-                        value=self.decantation_raffinate_feed_mass_flowrate,
+                        value=self.single_tank_decantation_raffinate_feed_mass_flowrate,
                         latex_name=r'$\dot{m}$',
                         info='Decantation Feed Mass Flowrate')
         quantities.append(feed_mass_flowrate)
 
         feed_mass_density = Quantity(name='mass_density',
                         formal_name='rho', unit='kg/m^3',
-                        value=self.decantation_raffinate_feed_mass_density,
+                        value=self.single_tank_decantation_raffinate_feed_mass_density,
                         latex_name=r'$\rho$',
                         info='Decantation Raffinate Feed Mass Density')
         quantities.append(feed_mass_density)
@@ -306,23 +315,23 @@ class DecantationFiltration(Module):
                            info='Au')
         species.append(gold_feed)
 
-        self.decantation_raffinate_feed_phase = Phase(time_stamp=self.initial_time,
+        self.single_tank_decantation_raffinate_feed_phase = Phase(time_stamp=self.initial_time,
                                             time_unit='s', quantities=quantities, species=species)
 
-        # Decantation Underflow Phase History (internal state/external)
+        # Counter Current Decantation Underflow Phase History (Tailings)
         quantities = list()
         species = list()  # Is it proper to rest the species list too?
 
-        underflow_mass_flowrate = Quantity(name='mass_flowrate',
+        ccd_underflow_mass_flowrate = Quantity(name='mass_flowrate',
                                        formal_name='mdot', unit='kg/s',
-                                       value=self.decantation_underflow_mass_flowrate,
+                                       value=self.ccd_underflow_mass_flowrate,
                                        latex_name=r'$\dot{m}_4$',
                                        info='Decantation Underflow Mass Flowrate')
-        quantities.append(underflow_mass_flowrate)
+        quantities.append(ccd_underflow_mass_flowrate)
 
         underflow_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
-                        value=self.decantation_underflow_solids_massfrac,
+                        value=self.ccd_underflow_solids_massfrac,
                         latex_name=r'$C_1$',
                         info='Decantation Underflow Solids Mass Fraction')
 
@@ -358,23 +367,23 @@ class DecantationFiltration(Module):
                            info='Au')
         species.append(gold_underflow)
 
-        self.decantation_underflow_phase = Phase(time_stamp=self.initial_time,
+        self.ccd_underflow_phase = Phase(time_stamp=self.initial_time,
                                                  time_unit='s', quantities=quantities, species=species)
 
-        # Decantation Overflow Phase History (internal state)
+        # Counter Current Decantation Overflow Phase History (Send to Pre-leaching)
         quantities = list()
         species = list()
 
         overflow_mass_flowrate = Quantity(name='mass_flowrate',
                         formal_name='mdot', unit='kg/s',
-                        value=self.decantation_overflow_mass_flowrate,
+                        value=self.ccd_overflow_mass_flowrate,
                         latex_name=r'$\dot{m}_1$',
                         info='Decantation Overflow Mass Flowrate')
         quantities.append(overflow_mass_flowrate)
 
         overflow_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
-                        value=self.decantation_overflow_solids_massfrac,
+                        value=self.ccd_overflow_solids_massfrac,
                         latex_name=r'$C_1$',
                         info='Decantation Overflow Solids Mass Fraction')
 
@@ -410,7 +419,7 @@ class DecantationFiltration(Module):
                            info='Au')
         species.append(gold_overflow)
 
-        self.decantation_overflow_phase = Phase(time_stamp=self.initial_time,
+        self.ccd_overflow_phase = Phase(time_stamp=self.initial_time,
                                                 time_unit='s', quantities=quantities, species=species)
 
 
@@ -418,9 +427,9 @@ class DecantationFiltration(Module):
         # F I L T R A T I O N
         #***************************************************************************************
 
-        # Filtration Slurry Phase History (internal state/external)
+        # Filtration Slurry Waste Phase History (Tailings/tbd)
         quantities = list()
-        species = list()  # Is it proper to rest the species list too?
+        species = list()
 
         slurry_mass_flowrate = Quantity(name='mass_flowrate',
                                        formal_name='mdot', unit='kg/s',
@@ -470,9 +479,9 @@ class DecantationFiltration(Module):
         self.filtration_slurry_phase = Phase(time_stamp=self.initial_time,
                                   time_unit='s', quantities=quantities, species=species)
 
-        # Filtration Filtrate Phase History (internal state/external)
+        # Filtration Filtrate Phase History (Send to Solvent Extraction)
         quantities = list()
-        species = list()  # Is it proper to rest the species list too?
+        species = list()
 
         filtrate_mass_flowrate = Quantity(name='mass_flowrate',
                                        formal_name='mdot', unit='kg/s',
