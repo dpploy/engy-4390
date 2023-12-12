@@ -37,16 +37,54 @@
 
                     Carnotite sandstone 0.2% U3O8, 1.5-2.0% V2O5
                     Arizona Strip breccia pipe 0.5-0.9% U3O8
-
-
+                    Example of Breccia Pipe Ore Metal Concentrations: 3000 ppm Arsenic, 200 ppm Cobalt, 
+                    8000 ppm copper, 6 ppm mercury, 260 ppm molybdenum, 500 ppm nickel, 1% lead,
+                    3000 ppm uranium (0.3%), 150 ppm Zinc. These concentrations can vary from 0.2-2% (20000-2000 ppm)
+                    The original mill design planned for 0.2-0.9% uranium. This is a relatively high concentration
+                    compared to many mines but is well within the averages/usuals for most mines.
+                    Uranium typically exists in the ores in the form of U3O8.
+      *Pre-Leach Ore Feed
+          -Mix of 1ton of ore and water
+          -55-58% solids. On a basis of 1 ton of ore feed....
+          -1000kg ore
+          -1000/0.55=1818.18kg total
+          -818.18 kg water
+      *Pre-Leach Output
+          -22% solids
+          -
+      Pulp or solids density is 22%. So 1t of ore into the preleach leaves with 220kg of solids.              
    + Acid-Leaching
-
+      *Chemistry EQNS
+          -Uranium
+              Typical oxidation of uranium from solid ore
+              1.  UO3(s)+2H^+(aq) --> UO2^2+(aq) + H2O(aq)
+          -Uranium and Iron
+              2.  UO2(s) +2Fe^3+(sq) --> UO2^2+(aq) + 2Fe^2+(aq)
+          -Uranium and Sulfiric Acid
+              3.  UO2^2+(aq) + 3(SO4^2-)(aq) --> (UO2(SO4)3)^4-(aq)
+              4.  OR UO2^2+(aq) + 3SO4(2-)(aq) --> UO2(SO4)2^2-(aq)
+          -Gold/Au
+                                        Inert
+          -Sodium Chloride (Dissolution)
+              5.  NaClO3(aq) --> ClO3^-(aq) + Na+(aq)
+          -Iron and Sulfiric Acid
+              6.  Fe3O4 + H2SO4 --> FeSO4 + Fe2O3 +H2O
+              7.  2Fe^2+(aq) + 1/3ClO3^2-(aq) + 2H^+(aq) --> 2Fe^3+(aq) + 1/3Cl^-(aq) + H2O(aq)
+          -Copper
       - Capacity: 1 t of ore
       - Acid (H2SO4) amount: 20 kg/t ore
-      - Temperature:
+          Optimal concentration of the acid feed for selectivity seems to be 10-48% sulfuric acid for the aqueous solution
+      - Temperature: 40C
+          Research paper showed that 40C was preferred to 50C, 60C, and 80C for selectivity purposes. Lower temp might be better
       - Residual H2SO4: 50 g/L free acid
 
    Source of info:
+      https://pubs.usgs.gov/sir/2010/5025/pdf/sir2010-5025_availability.pdf
+      https://www-pub.iaea.org/MTCD/publications/PDF/TE_1629_web.pdf
+      - Used to find chemical equations for Uranium+Look at kinetics
+      https://www.sciencedirect.com/science/article/pii/S1738573321005970
+      - Kinetic Equations?
+      https://repository.up.ac.za/bitstream/handle/2263/61336/Sililo_Modelling_2017.pdf?sequence=1
 """
 
 import logging
@@ -54,7 +92,7 @@ import logging
 import math
 from scipy.integrate import odeint
 import numpy as np
-
+    
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
@@ -68,9 +106,8 @@ class Leaching(Module):
     Notes
     -----
     These are the `port` names available in this module to connect to respective
-    module: DecantationFiltration
+    modules: Filtration/Decantation.
     See instance attribute `port_names_expected`.
-
     """
 
     def __init__(self):
@@ -83,9 +120,10 @@ class Leaching(Module):
 
         super().__init__()
 
+
         self.port_names_expected = ['pre-leach-feed', 'acid-leach-feed',
                                     'pre-leach-product', 'acid-leach-product']
-
+        
         # General attributes
         self.initial_time = 0.0*unit.second
         self.end_time = 1.0*unit.hour
@@ -507,9 +545,6 @@ class Leaching(Module):
     def __call_ports(self, time):
 
         # Interactions in the pre-leach-feed port
-        #----------------------------------------
-        # One way "from" pre-leach-feed port
-
         # Receive from
         if self.get_port('pre-leach-feed').connected_port:
 
