@@ -51,24 +51,32 @@
           -818.18 kg water
       *Pre-Leach Output
           -22% solids
-          -
-      Pulp or solids density is 22%. So 1t of ore into the preleach leaves with 220kg of solids.              
+          -Pulp or solids density is 22%. So 1t of ore into the preleach leaves with 220kg of solids
+          -pH maintained below 2.0
+      *Process Information
+          -Agitated tank (Energy intensive usually)
+          -To maintain low pH conductivity readings with automatic control often work
+          -Iron Concentration of 7g/L to get extraction of 93%
    + Acid-Leaching
       *Chemistry EQNS
           -Uranium
               Typical oxidation of uranium from solid ore
               1.  UO3(s)+2H^+(aq) --> UO2^2+(aq) + H2O(aq)
           -Uranium and Iron
-              2.  UO2(s) +2Fe^3+(sq) --> UO2^2+(aq) + 2Fe^2+(aq)
+              Iron(III) provides the protons for oxidation
+              2.  UO2(s) +2Fe^3+(aq) --> UO2^2+(aq) + 2Fe^2+(aq)
           -Uranium and Sulfiric Acid
+              Eqn 3 is the typical formation of a stable uranium sulphate complex
               3.  UO2^2+(aq) + 3(SO4^2-)(aq) --> (UO2(SO4)3)^4-(aq)
               4.  OR UO2^2+(aq) + 3SO4(2-)(aq) --> UO2(SO4)2^2-(aq)
           -Gold/Au
                                         Inert
           -Sodium Chloride (Dissolution)
               5.  NaClO3(aq) --> ClO3^-(aq) + Na+(aq)
-          -Iron and Sulfiric Acid
+          -Iron and Sulfiric Acid (Occurs at pH above 2)
               6.  Fe3O4 + H2SO4 --> FeSO4 + Fe2O3 +H2O
+          -Iron and Sodium Chloride
+              Regeneration of Iron(III) by sodium chloride in order to reduce acid consumption
               7.  2Fe^2+(aq) + 1/3ClO3^2-(aq) + 2H^+(aq) --> 2Fe^3+(aq) + 1/3Cl^-(aq) + H2O(aq)
           -Copper
       - Capacity: 1 t of ore
