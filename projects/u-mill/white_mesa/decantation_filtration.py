@@ -44,14 +44,18 @@
      2) Counter-Current Decantation (CCD)
        - # of thickeners:                    7
        - volume per thickener:               339.29 m^3
-       - wash water volumetric flowrate:     gallons/min or 2.5(feed flow rate)
+       - acid leach feed mass flowrate:
+       - wash water volumetric flowrate:     gallons/min or 1.69(feed flow rate)
        - feed mass fraction of solids:       10000 ppm
        - wash water mass fraction of solids: 500 ppm
        - overflow mass fraction of solids:   100 ppm
        - underflow mass fraction of solids:  9900 ppm
-       - wash water ratio (R):               2.5
+       - wash water ratio (R):               1.69
 
    + Filtration Steady-State Operation:
+       -
+       -
+       -
 
    Source of info:
    -https://www.911metallurgist.com/blog/uranium-extraction-process
