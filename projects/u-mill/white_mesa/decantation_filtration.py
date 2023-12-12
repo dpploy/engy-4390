@@ -53,7 +53,7 @@
        - wash water ratio (R):               1.69
 
    + Filtration Steady-State Operation:
-       -
+       - Volume of Drum Filter:
        -
        -
 
