@@ -46,16 +46,20 @@
    + Acid-Leaching
       -Chemistry EQNS
           Uranium
-              UO3(s)+2Fe^3+(aq) --> UO2^2+(aq) + 2Fe^2+(aq)
-              OR UO2(s) +2Fe^3+(sq) --> UO2^2+(aq) + 2Fe^2+(aq)
-              UO2^2+(aq) + 3(SO4^2-)(aq) --> UO2(SO4)3^4-
-              OR UO2^2+(aq) + 3SO4(2-) --> UO2(SO4)2^2-
+          1.  2UO2 + O2 --> 2UO3
+          Uranium and Iron
+          2.  UO3(s)+2Fe^3+(aq) --> UO2^2+(aq) + 2Fe^2+(aq)
+          2.1 OR UO2(s) +2Fe^3+(sq) --> UO2^2+(aq) + 2Fe^2+(aq)
+          Uranium and Sulfiric Acid
+          3.  UO2^2+(aq) + 3(SO4^2-)(aq) --> UO2(SO4)3^4-(aq)
+          4.  OR UO2^2+(aq) + 3SO4(2-)(aq) --> UO2(SO4)2^2-(aq)
           Gold/Au
-              Inert
-          Iron
-              NaClO3(aq) --> ClO3^-(aq) + Na+(aq)
-              Fe3O4 + H2SO4 --> FeSO4 + Fe2O3 +H2O
-              2Fe^2+(aq) + 1/3ClO3^2-(aq) + 2H^+(aq) --> 2Fe^3+(aq) + 1/3Cl^-(aq) + H2O(aq)
+                                        Inert
+          Sodium Chloride (Dissolution)
+          5.  NaClO3(aq) --> ClO3^-(aq) + Na+(aq)
+          Iron and Sulfiric Acid
+          6.  Fe3O4 + H2SO4 --> FeSO4 + Fe2O3 +H2O
+          7.  2Fe^2+(aq) + 1/3ClO3^2-(aq) + 2H^+(aq) --> 2Fe^3+(aq) + 1/3Cl^-(aq) + H2O(aq)
           Copper
       - Capacity: 1 t of ore
       - Acid (H2SO4) amount: 20 kg/t ore
@@ -67,6 +71,8 @@
    Source of info:
        https://pubs.usgs.gov/sir/2010/5025/pdf/sir2010-5025_availability.pdf
        https://www-pub.iaea.org/MTCD/publications/PDF/TE_1629_web.pdf
+      - Used to find chemical equations for Uranium+Look at kinetics
+       https://www.sciencedirect.com/science/article/pii/S1738573321005970
 """
 
 import logging
