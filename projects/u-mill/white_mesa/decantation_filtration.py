@@ -98,7 +98,7 @@ class DecantationFiltration(Module):
         super().__init__()
 
         self.port_names_expected = ['std-feed', 'ccd-feed', 'raffinate-feed',
-                                    'filtrate', 'std_underflow', 'ccd_overflow']
+                                    'filtrate', 'std-underflow', 'ccd-overflow']
 
         # General attributes
         self.initial_time = 0.0*unit.second

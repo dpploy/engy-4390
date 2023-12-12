@@ -103,14 +103,14 @@ def main():
 
     # White Mesa Network Connectivity
 
-    #white_mesa_network.connect([leaching, 'pre-leach-product'], [decant_filt, 'pre-leach-feed'])
-    #white_mesa_network.connect([decant_filt, 'pre-leach-feed'], [leaching, 'pre-leaching-feed'])
+    white_mesa_network.connect([leaching, 'pre-leach-product'], [decant_filt, 'std-feed'])
+    white_mesa_network.connect([decant_filt, 'std-underflow'], [leaching, 'acid-leach-feed'])
     white_mesa_network.connect([decant_filt, 'filtrate'], [solvex, 'extraction-feed'])
     white_mesa_network.connect([solvex, 'raffinate'], [decant_filt, 'raffinate-feed'])
     white_mesa_network.connect([solvex, 'product'], [precipt, 'uts-feed'])
     white_mesa_network.connect([precipt, 'adu-product'], [evap_calc, 'adu-feed'])
 
-    white_mesa_network.draw(engine='circo', node_shape='folder')
+    white_mesa_network.draw(engine='dot', node_shape='folder', size='600,1200')
     #white_mesa_network.draw()
 
     # Run
