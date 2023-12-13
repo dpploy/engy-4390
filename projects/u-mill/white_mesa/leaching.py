@@ -14,7 +14,7 @@
                      v
              |----------------|
              |                |
-             |  Pre-leaching  |<-------- CCD overflow (from Decantation Module)
+             |  Pre-leaching  |<-------- Pre-Leach Feed (CCD overflow from Decantation Module)
              |                |
              |                |
              |                |<-------- STD Underflow (from single-tank Decantation Module)
@@ -25,9 +25,9 @@
                   |       |
                   |       |
                   |       v
-                  |    Pre-leach (STD Single-Tank Decantation)
+                  |    Pre-leach Product (STD Single-Tank Decantation)
                   v
-    Acid-leach (CCD Decantation)
+    Acid-leach Product (CCD Decantation)
 
 
    + Pre-Leaching
@@ -37,18 +37,20 @@
 
                     Carnotite sandstone 0.2% U3O8, 1.5-2.0% V2O5
                     Arizona Strip breccia pipe 0.5-0.9% U3O8
-                    Example of Breccia Pipe Ore Metal Concentrations: 3000 ppm Arsenic, 200 ppm Cobalt, 
+                    Example of Breccia Pipe Ore Metal Concentrations: 3000 ppm Arsenic, 200 ppm Cobalt,
                     8000 ppm copper, 6 ppm mercury, 260 ppm molybdenum, 500 ppm nickel, 1% lead,
                     3000 ppm uranium (0.3%), 150 ppm Zinc. These concentrations can vary from 0.2-2% (20000-2000 ppm)
                     The original mill design planned for 0.2-0.9% uranium. This is a relatively high concentration
                     compared to many mines but is well within the averages/usuals for most mines.
                     Uranium typically exists in the ores in the form of U3O8.
+
       *Pre-Leach Ore Feed
           -Mix of 1ton of ore and water
           -55-58% solids. On a basis of 1 ton of ore feed....
-          -1000kg ore
-          -1000/0.55=1818.18kg total
+          -1000 kg ore
+          -1000 / 0.55 = 1818.18 kg total
           -818.18 kg water
+
       *Pre-Leach Output
           -22% solids
           -Pulp or solids density is 22%. So 1t of ore into the preleach leaves with 220kg of solids
@@ -57,6 +59,7 @@
           -Agitated tank (Energy intensive usually)
           -To maintain low pH conductivity readings with automatic control often work
           -Iron Concentration of 7g/L to get extraction of 93%
+
    + Acid-Leaching
       *Chemistry EQNS
           -Uranium
@@ -128,10 +131,9 @@ class Leaching(Module):
 
         super().__init__()
 
-
         self.port_names_expected = ['pre-leach-feed', 'acid-leach-feed',
                                     'pre-leach-product', 'acid-leach-product']
-        
+
         # General attributes
         self.initial_time = 0.0*unit.second
         self.end_time = 1.0*unit.hour
@@ -147,16 +149,21 @@ class Leaching(Module):
 
         # Configuration parameters
 
+        self.preleach_vol = 45 * unit.meter**3
+        self.wet_ore_feed_mass_density = 5000 * unit.kg/unit.meter**3
+
         # Initialization
 
         # Pre-leaching [These values are temporary, real ones will have to be added]
-        self.wet_ore_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.wet_ore_feed_mass_flowrate = 2727 * unit.kg/unit.minute
+        self.wet_ore_feed_solid_mass_fraction = 55/100
+
         self.wet_ore_mass_density = 1.0 * unit.kg / unit.liter
         self.wet_ore_solids_massfrac = 100 * unit.ppm
 
-        self.ccd_overflow_mass_flowrate = 1.0 * unit.liter / unit.minute
-        self.ccd_overflow_mass_density = 1.0 * unit.kg / unit.liter
-        self.ccd_overflow_solids_massfrac = 100 * unit.ppm
+        self.preleach_feed_mass_flowrate = 3500 * unit.kg / unit.minute
+        self.preleach_feed_mass_density = 1.6 * unit.kg / unit.liter
+        self.preleach_feed_solids_massfrac = 100 * unit.ppm
 
         self.preleach_output_mass_flowrate = 1.0 * unit.liter / unit.minute
         self.preleach_output_mass_density = 1.0 * unit.kg / unit.liter
@@ -184,7 +191,7 @@ class Leaching(Module):
 
         wet_ore_mass_flowrate = Quantity(name='mass_flowrate',
                                           formal_name='mdot', unit='kg/s',
-                                          value=self.ccd_overflow_mass_flowrate,
+                                          value=self.preleach_feed_mass_flowrate,
                                           latex_name=r'$\dot{m}_1$',
                                           info='Wet Ore Mass Flowrate')
         quantities.append(wet_ore_mass_flowrate)
@@ -237,88 +244,29 @@ class Leaching(Module):
         self.wet_ore_feed_phase = Phase(time_stamp=self.initial_time,
                                         time_unit='s', quantities=quantities, species=species)
 
-        # Pre-Leach Feed Phase (from Decantation Overflow Module)
-        quantities = list()
-        species = list()
-
-        overflow_mass_flowrate = Quantity(name='mass_flowrate',
-                                          formal_name='mdot', unit='kg/s',
-                                          value=self.ccd_overflow_mass_flowrate,
-                                          latex_name=r'$\dot{m}_1$',
-                                          info='Decantation Overflow Mass Flowrate')
-        quantities.append(overflow_mass_flowrate)
-
-        overflow_mass_density = Quantity(name='mass_density',
-                                     formal_name='rho', unit='kg/m^3',
-                                     value=self.ccd_overflow_mass_density,
-                                     latex_name=r'$\rho$',
-                                     info='Decantation Pre-Leach Feed Mass Density')
-        quantities.append(overflow_mass_density)
-
-        overflow_solids_massfrac = Quantity(name='solids_massfrac',
-                                            formal_name='solids_massfrac', unit='ppm',
-                                            value=self.ccd_overflow_solids_massfrac,
-                                            latex_name=r'$C_1$',
-                                            info='Decantation Overflow Solids Mass Fraction')
-
-        quantities.append(overflow_solids_massfrac)
-
-        uo2so434minus_overflow = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
-                                         atoms=['U', '2*O', '3*S', '12*O'],
-                                         info='UO2-(SO4)3^4-')
-        species.append(uo2so434minus_overflow)
-
-        h2o_overflow = Species(name='H2O', formula_name='H2O(aq)',
-                               atoms=['2*H', 'O'],
-                               info='H2O')
-        species.append(h2o_overflow)
-
-        h2so4_overflow = Species(name='H2SO4', formula_name='H2SO4(aq)',
-                                 atoms=['2*H', 'S', '4*O'],
-                                 info='H2SO4')
-        species.append(h2so4_overflow)
-
-        iron_overflow = Species(name='Fe', formula_name='Fe(s)',
-                                atoms=['Fe'],
-                                info='Fe')
-        species.append(iron_overflow)
-
-        copper_overflow = Species(name='Cu', formula_name='Cu(s)',
-                                  atoms=['Cu'],
-                                  info='Cu')
-        species.append(copper_overflow)
-
-        gold_overflow = Species(name='Au', formula_name='Au(s)',
-                                atoms=['Au'],
-                                info='Au')
-        species.append(gold_overflow)
-
-        self.ccd_overflow_phase = Phase(time_stamp=self.initial_time,
-                                                time_unit='s', quantities=quantities, species=species)
-
-        # Pre-Leach Product Phase History (Single-Tank Decantation)
+        # Pre-Leach Phase History (Goes to Single-Tank Decantation)
         quantities = list()
         species = list()
 
         preleach_output_mass_flowrate = Quantity(name='mass_flowrate',
                                           formal_name='mdot', unit='kg/s',
-                                          value=self.preleach_output_mass_flowrate,
-                                          latex_name=r'$\dot{m}_1$',
-                                          info='Preleach Output Mass Flowrate')
+                                          value=0.0,
+                                          latex_name=r'$\dot{m}_{p}$',
+                                          info='Pre-Leach Mass Flowrate')
         quantities.append(preleach_output_mass_flowrate)
 
         preleach_output_mass_density = Quantity(name='mass_density',
                                      formal_name='rho', unit='kg/m^3',
-                                     value=self.preleach_output_mass_density,
+                                     value=0.0,
                                      latex_name=r'$\rho$',
-                                     info='Pre-Leach Output Mass Density')
+                                     info='Pre-Leach Mass Density')
         quantities.append(preleach_output_mass_density)
 
         preleach_output_solids_massfrac = Quantity(name='solids_massfrac',
                                             formal_name='solids_massfrac', unit='ppm',
                                             value=self.preleach_output_solids_massfrac,
                                             latex_name=r'$C_1$',
-                                            info='Preleach Output Solids Mass Fraction')
+                                            info='Preleach Solids Mass Fraction')
 
         quantities.append(preleach_output_solids_massfrac)
 
@@ -352,7 +300,7 @@ class Leaching(Module):
                                 info='Au')
         species.append(gold_preleach_output)
 
-        self.preleach_product_phase = Phase(time_stamp=self.initial_time,
+        self.preleach_phase = Phase(time_stamp=self.initial_time,
                                             time_unit='s', quantities=quantities, species=species)
 
         # ***************************************************************************************
@@ -561,8 +509,8 @@ class Leaching(Module):
             (check_time, preleach_feed) = self.recv('pre-leach-feed')
             assert abs(check_time-time) <= 1e-6
 
+            self.preleach_feed_mass_flowrate = preleach_feed['mass-flowrate']
             '''
-            self.primary_inflow_temp = primary_inflow['temperature']
             self.primary_ressure = primary_inflow['pressure']
             self.primary_mass_flowrate = primary_inflow['mass_flowrate']
             '''
@@ -594,13 +542,12 @@ class Leaching(Module):
 
             msg_time = self.recv('pre-leach-product')
 
-            temp = self.stripping_product_phase.get_value('temp', msg_time)
-
             product = dict()
+            product['mass-flowrate'] = self.preleach_phase.get_value('mass-flowrate',msg_time)
+            product['mass-density'] = self.preleach_phase.get_value('mass-density',msg_time)
             '''
             product['temperature'] = temp
             product['pressure'] = self.primary_pressure
-            product['mass_flowrate'] = self.primary_mass_flowrate
             product['quality'] = 0.0
             '''
 
@@ -659,7 +606,38 @@ class Leaching(Module):
         steamer = self.state_phase.get_row(time)
         '''
 
+        # Evolving the pre-leach state
+        mass_flowrate_initial = self.preleach_phase.get_value('mass_flowrate', time)
+
+        wet_ore_mass_flowrate = self.wet_ore_feed_mass_flowrate
+        preleach_feed_mass_flowrate = self.preleach_feed_mass_flowrate
+        mass_flowrate_inflow = wet_ore_mass_flowrate + preleach_feed_mass_flowrate
+
+        rho_preleach_feed = self.preleach_feed_mass_density
+        rho_wet_ore = self.wet_ore_mass_density
+
+        rho_preleach = rho_preleach_feed + rho_wet_ore
+
+        vol_flowrate_initial = mass_flowrate_initial/rho_preleach
+
+        if vol_flowrate_initial == 0:
+            vol_flowrate_initial = wet_ore_mass_flowrate/rho_wet_ore
+            tau = self.preleach_vol/vol_flowrate_initial
+        else:
+            tau = self.preleach_vol/vol_flowrate_initial
+
+        mass_flowrate = mass_flowrate_inflow + \
+                        math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_inflow)
+
+        tmp = self.preleach_phase.get_row(time)
+
+        # Advance time
         time += self.time_step
+
+        self.preleach_phase.add_row(time, tmp)
+
+        self.preleach_phase.set_value('mass_flowrate', mass_flowrate, time)
+        self.preleach_phase.set_value('mass_density', rho_preleach, time)
 
         '''
         self.primary_outflow_phase.add_row(time, primary_outflow)
