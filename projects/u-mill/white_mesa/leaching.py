@@ -6,47 +6,42 @@
    Leaching process in the White Mesa Milling Plant.
 
 
-                  Wet Ore
-                 (internal)
-                     |
-                     |
-                     |
-                     v
-             |----------------|
-             |                |
-             |  Pre-leaching  |<-------- Pre-Leach Feed (CCD overflow from Decantation Module)
-             |                |
-             |                |
-             |                |<-------- STD Underflow (from single-tank Decantation Module)
-             |  Acid-leaching |
-             |                |<-------- Acids (internal) H2S04, NaCI03, Steam)
-             |________________|
-                  |       |
-                  |       |
-                  |       |
-                  |       v
-                  |    Pre-leach Product (STD Single-Tank Decantation)
-                  v
-    Acid-leach Product (CCD Decantation)
+                    Wet Ore
+                   (internal)
+                       |
+                       |
+                       |
+                       v
+               |----------------|
+               |                |
+ Pre-Leach     |  Pre-leaching  |<-------- Pre-Leach Feed (CCD overflow from Decantation Module)
+ Product <-----|                |
+ (to STD       |                |
+  Decant.)     |                |<-------- STD Underflow (from single-tank Decantation Module)
+               |  Acid-leaching |
+               |                |<-------- Acids (internal) H2S04, NaCI03, Steam)
+               |________________|
+                        |
+                        |
+                        |
+                        v
+        Acid-leach Product (to CCD Decantation)
 
 
    + Pre-Leaching
 
-   Add info here... what ore mineral (brannerite)?
-                    what oxidation process?
+     what oxidation process?
 
-                    Carnotite sandstone 0.2% U3O8, 1.5-2.0% V2O5
-                    Arizona Strip breccia pipe 0.5-0.9% U3O8
-                    Example of Breccia Pipe Ore Metal Concentrations: 3000 ppm Arsenic, 200 ppm Cobalt,
-                    8000 ppm copper, 6 ppm mercury, 260 ppm molybdenum, 500 ppm nickel, 1% lead,
-                    3000 ppm uranium (0.3%), 150 ppm Zinc. These concentrations can vary from 0.2-2% (20000-2000 ppm)
-                    The original mill design planned for 0.2-0.9% uranium. This is a relatively high concentration
-                    compared to many mines but is well within the averages/usuals for most mines.
-                    Uranium typically exists in the ores in the form of U3O8.
+     - Carnotite sandstone 0.2% U3O8, 1.5-2.0% V2O5
+     - Arizona Strip breccia pipe 0.5-0.9% U3O8
+     - Example of Breccia Pipe Ore Metal Concentrations: 3000 ppm Arsenic, 200 ppm Cobalt,
+     - 8000 ppm copper, 6 ppm mercury, 260 ppm molybdenum, 500 ppm nickel, 1% lead,
+     - 3000 ppm uranium (0.3%), 150 ppm Zinc. These concentrations can vary from 0.2-2% (20000-2000 ppm)
+     - The original mill design planned for 0.2-0.9% uranium. This is a relatively high concentration
+       compared to many mines but is well within the averages/usuals for most mines.
+     - Uranium typically exists in the ores in the form of U3O8.
 
       *Pre-Leach Ore Feed
-          -Mix of 1ton of ore and water
-
           -55-58% solids
           -90t/hr ore. 1.5t/min
           -1.5t/0.55=2.727t total feed. 2727.27 kg/min
@@ -60,19 +55,20 @@
           -Iron Concentration of 7g/L to get extraction of 93%
 
    + Acid-Leaching
-      *Chemistry EQNS
+
+      * Chemical Reactions
           -Uranium
               Typical oxidation of uranium from solid ore
-              1.  UO3(s)+2H^+(aq) --> UO2^2+(aq) + H2O(aq)
+              1.  UO3(s) + 2H^+(aq) --> UO2^2+(aq) + H2O(aq)
           -Uranium and Iron
               Iron(III) provides the protons for oxidation
-              2.  UO2(s) +2Fe^3+(aq) --> UO2^2+(aq) + 2Fe^2+(aq)
+              2.  UO2(s) + 2Fe^3+(aq) --> UO2^2+(aq) + 2Fe^2+(aq)
           -Uranium and Sulfiric Acid
               Eqn 3 is the typical formation of a stable uranium sulphate complex
               3.  UO2^2+(aq) + 3(SO4^2-)(aq) --> (UO2(SO4)3)^4-(aq)
               4.  OR UO2^2+(aq) + 3SO4(2-)(aq) --> UO2(SO4)2^2-(aq)
           -Gold/Au
-                                        Inert
+                                 Inert
           -Sodium Chloride (Dissolution)
               5.  NaClO3(aq) --> ClO3^-(aq) + Na+(aq)
           -Iron and Sulfiric Acid (Occurs at pH above 2)
@@ -83,9 +79,11 @@
           -Copper
       - Capacity: 1 t of ore
       - Acid (H2SO4) amount: 20 kg/t ore
-          Optimal concentration of the acid feed for selectivity seems to be 10-48% sulfuric acid for the aqueous solution
+        Optimal concentration of the acid feed for selectivity seems to be 10-48% sulfuric acid for the
+        aqueous solution
       - Temperature: 40C
-          Research paper showed that 40C was preferred to 50C, 60C, and 80C for selectivity purposes. Lower temp might be better
+        Research paper showed that 40C was preferred to 50C, 60C, and 80C for selectivity purposes.
+        Lower temp might be better
       - Residual H2SO4: 50 g/L free acid
 
    Source of info:
@@ -606,7 +604,7 @@ class Leaching(Module):
         steamer = self.state_phase.get_row(time)
         '''
 
-        # Evolving the pre-leach state
+        # Evolve the pre-leach state
         mass_flowrate_initial = self.preleach_phase.get_value('mass_flowrate', time)
 
         wet_ore_mass_flowrate = self.wet_ore_feed_mass_flowrate
@@ -631,7 +629,7 @@ class Leaching(Module):
 
         tmp = self.preleach_phase.get_row(time)
 
-        # Advance time
+        # Advance time and store new state variables
         time += self.time_step
 
         self.preleach_phase.add_row(time, tmp)
