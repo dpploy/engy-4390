@@ -17,12 +17,12 @@ def main():
 
     # Debugging
     make_run   = True
-    make_plots = False
+    make_plots = True
 
     # Preamble
-    end_time = 1.0 * unit.minute
-    time_step = 1.0 * unit.second
-    show_time = (True, 20 * unit.second)
+    end_time = 1.0 * unit.hour
+    time_step = 1.0 * unit.minute
+    show_time = (True, 5 * unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -56,13 +56,14 @@ def main():
         # leaching plots
         leaching = plant_net.modules[0]
 
-        (quant, time_unit) = leaching.primary_outflow_phase.get_quantity_history('temp')
+        (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass_flowrate')
 
-        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
-                   y_label=quant.latex_name+' [C]')
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('leaching-primary-outflow-temp.png', dpi=300)
+        plt.savefig('leaching-preleach-product-mass-flowrate.png', dpi=300)
 
+        '''
         (quant, time_unit) = leaching.primary_outflow_phase.get_quantity_history('flowrate')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
@@ -139,6 +140,7 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-nusselt_s.png', dpi=300)
+        '''
 
 if __name__ == '__main__':
     main()
