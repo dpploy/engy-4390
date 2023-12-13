@@ -77,7 +77,6 @@
               Regeneration of Iron(III) by sodium chloride in order to reduce acid consumption
               7.  2Fe^2+(aq) + 1/3ClO3^2-(aq) + 2H^+(aq) --> 2Fe^3+(aq) + 1/3Cl^-(aq) + H2O(aq)
           -Copper
-      - Capacity: 1 t of ore
       - Acid (H2SO4) amount: 20 kg/t ore
         Optimal concentration of the acid feed for selectivity seems to be 10-48% sulfuric acid for the
         aqueous solution
