@@ -53,9 +53,9 @@
        - wash water ratio (R):               1.69
 
    + Filtration Steady-State Operation:
-       - Volume of Drum Filter:
-       -
-       -
+       - volume of Drum Filter:              32.04 m^3
+       - filtrate mass fraction of solids:   10 ppm
+       - slurry mass fraction of solids:     990 ppm
 
    Source of info:
    -https://www.911metallurgist.com/blog/uranium-extraction-process
@@ -755,7 +755,7 @@ class DecantationFiltration(Module):
         c_o = 100 + (c_o-100)*2.78**(-1*time/1200)
         c_u = 9900 + (c_u-9900)*2.78**(-1*time/1200)
         m_dot_o = (c_pl_std*m_dot_pl_std - c_u*m_dot_u)/c_o
-        #print(m_dot_o)
+        m_dot_u = (c_pl_std*m_dot_pl_std - c_o*m_dot_o)/c_u
 
         # CCD Math
         m_dot_al = self.ccd_acidleach_feed_mass_flowrate
@@ -765,11 +765,21 @@ class DecantationFiltration(Module):
         m_dot_pl_ccd = self.ccd_overflow_mass_flowrate
         c_pl_ccd = self.ccd_overflow_solids_massfrac
 
+        c_t = 9801 + (c_t - 9801)*2.78**(-1*time/1200)
+        c_pl_ccd = 99 + (c_pl_ccd - 99)*2.78**(-1*time/1200)
+        m_dot_pl_ccd = (c_al*m_dot_al + 500*(1.69/3.28)*m_dot_al - c_t*m_dot_t)/c_pl_ccd
+        m_dot_t = (c_al*m_dot_al + 500*(1.69/3.28)*m_dot_al - c_pl_ccd*m_dot_pl_ccd)/c_t
+
         # Filtration Math
         m_dot_sl = self.filtration_slurry_mass_flowrate
         c_sl = self.filtration_slurry_solids_massfrac
         m_dot_f = self.filtration_filtrate_mass_flowrate
         c_f = self.filtration_filtrate_solids_massfrac
+
+        c_f = 10 * unit.ppm
+        c_sl = 990 * unit.ppm
+        m_dot_f = 0.991*m_dot_o
+        m_dot_sl = 0.009*m_dot_o
         '''
         # Get state values
         u_0 = self.__get_state_vector(time)
