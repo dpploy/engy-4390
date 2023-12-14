@@ -63,13 +63,13 @@ def main():
         plt.grid()
         plt.savefig('leaching-preleach-product-mass-flowrate.png', dpi=300)
 
-        '''
-        (quant, time_unit) = leaching.primary_outflow_phase.get_quantity_history('flowrate')
+        (quant, time_unit) = leaching.acidleach_phase.get_quantity_history('mass_flowrate')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('leaching-primary-mass-flowrate.png', dpi=300)
+        plt.savefig('leaching-acidleach-mass-flowrate.png', dpi=300)
+        '''
 
         (quant, time_unit) = leaching.secondary_inflow_phase.get_quantity_history('temp')
 
