@@ -22,7 +22,7 @@ def main():
 
     # Preamble
     end_time = 7.0*unit.hour
-    time_step = 0.5*unit.minute
+    time_step = 1.0*unit.minute
     show_time = (True, 5*unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
@@ -91,14 +91,23 @@ def main():
                    y_label=quant.latex_name + ' [' + quant.unit + ']')
         plt.grid()
         plt.savefig('decant-filt-ccd-underflow-mass-flowrate.png', dpi=300)
-        '''
-        (quant, time_unit) = filtration.primary_outflow_phase.get_quantity_history('temp')
 
-        quant.plot(x_scaling=1 / unit.minute, y_shift=273.15, x_label='Time [m]',
-                   y_label=quant.latex_name + ' [C]')
+        # Leaching plots
+        leaching = plant_net.modules[1]
+
+        (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass-flowrate')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('filtration-primary-outflow-temp.png', dpi=300)
-        '''
+        plt.savefig('leaching-preleach-product-mass-flowrate.png', dpi=300)
+
+        (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass-density')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('leaching-preleach-product-mass-density.png', dpi=300)
 
 if __name__ == '__main__':
     main()

@@ -154,7 +154,8 @@ class Leaching(Module):
         # Configuration parameters
 
         self.preleach_tank_vol = 45 * unit.meter**3
-        self.wet_ore_feed_mass_density = 5000 * unit.kg/unit.meter**3
+        self.wet_ore_feed_mass_density = 7120 * unit.kg/unit.meter**3
+        self.tau_preleach_dissolution = 20 * unit.hour
 
         self.acidleach_tank_vol = 70 * unit.meter**3
 
@@ -610,7 +611,9 @@ class Leaching(Module):
         steamer = self.state_phase.get_row(time)
         '''
 
+        #---------------------------
         # Evolve the pre-leach state
+        #---------------------------
         mass_flowrate_initial = self.preleach_phase.get_value('mass-flowrate', time)
 
         wet_ore_mass_flowrate = self.wet_ore_feed_mass_flowrate
@@ -619,27 +622,36 @@ class Leaching(Module):
         # Ideal solution
         mass_flowrate_inflow = wet_ore_mass_flowrate + preleach_feed_mass_flowrate
 
+        # Ideal dissolution
         rho_preleach_feed = self.preleach_feed_mass_density
         rho_wet_ore = self.wet_ore_mass_density
 
-        # Ideal solution
-        rho_preleach = rho_preleach_feed + rho_wet_ore
+        rho_preleach_initial = self.preleach_phase.get_value('mass-density', time)
+        rho_preleach_ideal = rho_preleach_feed + rho_wet_ore
 
-        vol_flowrate_initial = mass_flowrate_initial/rho_preleach
+        rho_preleach = rho_preleach_ideal + \
+                       math.exp(-time/self.tau_preleach_dissolution) * (rho_preleach_initial - rho_preleach_ideal)
+
+        # Mass balance
+        if rho_preleach == 0.0:
+            vol_flowrate_initial = 0.0
+        else:
+            vol_flowrate_initial = mass_flowrate_initial/rho_preleach
 
         if vol_flowrate_initial == 0:
             vol_flowrate_initial = wet_ore_mass_flowrate/rho_wet_ore
-            tau = self.preleach_tank_vol/vol_flowrate_initial
+            flow_residence_time = self.preleach_tank_vol/vol_flowrate_initial
         else:
-            tau = self.preleach_tank_vol/vol_flowrate_initial
+            flow_residence_time = self.preleach_tank_vol/vol_flowrate_initial
 
-        # Mass balance
         mass_flowrate_preleach = mass_flowrate_inflow + \
-                                 math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_inflow)
+                                 math.exp(-time/flow_residence_time) * (mass_flowrate_initial - mass_flowrate_inflow)
 
         tmp_preleach = self.preleach_phase.get_row(time)
 
+        #---------------------------
         # Evolve the acid-leach state
+        #---------------------------
         mass_flowrate_initial = self.acidleach_phase.get_value('mass-flowrate', time)
 
         acids_mass_flowrate = self.acids_mass_flowrate
