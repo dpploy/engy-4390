@@ -20,7 +20,7 @@ def main():
     make_plots = True
 
     # Preamble
-    end_time = 1.0*unit.hour
+    end_time = 7.0*unit.hour
     time_step = 0.5*unit.minute
     show_time = (True, 5*unit.minute)
 
@@ -62,6 +62,19 @@ def main():
         plt.grid()
         plt.savefig('decant-filt-std-overflow-mass-flowrate.png', dpi=300)
 
+        (quant, time_unit) = decant_filt.single_tank_decantation_underflow_phase.get_quantity_history('mass-flowrate')
+
+        quant.plot(x_scaling=1 / unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name + ' [' + quant.unit + ']')
+        plt.grid()
+        plt.savefig('decant-filt-std-underflow-mass-flowrate.png', dpi=300)
+
+        (quant, time_unit) = decant_filt.ccd_underflow_phase.get_quantity_history('mass-flowrate')
+
+        quant.plot(x_scaling=1 / unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name + ' [' + quant.unit + ']')
+        plt.grid()
+        plt.savefig('decant-filt-ccd-underflow-mass-flowrate.png', dpi=300)
         '''
         (quant, time_unit) = filtration.primary_outflow_phase.get_quantity_history('temp')
 
