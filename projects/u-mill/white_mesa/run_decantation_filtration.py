@@ -71,7 +71,8 @@ def main():
     # Plots
     if make_plots and plant.use_multiprocessing or plant.rank == 0:
 
-        # Decantation plots
+        # Mass flowrate plots
+
         decant_filt = plant_net.modules[0]
 
         (quant, time_unit) = decant_filt.std_state_phase.get_quantity_history('liquid-volume')
@@ -167,6 +168,23 @@ def main():
                        y_label=quant.latex_name+' ['+quant.unit+']')
             plt.grid()
             plt.savefig('leaching-acidleach-liq-volume.png', dpi=300)
+
+        # Mass fraction plots
+
+        (quant, time_unit) = decant_filt.single_tank_decantation_overflow_phase.get_quantity_history('solids-massfrac')
+
+        quant.plot(x_scaling=1 / unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name + ' [' + quant.unit + ']')
+        plt.grid()
+        plt.savefig('decant-filt-std-overflow-mass-fraction.png', dpi=300)
+
+        (quant, time_unit) = decant_filt.ccd_underflow_phase.get_quantity_history('solids-massfrac')
+
+        quant.plot(x_scaling=1 / unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name + ' [' + quant.unit + ']')
+        plt.grid()
+        plt.savefig('decant-filt-std-underflow-mass-fraction.png', dpi=300)
+
 
 if __name__ == '__main__':
     main()
