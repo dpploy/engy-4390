@@ -17,12 +17,12 @@ def main():
 
     # Debugging
     make_run   = True
-    make_plots = False
+    make_plots = True
 
     # Preamble
-    end_time = 1.0*unit.minute
-    time_step = 1.0*unit.second
-    show_time = (True, 20*unit.second)
+    end_time = 1.0*unit.hour
+    time_step = 0.5*unit.minute
+    show_time = (True, 5*unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -52,15 +52,15 @@ def main():
     # Plots
     if make_plots and plant.use_multiprocessing or plant.rank == 0:
 
-        # filtration plots
-        filtration = plant_net.modules[0]
+        # Decantation plots
+        decant_filt = plant_net.modules[0]
 
-        (quant, time_unit) = filtration.single_tank_decantation_raffinate_feed_solids_massfrac.get_quantity_history('temp')
+        (quant, time_unit) = decant_filt.single_tank_decantation_overflow_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
-                   y_label=quant.latex_name+' [C]')
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('filtration-primary-outflow-temp.png', dpi=300)
+        plt.savefig('decant-filt-std-overflow-mass-flowrate.png', dpi=300)
 
         '''
         (quant, time_unit) = filtration.primary_outflow_phase.get_quantity_history('temp')
