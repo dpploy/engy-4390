@@ -17,11 +17,11 @@ def main():
 
     # Debugging
     make_run   = True
-    make_plots = False
+    make_plots = True
 
     # Preamble
-    end_time = 10*unit.minute
-    time_step = 1.5*unit.second
+    end_time = 1*unit.hour
+    time_step = 1.0*unit.minute
     show_time = (True, 5*unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
@@ -60,13 +60,14 @@ def main():
         # Precipitation plots
         precipt = plant_net.modules[0]
 
-        (quant, time_unit) = precipt.primary_outflow_phase.get_quantity_history('temp')
+        (quant, time_unit) = precipt.precipitation_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
-                   y_label=quant.latex_name+' [C]')
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('precipt-primary-outflow-temp.png', dpi=300)
+        plt.savefig('precipitation-mass-flowrate.png', dpi=300)
 
+        '''
         (quant, time_unit) = precipt.primary_outflow_phase.get_quantity_history('flowrate')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
@@ -143,6 +144,7 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('precipt-nusselt_s.png', dpi=300)
+        '''
 
 if __name__ == '__main__':
     main()
