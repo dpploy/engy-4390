@@ -16,7 +16,7 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 |  |
 |:---:|
 | <img width="200" src="pics/network-0.gv.png" title="Plant Layout"> |
-| <p style="text-align:center;"><b>Mill Network Layout.</b></p> |
+| <p style="text-align:center;"><b>Mill Network Graph.</b></p> |
 
 
 References:
