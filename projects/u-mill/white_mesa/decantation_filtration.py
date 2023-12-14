@@ -147,7 +147,7 @@ class DecantationFiltration(Module):
         self.filtration_slurry_solids_massfrac = 100 * unit.ppm
 
         self.filtration_filtrate_mass_flowrate = 1.0 * unit.kg/unit.minute
-        self.filtration_filtrate_solids_massfrac = 100 * unit.ppm
+        self.filtration_filtrate_solids_massfrac = 10 * unit.ppm
 
         # Derived quantities
         # self.xxxx
@@ -752,8 +752,8 @@ class DecantationFiltration(Module):
         m_dot_u = self.single_tank_decantation_underflow_mass_flowrate
         c_u = self.single_tank_decantation_underflow_solids_massfrac
 
-        c_o = 100 + (c_o-100)*2.78**(-1*time/1200)
-        c_u = 9900 + (c_u-9900)*2.78**(-1*time/1200)
+        c_o = 100 + (c_pl_std-100)*2.78**(-1*time/1200)
+        c_u = 9900 + (c_pl_std-9900)*2.78**(-1*time/1200)
         m_dot_o = (c_pl_std*m_dot_pl_std - c_u*m_dot_u)/c_o
         m_dot_u = (c_pl_std*m_dot_pl_std - c_o*m_dot_o)/c_u
 
@@ -765,8 +765,8 @@ class DecantationFiltration(Module):
         m_dot_pl_ccd = self.ccd_overflow_mass_flowrate
         c_pl_ccd = self.ccd_overflow_solids_massfrac
 
-        c_t = 9801 + (c_t - 9801)*2.78**(-1*time/1200)
-        c_pl_ccd = 99 + (c_pl_ccd - 99)*2.78**(-1*time/1200)
+        c_t = 9801 + (c_al - 9801)*2.78**(-1*time/1200)
+        c_pl_ccd = 99 + (c_al - 99)*2.78**(-1*time/1200)
         m_dot_pl_ccd = (c_al*m_dot_al + 500*(1.69/3.28)*m_dot_al - c_t*m_dot_t)/c_pl_ccd
         m_dot_t = (c_al*m_dot_al + 500*(1.69/3.28)*m_dot_al - c_pl_ccd*m_dot_pl_ccd)/c_t
 
