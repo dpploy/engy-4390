@@ -674,7 +674,11 @@ class DecantationFiltration(Module):
 
         preleach_feed_mass_flowrate = self.single_tank_decantation_preleach_feed_mass_flowrate
         rho_preleach_feed = self.single_tank_decantation_preleach_feed_mass_density
-        preleach_feed_vol_flowrate = preleach_feed_mass_flowrate/rho_preleach_feed
+
+        if preleach_feed_mass_flowrate == 0.0:
+            preleach_feed_vol_flowrate = 0.0
+        else:
+            preleach_feed_vol_flowrate = preleach_feed_mass_flowrate/rho_preleach_feed
 
         wash_water_vol_flowrate = self.wash_water_preleach_feed_ratio * preleach_feed_vol_flowrate
         rho_wash_water = self.wash_water_mass_density
