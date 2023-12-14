@@ -766,6 +766,21 @@ class DecantationFiltration(Module):
         tmp_overflow = self.ccd_overflow_phase.get_row(time)
         tmp_underflow = self.ccd_underflow_phase.get_row(time)
 
+        # Evolve the Filtration State
+
+        filtration_filtrate_mass_flowrate_initial = self.filtration_filtrate_phase.get_value('mass-flowrate',
+                                                                                 time)
+        filtration_slurry_mass_flowrate_initial = self.filtration_slurry_phase.get_value('mass-flowrate', time)
+
+        filtration_feed_mass_flowrate = std_overflow_mass_flowrate
+        rho_filtration_feed = rho_std
+        filtration_feed_vol_flowrate = filtration_feed_mass_flowrate / rho_filtration_feed
+
+        # Ideal solution
+        mass_flowrate_inflow = filtration_feed_mass_flowrate
+
+        mass_flowrate_initial = filtration_filtrate_mass_flowrate_initial + filtration_slurry_mass_flowrate_initial
+
         # Filtration Math
         m_dot_sl = self.filtration_slurry_mass_flowrate
         c_sl = self.filtration_slurry_solids_massfrac
@@ -777,49 +792,26 @@ class DecantationFiltration(Module):
         m_dot_f = 0.991*m_dot_o
         m_dot_sl = 0.009*m_dot_o
 
+        tmp_filtrate = self.filtration_filtrate_phase.get_row(time)
+        tmp_slurry = self.filtration_slurry_phase.get_row(time)
+
         time += self.time_step
 
         self.single_tank_decantation_overflow_phase.add_row(time, tmp_overflow)
         self.single_tank_decantation_underflow_phase.add_row(time, tmp_underflow)
+
         self.ccd_overflow_phase.add_row(time, tmp_overflow)
         self.ccd_underflow_phase.add_row(time, tmp_underflow)
+
+        self.filtration_filtrate_phase.add_row(time, tmp_filtrate)
+        self.filtration_slurry_phase.add_row(time, tmp_slurry)
 
         self.single_tank_decantation_overflow_phase.set_value('mass-flowrate', std_overflow_mass_flowrate, time)
         self.single_tank_decantation_underflow_phase.set_value('mass-flowrate', std_underflow_mass_flowrate, time)
         self.ccd_overflow_phase.set_value('mass-flowrate', ccd_overflow_mass_flowrate, time)
         self.ccd_underflow_phase.set_value('mass-flowrate', ccd_underflow_mass_flowrate, time)
+        self.filtration_filtrate_phase.set_value('mass-flowrate', m_dot_f, time)
+        self.filtration_slurry_phase.set_value('mass-flowrate', m_dot_sl, time)
 
-
-        '''
-        self.primary_outflow_phase.add_row(time, primary_outflow)
-        self.primary_outflow_phase.set_value('temp', temp_p, time)
-        self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
-
-        self.secondary_inflow_phase.add_row(time, secondary_inflow)
-        self.secondary_inflow_phase.set_value('temp', self.secondary_inflow_temp, time)
-        self.secondary_inflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
-
-        self.secondary_outflow_phase.add_row(time, secondary_outflow)
-        self.secondary_outflow_phase.set_value('temp', temp_s, time)
-        self.secondary_outflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
-        self.secondary_outflow_phase.set_value('pressure', self.secondary_pressure, time)
-        self.secondary_outflow_phase.set_value('quality', self.secondary_outflow_quality, time)
-
-        self.state_phase.add_row(time, steamer)
-
-        # Primary residence time
-        self.state_phase.set_value('tau_p', self.tau_p, time)
-
-        # Secondary residence time
-        self.state_phase.set_value('tau_s', self.tau_s, time)
-
-        # Heat flux and Nusselt number
-        heatflux = -self.heat_sink_pwr/self.heat_transfer_area
-        self.state_phase.set_value('heatflux', heatflux, time)
-
-        self.state_phase.set_value('nusselt_p', self.nusselt_p, time)
-
-        self.state_phase.set_value('nusselt_s', self.nusselt_s, time)
-        '''
 
         return time
