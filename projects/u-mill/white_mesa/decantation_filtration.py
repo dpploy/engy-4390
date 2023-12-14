@@ -89,7 +89,6 @@ class DecantationFiltration(Module):
     See instance attribute `port_names_expected`.
     """
 
-
     def __init__(self):
         """Constructor.
 
@@ -538,10 +537,13 @@ class DecantationFiltration(Module):
 
             self.send(time, 'std-feed')
 
-            (check_time, feed_phase) = self.recv('std-feed')
+            (check_time, feed_stream) = self.recv('std-feed')
             assert abs(check_time-time) <= 1e-6
 
-            # insert data from std-feed_phase into decantation_feed_phase history
+            # Update feed stream data
+            self.single_tank_decantation_preleach_feed_mass_flowrate = feed_stream['mass-flowrate']
+            self.single_tank_decantation_preleach_feed_mass_density = feed_stream['mass-density']
+            self.single_tank_decantation_preleach_feed_solids_massfrac = feed_stream['solids-massfrac']
 
         # Interactions in the ccd feed port
         #------------------------------

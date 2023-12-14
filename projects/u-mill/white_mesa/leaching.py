@@ -548,6 +548,7 @@ class Leaching(Module):
             product = dict()
             product['mass-flowrate'] = self.preleach_phase.get_value('mass-flowrate',msg_time)
             product['mass-density'] = self.preleach_phase.get_value('mass-density',msg_time)
+            product['solids-massfrac'] = 0.0
             '''
             product['temperature'] = temp
             product['pressure'] = self.primary_pressure

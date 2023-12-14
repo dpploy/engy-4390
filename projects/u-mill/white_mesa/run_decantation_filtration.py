@@ -11,6 +11,7 @@ from cortix import Network
 
 import unit
 
+from leaching import Leaching
 from decantation_filtration import DecantationFiltration
 
 def main():
@@ -39,9 +40,24 @@ def main():
 
     plant_net.module(decant_filt)  # Add filtration module to network
 
+    # Leaching
+
+    leaching = Leaching() # Create a Leaching module
+
+    leaching.name = 'Leaching'
+    leaching.save = True
+    leaching.time_step = time_step
+    leaching.end_time = end_time
+    leaching.show_time = show_time
+
+    plant_net.module(leaching)
+
     # Balance of Plant Network Connectivity
 
-    plant_net.draw(engine='circo', node_shape='folder')
+    plant_net.connect([leaching, 'pre-leach-product'], [decant_filt, 'std-feed'])
+
+    #plant_net.draw(engine='circo', node_shape='folder')
+    plant_net.draw(engine='dot', node_shape='folder', size='600,1200')
 
     # Run
     if make_run:
