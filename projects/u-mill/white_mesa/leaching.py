@@ -17,7 +17,7 @@
  Pre-Leach     |  Pre-leaching  |<-------- Pre-Leach Feed (CCD overflow from Decantation Module)
  Product <-----|                |
  (to STD       |                |
-  Decant.)     |                |<-------- STD Underflow (from single-tank Decantation Module)
+  Decant.)     |                |<-------- Acid-Leach Feed (STD underflow from Decantation Module)
                |  Acid-leaching |
                |                |<-------- Acids (internal) H2S04, NaCI03, Steam)
                |________________|
@@ -41,21 +41,18 @@
        compared to many mines but is well within the averages/usuals for most mines.
      - Uranium typically exists in the ores in the form of U3O8.
 
-     * Pre-Leach Ore Feed
-          - Mix of 1ton of ore and water
-          - 55-58% solids. On a basis of 1 ton of ore feed....
-          - 1000 kg ore
-          - 1000 / 0.55 = 1818.18 kg total
-          - 818.18 kg water
-
-      * Pre-Leach Output
-          - 22% solids
-          - Pulp or solids density is 22%. So 1t of ore into the preleach leaves with 220kg of solids
-          - pH maintained below 2.0
-      * Process Information
-          - Agitated tank (Energy intensive usually)
-          - To maintain low pH conductivity readings with automatic control often work
-          - Iron Concentration of 7g/L to get extraction of 93%
+      *Pre-Leach Ore Feed
+          -55-58% solids
+          -90t/hr ore. 1.5t/min
+          -1.5t/0.55=2.727t total feed. 2727.27 kg/min
+          -1227.27 kg/min of water and 1500 kg of "ore"
+      *Pre-Leach Output
+          -22% solids
+          -pH maintained below 2.0
+      *Process Information
+          -Agitated tank (Energy intensive usually)
+          -To maintain low pH conductivity readings with automatic control often work
+          -Iron Concentration of 7g/L to get extraction of 93%
 
    + Acid-Leaching
 
@@ -80,7 +77,6 @@
               Regeneration of Iron(III) by sodium chloride in order to reduce acid consumption
               7.  2Fe^2+(aq) + 1/3ClO3^2-(aq) + 2H^+(aq) --> 2Fe^3+(aq) + 1/3Cl^-(aq) + H2O(aq)
           -Copper
-      - Capacity: 1 t of ore
       - Acid (H2SO4) amount: 20 kg/t ore
         Optimal concentration of the acid feed for selectivity seems to be 10-48% sulfuric acid for the
         aqueous solution
@@ -96,6 +92,8 @@
       https://www.sciencedirect.com/science/article/pii/S1738573321005970
       - Kinetic Equations?
       https://repository.up.ac.za/bitstream/handle/2263/61336/Sililo_Modelling_2017.pdf?sequence=1
+      - Ore Data
+      https://www.sciencebase.gov/catalog/item/5eb9dff082ce25b5135d5822
 """
 
 import logging
@@ -103,7 +101,7 @@ import logging
 import math
 from scipy.integrate import odeint
 import numpy as np
-    
+
 from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
@@ -152,39 +150,33 @@ class Leaching(Module):
         self.preleach_vol = 45 * unit.meter**3
         self.wet_ore_feed_mass_density = 5000 * unit.kg/unit.meter**3
 
+        self.acidleach_vol = 70 * unit.meter**3
+
         # Initialization
 
-        # Pre-leaching [These values are temporary, real ones will have to be added]
+        # Pre-leaching
         self.wet_ore_feed_mass_flowrate = 2727 * unit.kg/unit.minute
         self.wet_ore_feed_solid_mass_fraction = 55/100
-
         self.wet_ore_mass_density = 1.0 * unit.kg / unit.liter
         self.wet_ore_solids_massfrac = 100 * unit.ppm
 
         self.preleach_feed_mass_flowrate = 3500 * unit.kg / unit.minute
         self.preleach_feed_mass_density = 1.6 * unit.kg / unit.liter
-        self.preleach_feed_solids_massfrac = 100 * unit.ppm
-
-        self.preleach_output_mass_flowrate = 1.0 * unit.liter / unit.minute
-        self.preleach_output_mass_density = 1.0 * unit.kg / unit.liter
-        self.preleach_output_solids_massfrac = 100 * unit.ppm
+        #self.preleach_feed_solids_massfrac = 100 * unit.ppm
 
         # Acid-leaching
-        self.std_underflow_mass_flowrate = 1.0 * unit.liter / unit.minute
-        self.std_underflow_mass_density = 1.0 * unit.kg / unit.liter
-        self.std_underflow_solids_massfrac = 100 * unit.ppm
-
         self.acids_mass_flowrate = 1.0 * unit.liter / unit.minute
         self.acids_mass_density = 1.0 * unit.kg / unit.liter
 
-        self.acid_leach_output_mass_flowrate = 1.0 * unit.liter / unit.minute
-        self.acid_leach_output_mass_density = 1.0 * unit.kg / unit.liter
-        self.acid_leach_output_solids_massfrac = 100 * unit.ppm
+        self.acidleach_feed_mass_flowrate = 3500 * unit.kg / unit.minute
+        self.acidleach_feed_mass_density = 1.6 * unit.kg / unit.liter
+        #self.acidleach_feed_solids_massfrac = 100 * unit.ppm
 
         # ***************************************************************************************
         # P R E - L E A C H I N G
         # ***************************************************************************************
 
+        '''
         # Wet Ore Feed Phase History (internal)
         quantities = list()
         species = list()
@@ -243,62 +235,63 @@ class Leaching(Module):
 
         self.wet_ore_feed_phase = Phase(time_stamp=self.initial_time,
                                         time_unit='s', quantities=quantities, species=species)
+        '''
 
-        # Pre-Leach Phase History (Goes to Single-Tank Decantation)
+        # Pre-Leach Phase History (to single-tank decantation)
         quantities = list()
         species = list()
 
-        preleach_output_mass_flowrate = Quantity(name='mass_flowrate',
+        preleach_mass_flowrate = Quantity(name='mass_flowrate',
                                           formal_name='mdot', unit='kg/s',
                                           value=0.0,
                                           latex_name=r'$\dot{m}_{p}$',
                                           info='Pre-Leach Mass Flowrate')
-        quantities.append(preleach_output_mass_flowrate)
+        quantities.append(preleach_mass_flowrate)
 
-        preleach_output_mass_density = Quantity(name='mass_density',
+        preleach_mass_density = Quantity(name='mass_density',
                                      formal_name='rho', unit='kg/m^3',
                                      value=0.0,
                                      latex_name=r'$\rho$',
                                      info='Pre-Leach Mass Density')
-        quantities.append(preleach_output_mass_density)
+        quantities.append(preleach_mass_density)
 
-        preleach_output_solids_massfrac = Quantity(name='solids_massfrac',
+        preleach_solids_massfrac = Quantity(name='solids_massfrac',
                                             formal_name='solids_massfrac', unit='ppm',
-                                            value=self.preleach_output_solids_massfrac,
+                                            value=0.0,
                                             latex_name=r'$C_1$',
                                             info='Preleach Solids Mass Fraction')
 
-        quantities.append(preleach_output_solids_massfrac)
+        quantities.append(preleach_solids_massfrac)
 
-        uo2so434minus_preleach_output = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
+        uo2so434minus_preleach = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
                                          atoms=['U', '2*O', '3*S', '12*O'],
                                          info='UO2-(SO4)3^4-')
-        species.append(uo2so434minus_preleach_output)
+        species.append(uo2so434minus_preleach)
 
-        h2o_preleach_output = Species(name='H2O', formula_name='H2O(aq)',
+        h2o_preleach = Species(name='H2O', formula_name='H2O(aq)',
                                atoms=['2*H', 'O'],
                                info='H2O')
-        species.append(h2o_preleach_output)
+        species.append(h2o_preleach)
 
-        h2so4_preleach_output = Species(name='H2SO4', formula_name='H2SO4(aq)',
+        h2so4_preleach = Species(name='H2SO4', formula_name='H2SO4(aq)',
                                  atoms=['2*H', 'S', '4*O'],
                                  info='H2SO4')
-        species.append(h2so4_preleach_output)
+        species.append(h2so4_preleach)
 
-        iron_preleach_output = Species(name='Fe', formula_name='Fe(s)',
+        iron_preleach = Species(name='Fe', formula_name='Fe(s)',
                                 atoms=['Fe'],
                                 info='Fe')
-        species.append(iron_preleach_output)
+        species.append(iron_preleach)
 
-        copper_preleach_output = Species(name='Cu', formula_name='Cu(s)',
+        copper_preleach = Species(name='Cu', formula_name='Cu(s)',
                                   atoms=['Cu'],
                                   info='Cu')
-        species.append(copper_preleach_output)
+        species.append(copper_preleach)
 
-        gold_preleach_output = Species(name='Au', formula_name='Au(s)',
+        gold_preleach = Species(name='Au', formula_name='Au(s)',
                                 atoms=['Au'],
                                 info='Au')
-        species.append(gold_preleach_output)
+        species.append(gold_preleach)
 
         self.preleach_phase = Phase(time_stamp=self.initial_time,
                                             time_unit='s', quantities=quantities, species=species)
@@ -308,6 +301,7 @@ class Leaching(Module):
         # ***************************************************************************************
 
         # Acid-Leach Feed Phase History (STD underflow)
+        '''
         quantities = list()
         species = list()
 
@@ -364,7 +358,9 @@ class Leaching(Module):
 
         self.acidleach_feed_phase = Phase(time_stamp=self.initial_time,
                                           time_unit='s', quantities=quantities, species=species)
+        '''
 
+        '''
         # Acids feed phase history
         quantities = list()
         species = list()
@@ -399,65 +395,66 @@ class Leaching(Module):
         species.append(h2so4_acids)
 
         self.acids_phase = Phase(time_stamp=self.initial_time,
-                                         time_unit='s', quantities=quantities, species=species)
+                                 time_unit='s', quantities=quantities, species=species)
+        '''
 
-        # Acid-Leach Product Phase History (Decantation feed)
+        # Acid-Leach Phase History (to CCD decantation)
         quantities = list()
         species = list()
 
-        acid_leach_output_mass_flowrate = Quantity(name='mass_flowrate',
+        acid_leach_mass_flowrate = Quantity(name='mass_flowrate',
                                            formal_name='mdot', unit='kg/s',
-                                           value=self.acid_leach_output_mass_flowrate,
-                                           latex_name=r'$\dot{m}_4$',
-                                           info='Acid Leach Output Mass Flowrate')
-        quantities.append(acid_leach_output_mass_flowrate)
+                                           value=0.0,
+                                           latex_name=r'$\dot{m}_{a}$',
+                                           info='Acid Leach Mass Flowrate')
+        quantities.append(acid_leach_mass_flowrate)
 
-        acid_leach_output_mass_density = Quantity(name='mass_density',
-                                              formal_name='rho', unit='kg/m^3',
-                                              value=self.acid_leach_output_mass_density,
-                                              latex_name=r'$\rho$',
-                                              info='Acid Leach Output Mass Density')
-        quantities.append(acid_leach_output_mass_density)
+        acid_leach_mass_density = Quantity(name='mass_density',
+                                           formal_name='rho', unit='kg/m^3',
+                                           value=0.0,
+                                           latex_name=r'$\rho$',
+                                           info='Acid Leach Mass Density')
+        quantities.append(acid_leach_mass_density)
 
-        acid_leach_output_solids_massfrac = Quantity(name='solids_massfrac',
+        acid_leach_solids_massfrac = Quantity(name='solids_massfrac',
                                              formal_name='solids_massfrac', unit='ppm',
-                                             value=self.acid_leach_output_solids_massfrac,
+                                             value=0.0,
                                              latex_name=r'$C_1$',
-                                             info='Acid Leach Output Solids Mass Fraction')
-        quantities.append(acid_leach_output_solids_massfrac)
+                                             info='Acid Leach Solids Mass Fraction')
+        quantities.append(acid_leach_solids_massfrac)
 
-        uo2so434minus_acid_leach_output = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
+        uo2so434minus_acid_leach = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
                                           atoms=['U', '2*O', '3*S', '12*O'],
                                           info='UO2-(SO4)3^4-')
-        species.append(uo2so434minus_acid_leach_output)
+        species.append(uo2so434minus_acid_leach)
 
-        h2o_acid_leach_output = Species(name='H2O', formula_name='H2O(aq)',
+        h2o_acid_leach = Species(name='H2O', formula_name='H2O(aq)',
                                 atoms=['2*H', 'O'],
                                 info='H2O')
-        species.append(h2o_acid_leach_output)
+        species.append(h2o_acid_leach)
 
-        h2so4_acid_leach_output = Species(name='H2SO4', formula_name='H2SO4(aq)',
+        h2so4_acid_leach = Species(name='H2SO4', formula_name='H2SO4(aq)',
                                   atoms=['2*H', 'S', '4*O'],
                                   info='H2SO4')
-        species.append(h2so4_acid_leach_output)
+        species.append(h2so4_acid_leach)
 
-        iron_acid_leach_output = Species(name='Fe', formula_name='Fe(s)',
+        iron_acid_leach = Species(name='Fe', formula_name='Fe(s)',
                                  atoms=['Fe'],
                                  info='Fe')
-        species.append(iron_acid_leach_output)
+        species.append(iron_acid_leach)
 
-        copper_acid_leach_output = Species(name='Cu', formula_name='Cu(s)',
+        copper_acid_leach = Species(name='Cu', formula_name='Cu(s)',
                                    atoms=['Cu'],
                                    info='Cu')
-        species.append(copper_acid_leach_output)
+        species.append(copper_acid_leach)
 
-        gold_acid_leach_output = Species(name='Au', formula_name='Au(s)',
-                                 atoms=['Au'],
-                                 info='Au')
-        species.append(gold_acid_leach_output)
+        gold_acid_leach = Species(name='Au', formula_name='Au(s)',
+                                  atoms=['Au'],
+                                  info='Au')
+        species.append(gold_acid_leach)
 
-        self.acidleach_product_phase = Phase(time_stamp=self.initial_time,
-                                             time_unit='s', quantities=quantities, species=species)
+        self.acidleach_phase = Phase(time_stamp=self.initial_time,
+                                     time_unit='s', quantities=quantities, species=species)
 
     def run(self, *args):
 
@@ -611,11 +608,14 @@ class Leaching(Module):
 
         wet_ore_mass_flowrate = self.wet_ore_feed_mass_flowrate
         preleach_feed_mass_flowrate = self.preleach_feed_mass_flowrate
+
+        # Ideal solution
         mass_flowrate_inflow = wet_ore_mass_flowrate + preleach_feed_mass_flowrate
 
         rho_preleach_feed = self.preleach_feed_mass_density
         rho_wet_ore = self.wet_ore_mass_density
 
+        # Ideal solution
         rho_preleach = rho_preleach_feed + rho_wet_ore
 
         vol_flowrate_initial = mass_flowrate_initial/rho_preleach
@@ -626,18 +626,52 @@ class Leaching(Module):
         else:
             tau = self.preleach_vol/vol_flowrate_initial
 
-        mass_flowrate = mass_flowrate_inflow + \
-                        math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_inflow)
+        # Mass balance
+        mass_flowrate_preleach = mass_flowrate_inflow + \
+                                 math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_inflow)
 
-        tmp = self.preleach_phase.get_row(time)
+        tmp_preleach = self.preleach_phase.get_row(time)
+
+        # Evolve the acid-leach state
+        mass_flowrate_initial = self.acidleach_phase.get_value('mass_flowrate', time)
+
+        acids_mass_flowrate = self.acids_mass_flowrate
+        acidleach_feed_mass_flowrate = self.acidleach_feed_mass_flowrate
+
+        # Ideal solution
+        mass_flowrate_inflow = acids_mass_flowrate + acidleach_feed_mass_flowrate
+
+        rho_acidleach_feed = self.acidleach_feed_mass_density
+        rho_acids = self.acids_mass_density
+
+        # Ideal solution
+        rho_acidleach = rho_acidleach_feed + rho_acids
+
+        vol_flowrate_initial = mass_flowrate_initial/rho_acidleach
+
+        if vol_flowrate_initial == 0.0:
+            vol_flowrate_initial = acids_mass_flowrate/rho_acids
+            tau = self.acidleach_vol/vol_flowrate_initial
+        else:
+            tau = self.acidleach_vol/vol_flowrate_initial
+
+        # Mass balance
+        mass_flowrate_acidleach = mass_flowrate_inflow + \
+                                  math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_inflow)
+
+        tmp_acidleach = self.acidleach_phase.get_row(time)
 
         # Advance time and store new state variables
         time += self.time_step
 
-        self.preleach_phase.add_row(time, tmp)
+        self.preleach_phase.add_row(time, tmp_preleach)
+        self.acidleach_phase.add_row(time, tmp_acidleach)
 
-        self.preleach_phase.set_value('mass_flowrate', mass_flowrate, time)
+        self.preleach_phase.set_value('mass_flowrate', mass_flowrate_preleach, time)
         self.preleach_phase.set_value('mass_density', rho_preleach, time)
+
+        self.acidleach_phase.set_value('mass_flowrate', mass_flowrate_acidleach, time)
+        self.acidleach_phase.set_value('mass_density', rho_acidleach, time)
 
         '''
         self.primary_outflow_phase.add_row(time, primary_outflow)
