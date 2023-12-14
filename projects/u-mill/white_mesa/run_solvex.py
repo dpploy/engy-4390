@@ -6,10 +6,10 @@
 
 import matplotlib.pyplot as plt
 
-import unit
-
 from cortix import Cortix
 from cortix import Network
+
+import unit
 
 from solvex import Solvex
 
@@ -17,12 +17,12 @@ def main():
 
     # Debugging
     make_run   = True
-    make_plots = False
+    make_plots = True
 
     # Preamble
-    end_time = 5*unit.minute
-    time_step = 1*unit.second
-    show_time = (True, 10*unit.second)
+    end_time = 1.0 * unit.hour
+    time_step = 1.0 * unit.minute
+    show_time = (True, 5 * unit.minute)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -32,7 +32,6 @@ def main():
 
     solvex = Solvex()  # Create solvent extraction module
 
-    solvex = Solvex()  # Create reactor module
     solvex.name = 'Solvex'
     solvex.save = True
     solvex.time_step = time_step
@@ -57,6 +56,13 @@ def main():
         # Solvent extraction plots
         solvex = plant_net.modules[0]
 
+        (quant, time_unit) = solvex.extraction_feed_phase.get_quantity_history('mass_flowrate')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('solvex-extraction-feed-mass-flowrate.png', dpi=300)
+'''
         (quant, time_unit) = solvex.primary_outflow_phase.get_quantity_history('temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
@@ -140,6 +146,6 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('solvex-nusselt_s.png', dpi=300)
-
+'''
 if __name__ == '__main__':
     main()

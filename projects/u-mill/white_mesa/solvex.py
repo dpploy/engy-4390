@@ -41,7 +41,8 @@ This module is a model of the Solvent Extraction process in the White Mesa Urani
    + Stripping
 
    Source of info:
-      https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf
+   -https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf (pg. 189 )
+   
 """
 
 import logging
@@ -123,8 +124,22 @@ class Solvex(Module):
         '''
 
         # Initialization
+        # Placeholder Values to Test Code
+        
+        self.extraction_feed_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.extraction_feed_mass_density = 1.0 * unit.kg / unit.liter
 
-        self.extraction_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.extraction_raffinate_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.extraction_raffinate_mass_density = 1.0 * unit.kg / unit.liter
+
+        self.extraction_product_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.extraction_product_mass_density = 1.0 * unit.kg / unit.liter
+
+        self.stripping_feed_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.stripping_feed_mass_density = 1.0 * unit.kg / unit.liter
+
+        self.stripping_product_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.stripping_product_mass_density = 1.0 * unit.kg / unit.liter
 
         # Derived quantities
         '''
@@ -145,12 +160,19 @@ class Solvex(Module):
         quantities = list()
         species = list()
 
-        feed_mass_flowrate = Quantity(name='mass_flowrate',
-                                      formal_name='mdot', unit='kg/s',
-                                      value=self.extraction_feed_mass_flowrate,
-                                      latex_name=r'$\dot{m}_4$',
-                                      info='Extraction Feed Mass Flowrate')
-        quantities.append(feed_mass_flowrate)
+        extraction_feed_mass_flowrate = Quantity(name='mass_flowrate',
+                                          formal_name='mdot', unit='kg/s',
+                                          value=self.extraction_feed_mass_flowrate,
+                                          latex_name=r'$\dot{m}_1$',
+                                          info='Extraction Feed Mass Flowrate')
+        quantities.append(extraction_feed_mass_flowrate)
+
+        extraction_feed_mass_density = Quantity(name='mass_density',
+                                         formal_name='rho', unit='kg/m^3',
+                                         value=self.extraction_feed_mass_density,
+                                         latex_name=r'$\rho$',
+                                         info='Extraction Feed Mass Density')
+        quantities.append(extraction_feed_mass_density)
 
         uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
                            atoms=['U','2*O','3*S','12*O'],
@@ -195,12 +217,19 @@ class Solvex(Module):
         quantities = list()
         species = list()
 
-        feed_mass_flowrate = Quantity(name='mass_flowrate',
-                                      formal_name='mdot', unit='kg/s',
-                                      value=self.extraction_feed_mass_flowrate,
-                                      latex_name=r'$\dot{m}_4$',
-                                      info='Extraction Raffinate Mass Flowrate')
-        quantities.append(feed_mass_flowrate)
+        extraction_raffinate_mass_flowrate = Quantity(name='mass_flowrate',
+                                          formal_name='mdot', unit='kg/s',
+                                          value=self.extraction_raffinate_mass_flowrate,
+                                          latex_name=r'$\dot{m}_2$',
+                                          info='Extraction Raffinate Mass Flowrate')
+        quantities.append(extraction_raffinate_mass_flowrate)
+
+        extraction_raffinate_mass_density = Quantity(name='mass_density',
+                                         formal_name='rho', unit='kg/m^3',
+                                         value=self.extraction_raffinate_mass_density,
+                                         latex_name=r'$\rho$',
+                                         info='Extraction Raffinate Mass Density')
+        quantities.append(extraction_raffinate_mass_density)
 
         uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
                            atoms=['U','2*O','3*S','12*O'],
@@ -234,12 +263,19 @@ class Solvex(Module):
         quantities = list()
         species = list()
 
-        feed_mass_flowrate = Quantity(name='mass_flowrate',
-                                      formal_name='mdot', unit='kg/s',
-                                      value=self.extraction_feed_mass_flowrate,
-                                      latex_name=r'$\dot{m}_4$',
-                                      info='Extraction Feed Mass Flowrate')
-        quantities.append(feed_mass_flowrate)
+        extraction_product_mass_flowrate = Quantity(name='mass_flowrate',
+                                          formal_name='mdot', unit='kg/s',
+                                          value=self.extraction_product_mass_flowrate,
+                                          latex_name=r'$\dot{m}_3$',
+                                          info='Extraction Product Mass Flowrate')
+        quantities.append(extraction_product_mass_flowrate)
+
+        extraction_product_mass_density = Quantity(name='mass_density',
+                                         formal_name='rho', unit='kg/m^3',
+                                         value=self.extraction_product_mass_density,
+                                         latex_name=r'$\rho$',
+                                         info='Extraction Product Mass Density')
+        quantities.append(extraction_product_mass_density)
 
         uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
                            atoms=['U','2*O','3*S','12*O'],
@@ -288,6 +324,19 @@ class Solvex(Module):
         quantities = list()
         species = list()
 
+        stripping_feed_mass_flowrate = Quantity(name='mass_flowrate',
+                                          formal_name='mdot', unit='kg/s',
+                                          value=self.stripping_feed_mass_flowrate,
+                                          latex_name=r'$\dot{m}_4$',
+                                          info='Stripping Feed Mass Flowrate')
+        quantities.append(stripping_feed_mass_flowrate)
+
+        stripping_feed_mass_density = Quantity(name='mass_density',
+                                         formal_name='rho', unit='kg/m^3',
+                                         value=self.stripping_feed_mass_density,
+                                         latex_name=r'$\rho$',
+                                         info='Stripping Feed Mass Density')
+        quantities.append(stripping_feed_mass_density)
 
         uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
                            atoms=['U','2*O','3*S','12*O'],
@@ -340,12 +389,19 @@ class Solvex(Module):
         quantities = list()
         species = list()
 
-        feed_mass_flowrate = Quantity(name='mass_flowrate',
-                                      formal_name='mdot', unit='kg/s',
-                                      value=self.extraction_feed_mass_flowrate,
-                                      latex_name=r'$\dot{m}_4$',
-                                      info='Stripping Product Mass Flowrate')
-        quantities.append(feed_mass_flowrate)
+        stripping_product_mass_flowrate = Quantity(name='mass_flowrate',
+                                          formal_name='mdot', unit='kg/s',
+                                          value=self.stripping_product_mass_flowrate,
+                                          latex_name=r'$\dot{m}_5$',
+                                          info='Stripping Product Mass Flowrate')
+        quantities.append(stripping_product_mass_flowrate)
+
+        stripping_product_mass_density = Quantity(name='mass_density',
+                                         formal_name='rho', unit='kg/m^3',
+                                         value=self.stripping_product_mass_density,
+                                         latex_name=r'$\rho$',
+                                         info='Stripping Product Mass Density')
+        quantities.append(stripping_product_mass_density)
 
         uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
                            atoms=['U','2*O','3*S','12*O'],
@@ -512,9 +568,9 @@ class Solvex(Module):
 
             msg_time = self.recv('product')
 
-            temp = self.stripping_product_phase.get_value('temp', msg_time)
-
             product = dict()
+            product['mass-flowrate'] = self.stripping_product_phase.get_value('mass-flowrate',msg_time)
+            product['mass-density'] = self.stripping_product_phase.get_value('mass-density',msg_time)
             '''
             product['temperature'] = temp
             product['pressure'] = self.primary_pressure
@@ -533,9 +589,9 @@ class Solvex(Module):
 
             msg_time = self.recv('raffinate')
 
-            temp = self.extraction_raffinate_phase.get_value('temp', msg_time)
-
             raffinate = dict()
+            product['mass-flowrate'] = self.extraction_raffinate_phase.get_value('mass-flowrate',msg_time)
+            product['mass-density'] = self.extraction_raffinate_phase.get_value('mass-density',msg_time)
             '''
             raffinate['temperature'] = temp
             raffinate['pressure'] = press
@@ -546,7 +602,7 @@ class Solvex(Module):
             self.send((msg_time, raffinate), 'raffinate')
 
     def __step(self, time=0.0):
-        """Stepping Decantation-Filtration in time
+        """Stepping Solvex in time
         """
 
         '''
@@ -577,7 +633,18 @@ class Solvex(Module):
         steamer = self.state_phase.get_row(time)
         '''
 
+        #Time Step with Constant Value to Test Code
+        tmp = self.extraction_feed_phase.get_row(time)
+        print(tmp)
+        mass_flowrate = self.extraction_feed_phase.get_value('mass_flowrate', time)
+
         time += self.time_step
+        
+        self.extraction_feed_phase.add_row(time, tmp)
+
+        self.extraction_feed_phase.set_value('mass_flowrate', mass_flowrate, time)
+        #self.extraction_feed_phase.set_value('mass_density', rho_preleach, time)
+
 
         '''
         self.primary_outflow_phase.add_row(time, primary_outflow)
