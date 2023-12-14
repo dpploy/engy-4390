@@ -32,7 +32,6 @@ def main():
 
     white_mesa_network = whte_mesa.network = Network() # Network
 
-    # Leaching
 
     #reactor = SMPWR()  # Create reactor module
     #reactor.name = "SM-PWR"
@@ -41,7 +40,7 @@ def main():
 
     #white_mesa_network.module(reactor)  # Add reactor module to network
 
-    #Leaching
+    # Leaching
 
     leaching = Leaching() # Create a Leaching module
 
