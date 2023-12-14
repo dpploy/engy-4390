@@ -124,7 +124,8 @@ class Solvex(Module):
         '''
 
         # Initialization
-
+        # Placeholder Values to Test Code
+        
         self.extraction_feed_mass_flowrate = 1.0 * unit.liter / unit.minute
         self.extraction_feed_mass_density = 1.0 * unit.kg / unit.liter
 
@@ -632,6 +633,7 @@ class Solvex(Module):
         steamer = self.state_phase.get_row(time)
         '''
 
+        #Time Step with Constant Value to Test Code
         tmp = self.extraction_feed_phase.get_row(time)
         print(tmp)
         mass_flowrate = self.extraction_feed_phase.get_value('mass_flowrate', time)
