@@ -55,89 +55,21 @@ def main():
         # filtration plots
         filtration = plant_net.modules[0]
 
-        (quant, time_unit) = filtration.primary_outflow_phase.get_quantity_history('temp')
+        (quant, time_unit) = filtration.single_tank_decantation_raffinate_feed_solids_massfrac.get_quantity_history('temp')
 
         quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
                    y_label=quant.latex_name+' [C]')
         plt.grid()
         plt.savefig('filtration-primary-outflow-temp.png', dpi=300)
 
-        (quant, time_unit) = filtration.primary_outflow_phase.get_quantity_history('flowrate')
+        '''
+        (quant, time_unit) = filtration.primary_outflow_phase.get_quantity_history('temp')
 
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
+        quant.plot(x_scaling=1 / unit.minute, y_shift=273.15, x_label='Time [m]',
+                   y_label=quant.latex_name + ' [C]')
         plt.grid()
-        plt.savefig('filtration-primary-mass-flowrate.png', dpi=300)
-
-        (quant, time_unit) = filtration.secondary_inflow_phase.get_quantity_history('temp')
-
-        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
-                   y_label=quant.latex_name+' [C]')
-        plt.grid()
-        plt.savefig('filtration-secondary-inflow-temp.png', dpi=300)
-
-        (quant, time_unit) = filtration.secondary_outflow_phase.get_quantity_history('temp')
-
-        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
-                   y_label=quant.latex_name+' [C]')
-        plt.grid()
-        plt.savefig('filtration-secondary-outflow-temp.png', dpi=300)
-
-        (quant, time_unit) = filtration.secondary_inflow_phase.get_quantity_history('flowrate')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('filtration-secondary-inflow-flowrate.png', dpi=300)
-
-        (quant, time_unit) = filtration.secondary_outflow_phase.get_quantity_history('flowrate')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('filtration-secondary-outflow-flowrate.png', dpi=300)
-
-        (quant, time_unit) = filtration.state_phase.get_quantity_history('tau_p')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('filtration-primary-tau.png', dpi=300)
-
-        (quant, time_unit) = filtration.state_phase.get_quantity_history('tau_s')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('filtration-secondary-tau.png', dpi=300)
-
-        (quant, time_unit) = filtration.secondary_outflow_phase.get_quantity_history('quality')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('filtration-secondary-quality.png', dpi=300)
-
-        (quant, time_unit) = filtration.state_phase.get_quantity_history('heatflux')
-
-        quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.kilo, x_label='Time [m]',
-                   y_label=quant.latex_name+' [k'+quant.unit+']')
-        plt.grid()
-        plt.savefig('filtration-heatflux.png', dpi=300)
-
-        (quant, time_unit) = filtration.state_phase.get_quantity_history('nusselt_p')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('filtration-nusselt_p.png', dpi=300)
-
-        (quant, time_unit) = filtration.state_phase.get_quantity_history('nusselt_s')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('filtration-nusselt_s.png', dpi=300)
+        plt.savefig('filtration-primary-outflow-temp.png', dpi=300)
+        '''
 
 if __name__ == '__main__':
     main()
