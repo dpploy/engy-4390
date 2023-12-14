@@ -17,7 +17,7 @@ def main():
 
     # Debugging
     make_run   = True
-    make_plots = False
+    make_plots = True
 
     # Preamble
     end_time = 1.0*unit.minute
@@ -50,11 +50,27 @@ def main():
 
     plant.close()  # Properly shutdow Cortix
 
-    # Plots
+    # Evaporation and Calcination Plots
     if make_plots and plant.use_multiprocessing or plant.rank == 0:
 
-        # Steamer plots
-        steamer = plant_net.modules[0]
+        evaporation_calcination = plant_net.modules[0]
+
+        (quant, time_unit) = evaporation_calcination.calcination_product_phase.get_quantity_history('mass_flowrate')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('Calcination-u3o8-product-mass-flowrate.png', dpi=300)
+
+        '''(quant, time_unit) = leaching.acidleach_phase.get_quantity_history('mass_flowrate')
+
+        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('leaching-acidleach-mass-flowrate.png', dpi=300)'''
+        
+        
+        '''steamer = plant_net.modules[0]
 
         (quant, time_unit) = steamer.primary_outflow_phase.get_quantity_history('temp')
 
@@ -138,7 +154,7 @@ def main():
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('steamer-nusselt_s.png', dpi=300)
+        plt.savefig('steamer-nusselt_s.png', dpi=300)'''
 
 if __name__ == '__main__':
     main()
