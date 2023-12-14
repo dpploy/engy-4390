@@ -41,21 +41,18 @@
        compared to many mines but is well within the averages/usuals for most mines.
      - Uranium typically exists in the ores in the form of U3O8.
 
-     * Pre-Leach Ore Feed
-          - Mix of 1ton of ore and water
-          - 55-58% solids. On a basis of 1 ton of ore feed....
-          - 1000 kg ore
-          - 1000 / 0.55 = 1818.18 kg total
-          - 818.18 kg water
-
-      * Pre-Leach Output
-          - 22% solids
-          - Pulp or solids density is 22%. So 1t of ore into the preleach leaves with 220kg of solids
-          - pH maintained below 2.0
-      * Process Information
-          - Agitated tank (Energy intensive usually)
-          - To maintain low pH conductivity readings with automatic control often work
-          - Iron Concentration of 7g/L to get extraction of 93%
+      *Pre-Leach Ore Feed
+          -55-58% solids
+          -90t/hr ore. 1.5t/min
+          -1.5t/0.55=2.727t total feed. 2727.27 kg/min
+          -1227.27 kg/min of water and 1500 kg of "ore"
+      *Pre-Leach Output
+          -22% solids
+          -pH maintained below 2.0
+      *Process Information
+          -Agitated tank (Energy intensive usually)
+          -To maintain low pH conductivity readings with automatic control often work
+          -Iron Concentration of 7g/L to get extraction of 93%
 
    + Acid-Leaching
 
@@ -80,7 +77,6 @@
               Regeneration of Iron(III) by sodium chloride in order to reduce acid consumption
               7.  2Fe^2+(aq) + 1/3ClO3^2-(aq) + 2H^+(aq) --> 2Fe^3+(aq) + 1/3Cl^-(aq) + H2O(aq)
           -Copper
-      - Capacity: 1 t of ore
       - Acid (H2SO4) amount: 20 kg/t ore
         Optimal concentration of the acid feed for selectivity seems to be 10-48% sulfuric acid for the
         aqueous solution
@@ -96,6 +92,8 @@
       https://www.sciencedirect.com/science/article/pii/S1738573321005970
       - Kinetic Equations?
       https://repository.up.ac.za/bitstream/handle/2263/61336/Sililo_Modelling_2017.pdf?sequence=1
+      - Ore Data
+      https://www.sciencebase.gov/catalog/item/5eb9dff082ce25b5135d5822
 """
 
 import logging
@@ -159,7 +157,6 @@ class Leaching(Module):
         # Pre-leaching
         self.wet_ore_feed_mass_flowrate = 2727 * unit.kg/unit.minute
         self.wet_ore_feed_solid_mass_fraction = 55/100
-
         self.wet_ore_mass_density = 1.0 * unit.kg / unit.liter
         self.wet_ore_solids_massfrac = 100 * unit.ppm
 
