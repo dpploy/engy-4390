@@ -53,7 +53,8 @@
           -Agitated tank (Energy intensive usually)
           -To maintain low pH conductivity readings with automatic control often work
           -Iron Concentration of 7g/L to get extraction of 93%
-
+          - NEED SOLIDS MASS FRACTION PPM TO LINK WITH DECANT
+            
    + Acid-Leaching
 
       * Chemical Reactions
@@ -73,9 +74,14 @@
               5.  NaClO3(aq) --> ClO3^-(aq) + Na+(aq)
           -Iron and Sulfiric Acid (Occurs at pH above 2)
               6.  Fe3O4 + H2SO4 --> FeSO4 + Fe2O3 +H2O
+          -Iron Ore Dissolution in strong acid
+              7.  2Fe2O3(s) + 6H^+(aq) --> 2Fe^3+(aq) 3H2O(aq)
+              8. Fe3O4(s) + 8H^+(aq) --> Fe^2+(aq) + 2Fe^3+(aq) + 4H2O(aq)
           -Iron and Sodium Chloride
               Regeneration of Iron(III) by sodium chloride in order to reduce acid consumption
-              7.  2Fe^2+(aq) + 1/3ClO3^2-(aq) + 2H^+(aq) --> 2Fe^3+(aq) + 1/3Cl^-(aq) + H2O(aq)
+              9.  2Fe^2+(aq) + 1/3ClO3^2-(aq) + 2H^+(aq) --> 2Fe^3+(aq) + 1/3Cl^-(aq) + H2O(aq)
+          -Iron (III) regeneration by oxidation in acid
+              10. 4Fe^2+(aq) + O2(aq) +4H^+ --> 2H2O(aq) + 4Fe^3+(aq)
           -Copper
       - Acid (H2SO4) amount: 20 kg/t ore
         Optimal concentration of the acid feed for selectivity seems to be 10-48% sulfuric acid for the
