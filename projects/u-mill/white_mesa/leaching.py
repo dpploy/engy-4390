@@ -54,7 +54,7 @@
           -To maintain low pH conductivity readings with automatic control often work
           -Iron Concentration of 7g/L to get extraction of 93%
           - NEED SOLIDS MASS FRACTION PPM TO LINK WITH DECANT
-            
+
    + Acid-Leaching
 
       * Chemical Reactions
@@ -153,10 +153,10 @@ class Leaching(Module):
 
         # Configuration parameters
 
-        self.preleach_vol = 45 * unit.meter**3
+        self.preleach_tank_vol = 45 * unit.meter**3
         self.wet_ore_feed_mass_density = 5000 * unit.kg/unit.meter**3
 
-        self.acidleach_vol = 70 * unit.meter**3
+        self.acidleach_tank_vol = 70 * unit.meter**3
 
         # Initialization
 
@@ -187,14 +187,14 @@ class Leaching(Module):
         quantities = list()
         species = list()
 
-        wet_ore_mass_flowrate = Quantity(name='mass_flowrate',
+        wet_ore_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
                                           value=self.preleach_feed_mass_flowrate,
                                           latex_name=r'$\dot{m}_1$',
                                           info='Wet Ore Mass Flowrate')
         quantities.append(wet_ore_mass_flowrate)
 
-        wet_ore_mass_density = Quantity(name='mass_density',
+        wet_ore_mass_density = Quantity(name='mass-density',
                                          formal_name='rho', unit='kg/m^3',
                                          value=self.wet_ore_mass_density,
                                          latex_name=r'$\rho$',
@@ -247,14 +247,14 @@ class Leaching(Module):
         quantities = list()
         species = list()
 
-        preleach_mass_flowrate = Quantity(name='mass_flowrate',
+        preleach_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
                                           value=0.0,
-                                          latex_name=r'$\dot{m}_{p}$',
+                                          latex_name=r'$\dot{m}_{pl}$',
                                           info='Pre-Leach Mass Flowrate')
         quantities.append(preleach_mass_flowrate)
 
-        preleach_mass_density = Quantity(name='mass_density',
+        preleach_mass_density = Quantity(name='mass-density',
                                      formal_name='rho', unit='kg/m^3',
                                      value=0.0,
                                      latex_name=r'$\rho$',
@@ -311,14 +311,14 @@ class Leaching(Module):
         quantities = list()
         species = list()
 
-        underflow_mass_flowrate = Quantity(name='mass_flowrate',
+        underflow_mass_flowrate = Quantity(name='mass-flowrate',
                                            formal_name='mdot', unit='kg/s',
                                            value=self.std_underflow_mass_flowrate,
                                            latex_name=r'$\dot{m}_4$',
                                            info='STD Underflow Mass Flowrate')
         quantities.append(underflow_mass_flowrate)
 
-        std_underflow_mass_density = Quantity(name='mass_density',
+        std_underflow_mass_density = Quantity(name='mass-density',
                                      formal_name='rho', unit='kg/m^3',
                                      value=self.std_underflow_mass_density,
                                      latex_name=r'$\rho$',
@@ -371,14 +371,14 @@ class Leaching(Module):
         quantities = list()
         species = list()
 
-        acids_mass_flowrate = Quantity(name='mass_flowrate',
+        acids_mass_flowrate = Quantity(name='mass-flowrate',
                                            formal_name='mdot', unit='kg/s',
                                            value=self.acids_mass_flowrate,
                                            latex_name=r'$\dot{m}_4$',
                                            info='Acid Feed Mass Flowrate')
         quantities.append(acids_mass_flowrate)
 
-        acids_mass_density = Quantity(name='mass_density',
+        acids_mass_density = Quantity(name='mass-density',
                                               formal_name='rho', unit='kg/m^3',
                                               value=self.acids_mass_density,
                                               latex_name=r'$\rho$',
@@ -408,14 +408,14 @@ class Leaching(Module):
         quantities = list()
         species = list()
 
-        acid_leach_mass_flowrate = Quantity(name='mass_flowrate',
+        acid_leach_mass_flowrate = Quantity(name='mass-flowrate',
                                            formal_name='mdot', unit='kg/s',
                                            value=0.0,
-                                           latex_name=r'$\dot{m}_{a}$',
+                                           latex_name=r'$\dot{m}_{al}$',
                                            info='Acid Leach Mass Flowrate')
         quantities.append(acid_leach_mass_flowrate)
 
-        acid_leach_mass_density = Quantity(name='mass_density',
+        acid_leach_mass_density = Quantity(name='mass-density',
                                            formal_name='rho', unit='kg/m^3',
                                            value=0.0,
                                            latex_name=r'$\rho$',
@@ -610,7 +610,7 @@ class Leaching(Module):
         '''
 
         # Evolve the pre-leach state
-        mass_flowrate_initial = self.preleach_phase.get_value('mass_flowrate', time)
+        mass_flowrate_initial = self.preleach_phase.get_value('mass-flowrate', time)
 
         wet_ore_mass_flowrate = self.wet_ore_feed_mass_flowrate
         preleach_feed_mass_flowrate = self.preleach_feed_mass_flowrate
@@ -628,9 +628,9 @@ class Leaching(Module):
 
         if vol_flowrate_initial == 0:
             vol_flowrate_initial = wet_ore_mass_flowrate/rho_wet_ore
-            tau = self.preleach_vol/vol_flowrate_initial
+            tau = self.preleach_tank_vol/vol_flowrate_initial
         else:
-            tau = self.preleach_vol/vol_flowrate_initial
+            tau = self.preleach_tank_vol/vol_flowrate_initial
 
         # Mass balance
         mass_flowrate_preleach = mass_flowrate_inflow + \
@@ -639,7 +639,7 @@ class Leaching(Module):
         tmp_preleach = self.preleach_phase.get_row(time)
 
         # Evolve the acid-leach state
-        mass_flowrate_initial = self.acidleach_phase.get_value('mass_flowrate', time)
+        mass_flowrate_initial = self.acidleach_phase.get_value('mass-flowrate', time)
 
         acids_mass_flowrate = self.acids_mass_flowrate
         acidleach_feed_mass_flowrate = self.acidleach_feed_mass_flowrate
@@ -657,9 +657,9 @@ class Leaching(Module):
 
         if vol_flowrate_initial == 0.0:
             vol_flowrate_initial = acids_mass_flowrate/rho_acids
-            tau = self.acidleach_vol/vol_flowrate_initial
+            tau = self.acidleach_tank_vol/vol_flowrate_initial
         else:
-            tau = self.acidleach_vol/vol_flowrate_initial
+            tau = self.acidleach_tank_vol/vol_flowrate_initial
 
         # Mass balance
         mass_flowrate_acidleach = mass_flowrate_inflow + \
@@ -671,29 +671,14 @@ class Leaching(Module):
         time += self.time_step
 
         self.preleach_phase.add_row(time, tmp_preleach)
+        self.preleach_phase.set_value('mass-flowrate', mass_flowrate_preleach, time)
+        self.preleach_phase.set_value('mass-density', rho_preleach, time)
+
         self.acidleach_phase.add_row(time, tmp_acidleach)
-
-        self.preleach_phase.set_value('mass_flowrate', mass_flowrate_preleach, time)
-        self.preleach_phase.set_value('mass_density', rho_preleach, time)
-
-        self.acidleach_phase.set_value('mass_flowrate', mass_flowrate_acidleach, time)
-        self.acidleach_phase.set_value('mass_density', rho_acidleach, time)
+        self.acidleach_phase.set_value('mass-flowrate', mass_flowrate_acidleach, time)
+        self.acidleach_phase.set_value('mass-density', rho_acidleach, time)
 
         '''
-        self.primary_outflow_phase.add_row(time, primary_outflow)
-        self.primary_outflow_phase.set_value('temp', temp_p, time)
-        self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
-
-        self.secondary_inflow_phase.add_row(time, secondary_inflow)
-        self.secondary_inflow_phase.set_value('temp', self.secondary_inflow_temp, time)
-        self.secondary_inflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
-
-        self.secondary_outflow_phase.add_row(time, secondary_outflow)
-        self.secondary_outflow_phase.set_value('temp', temp_s, time)
-        self.secondary_outflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
-        self.secondary_outflow_phase.set_value('pressure', self.secondary_pressure, time)
-        self.secondary_outflow_phase.set_value('quality', self.secondary_outflow_quality, time)
-
         self.state_phase.add_row(time, steamer)
 
         # Primary residence time

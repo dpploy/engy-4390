@@ -56,14 +56,14 @@ def main():
         # leaching plots
         leaching = plant_net.modules[0]
 
-        (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass_flowrate')
+        (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass-flowrate')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-preleach-product-mass-flowrate.png', dpi=300)
 
-        (quant, time_unit) = leaching.acidleach_phase.get_quantity_history('mass_flowrate')
+        (quant, time_unit) = leaching.acidleach_phase.get_quantity_history('mass-flowrate')
 
         quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
                    y_label=quant.latex_name+' ['+quant.unit+']')

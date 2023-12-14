@@ -21,9 +21,9 @@ This module is a model of the Precipitation process in the White Mesa Uranium Mi
              |
              |
              |
-             |
              v
-     Ammonium Diuranate Product
+         Ammonium
+     Diuranate Product
 
 
  + Precipitation
@@ -98,35 +98,20 @@ class Precipitation(Module):
         # Domain attributes
 
         # Configuration parameters
-        '''
-        self.discard_tau_recording_before = 2*unit.minute
-        self.heat_transfer_area = 1665.57*unit.meter**2
-
-        self.helicoil_outer_radius = 16/2*unit.milli*unit.meter
-        self.helicoil_tube_wall = 0.9*unit.milli*unit.meter
-        self.helicoil_inner_radius = self.helicoil_outer_radius - self.helicoil_tube_wall
-        self.helicoil_length = 22.3*unit.meter
-        self.n_helicoil_tubes = 1380
-
-        self.wall_temp_delta_primary = 1.5*unit.K
-        self.wall_temp_delta_secondary = 1.5*unit.K
-
-        self.iconel690_k = 12.1 * unit.watt/unit.meter/unit.kelvin
-
-        self.helix_to_cylinder = 1./.928
-
-        self.secondary_volume = math.pi * self.helicoil_inner_radius**2 * \
-                                self.helicoil_length * self.n_helicoil_tubes *\
-                                self.helix_to_cylinder
-
-        self.primary_volume = 0.5 * self.secondary_volume
-
-        # Ratio of the tube bundle pithc transverse to flow to parallel to flow
-        self.tube_bundle_pitch_ratio = 1.5  # st/sl
-
-        '''
+        self.precipitation_tank_vol = 45 * unit.meter**3
+        self.thickening_tank_vol = 45 * unit.meter**3
 
         # Initialization
+
+        # Precipitation
+        self.uranyl_trisulfate_feed_mass_flowrate = 727 * unit.kg/unit.minute
+        self.uranyl_trisulfate_feed_mass_density = 1.1 * unit.kg / unit.liter
+
+        self.ammonia_sparge_feed_mass_flowrate = 5 * unit.kg/unit.minute
+        self.ammonia_sparge_feed_mass_density = 5 * unit.kg/unit.minute
+
+        # Thickening/Washing
+
         '''
         self.primary_inflow_temp = primary_inflow_temp
 
@@ -171,23 +156,37 @@ class Precipitation(Module):
         # P R E C I P I T A T I O N
         #***************************************************************************************
 
-        # Precipitation Feed Phase History (solvent extraction stripping product)
+        # Precipitation Phase History
         quantities = list()
         species = list()
 
-        self.precipitation_feed_phase = Phase(time_stamp=self.initial_time,
-                                              time_unit='s', quantities=quantities, species=species)
+        precipitation_mass_flowrate = Quantity(name='mass-flowrate',
+                                               formal_name='mdot', unit='kg/s',
+                                               value=0.0,
+                                               latex_name=r'$\dot{m}_{p}$',
+                                               info='Precipitation Mass Flowrate')
+        quantities.append(precipitation_mass_flowrate)
+
+        self.precipitation_phase = Phase(time_stamp=self.initial_time,
+                                         time_unit='s', quantities=quantities, species=species)
 
         #***************************************************************************************
         # T H I C K N E N I N G
         #***************************************************************************************
 
-        # Thickening/Centrifuge Product Phase History (thickening/centrifuge outflow)
+        # Thickening/Centrifuge Phase History (thickening/centrifuge)
         quantities = list()
         species = list()
 
-        self.thickening_product_phase = Phase(time_stamp=self.initial_time,
-                                              time_unit='s', quantities=quantities, species=species)
+        thickening_mass_flowrate = Quantity(name='mass-flowrate',
+                                       formal_name='mdot', unit='kg/s',
+                                       value=0.0,
+                                       latex_name=r'$\dot{m}_{t}$',
+                                       info='Thickening Mass Flowrate')
+        quantities.append(thickening_mass_flowrate)
+
+        self.thickening_phase = Phase(time_stamp=self.initial_time,
+                                      time_unit='s', quantities=quantities, species=species)
 
         #***************************************************************************************
         # S T A T E  P H A S E
@@ -305,24 +304,42 @@ class Precipitation(Module):
         secondary_outflow = self.secondary_outflow_phase.get_row(time)
         steamer = self.state_phase.get_row(time)
         '''
+        # Evolve the precipitation state
+        mass_flowrate_initial = self.precipitation_phase.get_value('mass-flowrate', time)
 
+        uts_feed_mass_flowrate = self.uranyl_trisulfate_feed_mass_flowrate
+        sparge_feed_mass_flowrate = self.ammonia_sparge_feed_mass_flowrate
+
+        # Ideal solution
+        mass_flowrate_inflow = uts_feed_mass_flowrate + sparge_feed_mass_flowrate
+
+        rho_uts_feed = self.uranyl_trisulfate_feed_mass_density
+        rho_nh4_feed = self.ammonia_sparge_feed_mass_density
+
+        # Ideal solution
+        rho_precipitation = rho_uts_feed + rho_nh4_feed
+
+        vol_flowrate_initial = mass_flowrate_initial/rho_precipitation
+
+        if vol_flowrate_initial == 0:
+            vol_flowrate_initial = mass_flowrate_inflow/rho_precipitation
+            tau = self.precipitation_tank_vol/vol_flowrate_initial
+        else:
+            tau = self.precipitation_tank_vol/vol_flowrate_initial
+
+        # Mass balance
+        mass_flowrate_precipitation = mass_flowrate_inflow + \
+                                 math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_inflow)
+
+        tmp_precipitation = self.precipitation_phase.get_row(time)
+
+        # Advance time and store new state variables
         time += self.time_step
 
+        self.precipitation_phase.add_row(time, tmp_precipitation)
+        self.precipitation_phase.set_value('mass-flowrate', mass_flowrate_precipitation, time)
+
         '''
-        self.primary_outflow_phase.add_row(time, primary_outflow)
-        self.primary_outflow_phase.set_value('temp', temp_p, time)
-        self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
-
-        self.secondary_inflow_phase.add_row(time, secondary_inflow)
-        self.secondary_inflow_phase.set_value('temp', self.secondary_inflow_temp, time)
-        self.secondary_inflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
-
-        self.secondary_outflow_phase.add_row(time, secondary_outflow)
-        self.secondary_outflow_phase.set_value('temp', temp_s, time)
-        self.secondary_outflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
-        self.secondary_outflow_phase.set_value('pressure', self.secondary_pressure, time)
-        self.secondary_outflow_phase.set_value('quality', self.secondary_outflow_quality, time)
-
         self.state_phase.add_row(time, steamer)
 
         # Primary residence time
