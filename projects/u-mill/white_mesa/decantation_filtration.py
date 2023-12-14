@@ -117,14 +117,16 @@ class DecantationFiltration(Module):
         # Domain attributes
 
         # Configuration parameters
-        self.std_tank_volume = 0.988 * unit.meter**3 # STD
-        self.ccd_tank_volume = 4.988 * unit.meter**3 # CCD
+        self.std_tank_volume = 3402.33 * unit.meter**3 # STD
+        self.ccd_tank_volume = 7*339.29 * unit.meter**3 # CCD
 
         self.std_wash_water_vol_flowrate = 1067 * unit.gallon/unit.minute
         self.ccd_wash_water_vol_flowrate = 1067 * unit.gallon/unit.minute
 
         self.wash_water_preleach_feed_ratio = 99.0
         self.std_underflow_overflow_mass_flowrate_ratio = 99.0
+        self.ccd_underflow_overflow_mass_flowrate_ratio = 99.0
+        self.wash_water_acidleach_feed_ratio = 1.69
 
         # Initialization
         self.wash_water_mass_density = 1.0 * unit.kg/unit.meter**3
@@ -134,7 +136,7 @@ class DecantationFiltration(Module):
         self.single_tank_decantation_preleach_feed_mass_density = 7.8 * unit.kg/unit.liter
         self.single_tank_decantation_preleach_feed_solids_massfrac = 100 * unit.ppm
 
-        self.ccd_acidleach_feed_mass_flowrate = 1.0 * unit.kg/unit.minute
+        self.ccd_acidleach_feed_mass_flowrate = 2270 * unit.kg/unit.minute
         self.ccd_acidleach_feed_mass_density = 7.8 * unit.kg/unit.liter
         self.ccd_acidleach_feed_solids_massfrac = 100 * unit.ppm
 
@@ -714,7 +716,39 @@ class DecantationFiltration(Module):
         tmp_overflow = self.single_tank_decantation_overflow_phase.get_row(time)
         tmp_underflow = self.single_tank_decantation_underflow_phase.get_row(time)
 
+        # Evolve the CCD State
 
+        ccd_underflow_mass_flowrate_initial = self.ccd_underflow_phase.get_value('mass-flowrate',
+                                                                                                     time)
+        ccd_overlow_mass_flowrate_initial = self.ccd_overflow_phase.get_value('mass-flowrate', time)
+
+        acidleach_feed_mass_flowrate = self.ccd_acidleach_feed_mass_flowrate
+        rho_acidleach_feed = self.ccd_acidleach_feed_mass_density
+        acidleach_feed_vol_flowrate = acidleach_feed_mass_flowrate / rho_acidleach_feed
+
+        ccd_wash_water_vol_flowrate = self.wash_water_acidleach_feed_ratio * acidleach_feed_vol_flowrate
+        rho_wash_water = self.wash_water_mass_density
+        ccd_wash_water_mass_flowrate = ccd_wash_water_vol_flowrate * rho_wash_water
+        wash_water_massfrac = 500 * unit.ppm
+
+        # Ideal solution
+        mass_flowrate_inflow = acidleach_feed_mass_flowrate + ccd_wash_water_mass_flowrate
+
+        mass_flowrate_initial = ccd_underflow_mass_flowrate_initial + ccd_overlow_mass_flowrate_initial
+
+        rho_std = rho_acidleach_feed + rho_wash_water
+
+        vol_flowrate_initial = mass_flowrate_initial / rho_std
+
+        tau = self.ccd_tank_volume / vol_flowrate_initial
+
+        mass_flowrate = mass_flowrate_inflow + \
+                        math.exp(-time / tau) * (mass_flowrate_initial - mass_flowrate_inflow)
+
+        u_over_o = self.ccd_underflow_overflow_mass_flowrate_ratio
+
+        ccd_overflow_mass_flowrate = 1 / (u_over_o + 1) * mass_flowrate
+        ccd_underflow_mass_flowrate = u_over_o / (u_over_o + 1) * mass_flowrate
 
         # CCD Math
         m_dot_al = self.ccd_acidleach_feed_mass_flowrate
@@ -728,6 +762,9 @@ class DecantationFiltration(Module):
         c_pl_ccd = 99 + (c_al - 99)*2.78**(-1*time/1200)
         m_dot_pl_ccd = (c_al*m_dot_al + 500*(1.69/3.28)*m_dot_al - c_t*m_dot_t)/c_pl_ccd
         m_dot_t = (c_al*m_dot_al + 500*(1.69/3.28)*m_dot_al - c_pl_ccd*m_dot_pl_ccd)/c_t
+
+        tmp_overflow = self.ccd_overflow_phase.get_row(time)
+        tmp_underflow = self.ccd_underflow_phase.get_row(time)
 
         # Filtration Math
         m_dot_sl = self.filtration_slurry_mass_flowrate
@@ -744,9 +781,13 @@ class DecantationFiltration(Module):
 
         self.single_tank_decantation_overflow_phase.add_row(time, tmp_overflow)
         self.single_tank_decantation_underflow_phase.add_row(time, tmp_underflow)
+        self.ccd_overflow_phase.add_row(time, tmp_overflow)
+        self.ccd_underflow_phase.add_row(time, tmp_underflow)
 
         self.single_tank_decantation_overflow_phase.set_value('mass-flowrate', std_overflow_mass_flowrate, time)
         self.single_tank_decantation_underflow_phase.set_value('mass-flowrate', std_underflow_mass_flowrate, time)
+        self.ccd_overflow_phase.set_value('mass-flowrate', ccd_overflow_mass_flowrate, time)
+        self.ccd_underflow_phase.set_value('mass-flowrate', ccd_underflow_mass_flowrate, time)
 
 
         '''
