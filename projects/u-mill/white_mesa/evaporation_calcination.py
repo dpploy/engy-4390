@@ -103,13 +103,12 @@ class EvaporationCalcination(Module):
         self.calcination_flash_time = 80 * unit.minute
 
         #Evaporation
-
-        #Calcination
-        self.evaporation_feed_mass_flowrate = 1.0 * unit.liter/unit.minute
+        self.evaporation_feed_mass_flowrate = 1.0 * unit.kg / unit.minute
         self.evaporation_feed_mass_density = 7.8 * unit.kg/unit.liter
         self.evaporation_feed_solids_massfrac = 100 * unit.ppm
-
-        self.calcination_product_mass_flowrate = 1.0 * unit.liter/unit.minute
+        
+        #Calcination
+        self.calcination_product_mass_flowrate = 1.0 * unit.kg / unit.minute
         self.calcination_product_mass_density = 7.8 * unit.kg/unit.liter
         self.calcination_product_solids_massfrac = 100 * unit.ppm
 
@@ -187,7 +186,7 @@ class EvaporationCalcination(Module):
                         value=self.calcination_product_mass_flowrate,
                         latex_name=r'$\dot{m}$',
                         info='Calcination Product Mass Flowrate')
-        quantities.append(feed_mass_flowrate)
+        quantities.append(product_mass_flowrate)
 
         product_mass_density = Quantity(name='mass_density',
                         formal_name='rho', unit='kg/m^3',
@@ -257,11 +256,10 @@ class EvaporationCalcination(Module):
                         latex_name=r'$Nu_s$',
                         info='Steamer Secondary Nusselt Number')
 
-        quantities.append(nusselt_s)
+        quantities.append(nusselt_s)'''
 
-        self.state_phase = Phase(time_stamp=self.initial_time,
+        self.evaporation_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities)
-        '''
 
     def run(self, *args):
 
@@ -375,8 +373,57 @@ class EvaporationCalcination(Module):
         secondary_outflow = self.secondary_outflow_phase.get_row(time)
         steamer = self.state_phase.get_row(time)
         '''
+        
+        # Evolve the Evaporation state
+        '''mass_flowrate_initial = self.evaporation_phase.get_value('mass_flowrate', time)
 
+        mass_flowrate_inflow = self.evaporation_feed_mass_flowrate
+
+        rho_evaporation = self.evaporation_feed_mass_density
+
+        vol_flowrate_initial = mass_flowrate_initial/rho_evaporation
+
+        if vol_flowrate_initial == 0:
+            vol_flowrate_initial = mass_flowrate_inflow
+            tau = self.diuranate_volume/vol_flowrate_initial
+        else:
+            tau = self.diuranate_volume/vol_flowrate_initial
+
+        # Mass balance
+        mass_flowrate_evaporation = mass_flowrate_inflow + \
+                                 math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_inflow)
+'''
+        # Evolve the u3o8 Product state
+        mass_flowrate_initial = self.calcination_product_phase.get_value('mass_flowrate', time)
+
+        mass_flowrate_outflow = self.calcination_product_mass_flowrate
+
+        rho_calcination = self.calcination_product_mass_density
+
+        vol_flowrate_initial = mass_flowrate_initial/rho_calcination
+
+        if vol_flowrate_initial == 0:
+            vol_flowrate_initial = mass_flowrate_outflow
+            tau = self.diuranate_volume/vol_flowrate_initial
+        else:
+            tau = self.diuranate_volume/vol_flowrate_initial
+
+        # Mass balance
+        mass_flowrate_product = mass_flowrate_outflow + \
+                                  math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_outflow)
+
+        tmp_calcination = self.calcination_phase.get_row(time)
+
+        # Advance time and store new state variables
         time += self.time_step
+
+        self.calcination_product_phase.add_row(time, tmp_calcination)
+        #self.evaporation_phase.add_row(time, tmp_calcination)
+
+        self.calcination_product_phase.set_value('mass_flowrate', mass_flowrate_product, time)
+        self.calcination_product_phase.set_value('mass_density', rho_calcination, time)
+
+        #self.evaporation_phase.set_value('mass_flowrate', mass_flowrate_evaporation, time)
 
         '''
         self.primary_outflow_phase.add_row(time, primary_outflow)
