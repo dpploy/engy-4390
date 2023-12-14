@@ -277,14 +277,14 @@ class DecantationFiltration(Module):
                                        formal_name='mdot', unit='kg/s',
                                        value=self.ccd_underflow_mass_flowrate,
                                        latex_name=r'$\dot{m}_4$',
-                                       info='Decantation Underflow Mass Flowrate')
+                                       info='Counter Current Decantation Underflow Mass Flowrate')
         quantities.append(ccd_underflow_mass_flowrate)
 
         underflow_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=self.ccd_underflow_solids_massfrac,
                         latex_name=r'$C_1$',
-                        info='Decantation Underflow Solids Mass Fraction')
+                        info='Counter Current Decantation Underflow Solids Mass Fraction')
 
         quantities.append(underflow_solids_massfrac)
 
@@ -329,14 +329,14 @@ class DecantationFiltration(Module):
                         formal_name='mdot', unit='kg/s',
                         value=self.ccd_overflow_mass_flowrate,
                         latex_name=r'$\dot{m}_1$',
-                        info='Decantation Overflow Mass Flowrate')
+                        info='Counter Current Decantation Overflow Mass Flowrate')
         quantities.append(overflow_mass_flowrate)
 
         overflow_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=self.ccd_overflow_solids_massfrac,
                         latex_name=r'$C_1$',
-                        info='Decantation Overflow Solids Mass Fraction')
+                        info='Counter Current Decantation Overflow Solids Mass Fraction')
 
         quantities.append(overflow_solids_massfrac)
 
