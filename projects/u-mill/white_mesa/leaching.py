@@ -152,27 +152,26 @@ class Leaching(Module):
         # Domain attributes
 
         # Configuration parameters
+        self.wet_ore_feed_mass_density = 7120 * unit.kg/unit.meter**3
+        self.wet_ore_feed_mass_flowrate = 2727 * unit.kg/unit.minute
+        self.wet_ore_feed_solid_mass_fraction = 55/100
+        self.wet_ore_solids_massfrac = 100 * unit.ppm
 
         self.preleach_tank_vol = 45 * unit.meter**3
-        self.wet_ore_feed_mass_density = 7120 * unit.kg/unit.meter**3
-        self.tau_preleach_dissolution = 20 * unit.hour
+        self.five_tau_preleach_dissolution = 4.5 * unit.hour # 5 * relaxation time
 
         self.acidleach_tank_vol = 70 * unit.meter**3
+        self.five_tau_acidleach_dissolution = 2.5 * unit.hour # 5 * relaxation time
 
         # Initialization
 
         # Pre-leaching
-        self.wet_ore_feed_mass_flowrate = 2727 * unit.kg/unit.minute
-        self.wet_ore_feed_solid_mass_fraction = 55/100
-        self.wet_ore_mass_density = 1.0 * unit.kg / unit.liter
-        self.wet_ore_solids_massfrac = 100 * unit.ppm
-
         self.preleach_feed_mass_flowrate = 3500 * unit.kg / unit.minute
         self.preleach_feed_mass_density = 1.6 * unit.kg / unit.liter
         #self.preleach_feed_solids_massfrac = 100 * unit.ppm
 
         # Acid-leaching
-        self.acids_mass_flowrate = 1.0 * unit.liter / unit.minute
+        self.acids_mass_flowrate = 400 * unit.kg / unit.minute
         self.acids_mass_density = 1.0 * unit.kg / unit.liter
 
         self.acidleach_feed_mass_flowrate = 3500 * unit.kg / unit.minute
@@ -251,14 +250,14 @@ class Leaching(Module):
         preleach_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
                                           value=0.0,
-                                          latex_name=r'$\dot{m}_{pl}$',
+                                          latex_name=r'$\dot{m}_\text{pl}$',
                                           info='Pre-Leach Mass Flowrate')
         quantities.append(preleach_mass_flowrate)
 
         preleach_mass_density = Quantity(name='mass-density',
-                                     formal_name='rho', unit='kg/m^3',
+                                     formal_name='rho', unit='kg/m$^3$',
                                      value=0.0,
-                                     latex_name=r'$\rho$',
+                                     latex_name=r'$\rho_\text{pl}$',
                                      info='Pre-Leach Mass Density')
         quantities.append(preleach_mass_density)
 
@@ -417,7 +416,7 @@ class Leaching(Module):
         quantities.append(acid_leach_mass_flowrate)
 
         acid_leach_mass_density = Quantity(name='mass-density',
-                                           formal_name='rho', unit='kg/m^3',
+                                           formal_name='rho', unit='kg/m$^3$',
                                            value=0.0,
                                            latex_name=r'$\rho$',
                                            info='Acid Leach Mass Density')
@@ -624,13 +623,16 @@ class Leaching(Module):
 
         # Ideal dissolution
         rho_preleach_feed = self.preleach_feed_mass_density
-        rho_wet_ore = self.wet_ore_mass_density
+        rho_wet_ore = self.wet_ore_feed_mass_density
 
         rho_preleach_initial = self.preleach_phase.get_value('mass-density', time)
         rho_preleach_ideal = rho_preleach_feed + rho_wet_ore
 
+        tau_preleach_dissolution = self.five_tau_preleach_dissolution/5
+
         rho_preleach = rho_preleach_ideal + \
-                       math.exp(-time/self.tau_preleach_dissolution) * (rho_preleach_initial - rho_preleach_ideal)
+                       math.exp(-self.time_step/tau_preleach_dissolution) * \
+                       (rho_preleach_initial - rho_preleach_ideal)
 
         # Mass balance
         if rho_preleach == 0.0:
@@ -645,7 +647,8 @@ class Leaching(Module):
             flow_residence_time = self.preleach_tank_vol/vol_flowrate_initial
 
         mass_flowrate_preleach = mass_flowrate_inflow + \
-                                 math.exp(-time/flow_residence_time) * (mass_flowrate_initial - mass_flowrate_inflow)
+                                 math.exp(-self.time_step/flow_residence_time) * \
+                                 (mass_flowrate_initial - mass_flowrate_inflow)
 
         tmp_preleach = self.preleach_phase.get_row(time)
 
@@ -660,23 +663,34 @@ class Leaching(Module):
         # Ideal solution
         mass_flowrate_inflow = acids_mass_flowrate + acidleach_feed_mass_flowrate
 
+        # Ideal dissolution
         rho_acidleach_feed = self.acidleach_feed_mass_density
         rho_acids = self.acids_mass_density
 
-        # Ideal solution
-        rho_acidleach = rho_acidleach_feed + rho_acids
+        rho_acidleach_initial = self.acidleach_phase.get_value('mass-density', time)
+        rho_acidleach_ideal = rho_acids + rho_acidleach_feed
 
-        vol_flowrate_initial = mass_flowrate_initial/rho_acidleach
+        tau_acidleach_dissolution = self.five_tau_acidleach_dissolution/5
+
+        rho_acidleach = rho_acidleach_ideal + \
+                       math.exp(-self.time_step/tau_acidleach_dissolution) * \
+                       (rho_acidleach_initial - rho_acidleach_ideal)
+
+        # Mass balance
+        if rho_acidleach == 0.0:
+            vol_flowrate_initial = 0.0
+        else:
+            vol_flowrate_initial = mass_flowrate_initial/rho_acidleach
 
         if vol_flowrate_initial == 0.0:
             vol_flowrate_initial = acids_mass_flowrate/rho_acids
-            tau = self.acidleach_tank_vol/vol_flowrate_initial
+            flow_residence_time = self.acidleach_tank_vol/vol_flowrate_initial
         else:
-            tau = self.acidleach_tank_vol/vol_flowrate_initial
+            flow_residence_time = self.acidleach_tank_vol/vol_flowrate_initial
 
-        # Mass balance
         mass_flowrate_acidleach = mass_flowrate_inflow + \
-                                  math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_inflow)
+                                  math.exp(-self.time_step/flow_residence_time) * \
+                                  (mass_flowrate_initial - mass_flowrate_inflow)
 
         tmp_acidleach = self.acidleach_phase.get_row(time)
 
