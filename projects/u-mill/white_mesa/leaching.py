@@ -271,7 +271,7 @@ class Leaching(Module):
         liq_volume = Quantity(name='liquid-volume',
                               formal_name='vol', unit='m$^3$',
                               value=0.0,
-                              latex_name=r'$V$',
+                              latex_name=r'$V_\text{pl}$',
                               info='Pre-Leach Liquid Volume')
         quantities.append(liq_volume)
 
@@ -417,14 +417,14 @@ class Leaching(Module):
         acid_leach_mass_flowrate = Quantity(name='mass-flowrate',
                                            formal_name='mdot', unit='kg/s',
                                            value=0.0,
-                                           latex_name=r'$\dot{m}_{al}$',
+                                           latex_name=r'$\dot{m}_\text{al}$',
                                            info='Acid Leach Mass Flowrate')
         quantities.append(acid_leach_mass_flowrate)
 
         acid_leach_mass_density = Quantity(name='mass-density',
                                            formal_name='rho', unit='kg/m$^3$',
                                            value=0.0,
-                                           latex_name=r'$\rho$',
+                                           latex_name=r'$\rho_\text{al}$',
                                            info='Acid Leach Mass Density')
         quantities.append(acid_leach_mass_density)
 
@@ -434,6 +434,13 @@ class Leaching(Module):
                                              latex_name=r'$C_1$',
                                              info='Acid Leach Solids Mass Fraction')
         quantities.append(acid_leach_solids_massfrac)
+
+        liq_volume = Quantity(name='liquid-volume',
+                              formal_name='vol', unit='m$^3$',
+                              value=0.0,
+                              latex_name=r'$V_\text{al}$',
+                              info='Acid Leach Liquid Volume')
+        quantities.append(liq_volume)
 
         uo2so434minus_acid_leach = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
                                           atoms=['U', '2*O', '3*S', '12*O'],
@@ -661,17 +668,9 @@ class Leaching(Module):
 
         tmp_preleach = self.preleach_phase.get_row(time)
 
-        #---------------------------
+        #----------------------------
         # Evolve the acid-leach state
-        #---------------------------
-        mass_flowrate_initial = self.acidleach_phase.get_value('mass-flowrate', time)
-
-        acids_mass_flowrate = self.acids_mass_flowrate
-        acidleach_feed_mass_flowrate = self.acidleach_feed_mass_flowrate
-
-        # Ideal solution
-        mass_flowrate_inflow = acids_mass_flowrate + acidleach_feed_mass_flowrate
-
+        #----------------------------
         # Ideal dissolution
         rho_acidleach_feed = self.acidleach_feed_mass_density
         rho_acids = self.acids_mass_density
@@ -685,21 +684,32 @@ class Leaching(Module):
                         math.exp(-self.time_step/tau_acidleach_dissolution) * \
                         (rho_acidleach_initial - rho_acidleach_ideal)
 
+        # Ideal flow mixing
+        mass_flowrate_initial = self.acidleach_phase.get_value('mass-flowrate', time)
+
+        acids_mass_flowrate = self.acids_mass_flowrate
+        acidleach_feed_mass_flowrate = self.acidleach_feed_mass_flowrate
+
+        mass_flowrate_inflow = acids_mass_flowrate + acidleach_feed_mass_flowrate
+        vol_flowrate_inflow = mass_flowrate_inflow/rho_acidleach_ideal
+
+        acidleach_liq_volume_initial = self.acidleach_phase.get_value('liquid-volume', time)
+
+        vol_flowrate_initial = mass_flowrate_initial/rho_acidleach
+
+        acidleach_liq_volume = acidleach_liq_volume_initial + \
+                               (vol_flowrate_inflow-vol_flowrate_initial) * self.time_step
+
         # Place-holder for mass balance
-        if rho_acidleach == 0.0:
-            vol_flowrate_initial = 0.0
-        else:
-            vol_flowrate_initial = mass_flowrate_initial/rho_acidleach
+        if acidleach_liq_volume >= 0.9 * self.acidleach_tank_vol:
 
-        if vol_flowrate_initial == 0.0:
-            vol_flowrate_initial = acids_mass_flowrate/rho_acids
-            flow_residence_time = self.acidleach_tank_vol/vol_flowrate_initial
-        else:
-            flow_residence_time = self.acidleach_tank_vol/vol_flowrate_initial
+            flow_residence_time = self.acidleach_tank_vol/vol_flowrate_inflow
 
-        mass_flowrate_acidleach = mass_flowrate_inflow + \
-                                  math.exp(-self.time_step/flow_residence_time) * \
-                                  (mass_flowrate_initial - mass_flowrate_inflow)
+            mass_flowrate_acidleach = mass_flowrate_inflow + \
+                                      math.exp(-self.time_step/flow_residence_time) * \
+                                      (mass_flowrate_initial - mass_flowrate_inflow)
+        else:
+            mass_flowrate_acidleach = 0.0
 
         tmp_acidleach = self.acidleach_phase.get_row(time)
 
@@ -714,6 +724,7 @@ class Leaching(Module):
         self.acidleach_phase.add_row(time, tmp_acidleach)
         self.acidleach_phase.set_value('mass-flowrate', mass_flowrate_acidleach, time)
         self.acidleach_phase.set_value('mass-density', rho_acidleach, time)
+        self.acidleach_phase.set_value('liquid-volume', acidleach_liq_volume, time)
 
         '''
         self.state_phase.add_row(time, steamer)
