@@ -152,8 +152,8 @@ class Leaching(Module):
         # Domain attributes
 
         # Configuration parameters
-        self.wet_ore_feed_mass_density = 7120 * unit.kg/unit.meter**3
         self.wet_ore_feed_mass_flowrate = 2727 * unit.kg/unit.minute
+        self.wet_ore_feed_mass_density = 7120 * unit.kg/unit.meter**3
         self.wet_ore_feed_solid_mass_fraction = 55/100
         self.wet_ore_solids_massfrac = 100 * unit.ppm
 
@@ -255,19 +255,25 @@ class Leaching(Module):
         quantities.append(preleach_mass_flowrate)
 
         preleach_mass_density = Quantity(name='mass-density',
-                                     formal_name='rho', unit='kg/m$^3$',
-                                     value=0.0,
-                                     latex_name=r'$\rho_\text{pl}$',
-                                     info='Pre-Leach Mass Density')
+                                         formal_name='rho', unit='kg/m$^3$',
+                                         value=0.0,
+                                         latex_name=r'$\rho_\text{pl}$',
+                                         info='Pre-Leach Mass Density')
         quantities.append(preleach_mass_density)
 
         preleach_solids_massfrac = Quantity(name='solids_massfrac',
                                             formal_name='solids_massfrac', unit='ppm',
                                             value=0.0,
                                             latex_name=r'$C_1$',
-                                            info='Preleach Solids Mass Fraction')
-
+                                            info='Pre-Leach Solids Mass Fraction')
         quantities.append(preleach_solids_massfrac)
+
+        liq_volume = Quantity(name='liquid-volume',
+                              formal_name='vol', unit='m$^3$',
+                              value=0.0,
+                              latex_name=r'$V$',
+                              info='Pre-Leach Liquid Volume')
+        quantities.append(liq_volume)
 
         uo2so434minus_preleach = Species(name='UO2-(SO4)3^4-', formula_name='UO2(SO4)3^4-(aq)',
                                          atoms=['U', '2*O', '3*S', '12*O'],
@@ -613,14 +619,6 @@ class Leaching(Module):
         #---------------------------
         # Evolve the pre-leach state
         #---------------------------
-        mass_flowrate_initial = self.preleach_phase.get_value('mass-flowrate', time)
-
-        wet_ore_mass_flowrate = self.wet_ore_feed_mass_flowrate
-        preleach_feed_mass_flowrate = self.preleach_feed_mass_flowrate
-
-        # Ideal solution
-        mass_flowrate_inflow = wet_ore_mass_flowrate + preleach_feed_mass_flowrate
-
         # Ideal dissolution
         rho_preleach_feed = self.preleach_feed_mass_density
         rho_wet_ore = self.wet_ore_feed_mass_density
@@ -634,21 +632,32 @@ class Leaching(Module):
                        math.exp(-self.time_step/tau_preleach_dissolution) * \
                        (rho_preleach_initial - rho_preleach_ideal)
 
-        # Mass balance
-        if rho_preleach == 0.0:
-            vol_flowrate_initial = 0.0
-        else:
-            vol_flowrate_initial = mass_flowrate_initial/rho_preleach
+        # Ideal flow mixing
+        mass_flowrate_initial = self.preleach_phase.get_value('mass-flowrate', time)
 
-        if vol_flowrate_initial == 0:
-            vol_flowrate_initial = wet_ore_mass_flowrate/rho_wet_ore
-            flow_residence_time = self.preleach_tank_vol/vol_flowrate_initial
-        else:
-            flow_residence_time = self.preleach_tank_vol/vol_flowrate_initial
+        wet_ore_mass_flowrate = self.wet_ore_feed_mass_flowrate
+        preleach_feed_mass_flowrate = self.preleach_feed_mass_flowrate
 
-        mass_flowrate_preleach = mass_flowrate_inflow + \
-                                 math.exp(-self.time_step/flow_residence_time) * \
-                                 (mass_flowrate_initial - mass_flowrate_inflow)
+        mass_flowrate_inflow = wet_ore_mass_flowrate + preleach_feed_mass_flowrate
+        vol_flowrate_inflow = mass_flowrate_inflow/rho_preleach_ideal
+
+        preleach_liq_volume_initial = self.preleach_phase.get_value('liquid-volume', time)
+
+        vol_flowrate_initial = mass_flowrate_initial/rho_preleach
+
+        preleach_liq_volume = preleach_liq_volume_initial + \
+                              (vol_flowrate_inflow-vol_flowrate_initial) * self.time_step
+
+        # Place-holder for mass balance
+        if preleach_liq_volume >= 0.9 * self.preleach_tank_vol:
+
+            flow_residence_time = self.preleach_tank_vol/vol_flowrate_inflow
+
+            mass_flowrate_preleach = mass_flowrate_inflow + \
+                                     math.exp(-self.time_step/flow_residence_time) * \
+                                     (mass_flowrate_initial - mass_flowrate_inflow)
+        else:
+            mass_flowrate_preleach = 0.0
 
         tmp_preleach = self.preleach_phase.get_row(time)
 
@@ -673,10 +682,10 @@ class Leaching(Module):
         tau_acidleach_dissolution = self.five_tau_acidleach_dissolution/5
 
         rho_acidleach = rho_acidleach_ideal + \
-                       math.exp(-self.time_step/tau_acidleach_dissolution) * \
-                       (rho_acidleach_initial - rho_acidleach_ideal)
+                        math.exp(-self.time_step/tau_acidleach_dissolution) * \
+                        (rho_acidleach_initial - rho_acidleach_ideal)
 
-        # Mass balance
+        # Place-holder for mass balance
         if rho_acidleach == 0.0:
             vol_flowrate_initial = 0.0
         else:
@@ -700,6 +709,7 @@ class Leaching(Module):
         self.preleach_phase.add_row(time, tmp_preleach)
         self.preleach_phase.set_value('mass-flowrate', mass_flowrate_preleach, time)
         self.preleach_phase.set_value('mass-density', rho_preleach, time)
+        self.preleach_phase.set_value('liquid-volume', preleach_liq_volume, time)
 
         self.acidleach_phase.add_row(time, tmp_acidleach)
         self.acidleach_phase.set_value('mass-flowrate', mass_flowrate_acidleach, time)

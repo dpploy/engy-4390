@@ -58,24 +58,31 @@ def main():
 
         (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1/unit.hour, x_label='Time [m]',
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-preleach-mass-flowrate.png', dpi=300)
 
         (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass-density')
 
-        quant.plot(x_scaling=1/unit.hour, x_label='Time [m]',
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-preleach-mass-density.png', dpi=300)
 
         (quant, time_unit) = leaching.acidleach_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1/unit.hour, x_label='Time [m]',
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-acidleach-mass-flowrate.png', dpi=300)
+
+        (quant, time_unit) = leaching.preleach_phase.get_quantity_history('liquid-volume')
+
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('leaching-acidleach-liq-volume.png', dpi=300)
 
         (quant, time_unit) = leaching.acidleach_phase.get_quantity_history('mass-density')
 
