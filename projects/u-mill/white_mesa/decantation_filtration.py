@@ -11,7 +11,7 @@
              |   DECANTATION   |
  STD         |                 |
     <--------|  + Single Tank  |<-------- Wash water (internal)
- underflow   |                 |<-------- Pre-Leach Feed
+ underflow   |                 |<-------- Pre-Leach Feed (from Leaching Module pre-leach product)
              |                 |
  CCD         |                 |<-------- Acid-Leach Feed
     <--------|  + CC Bank Tank |<-------- Wash water (internal)
@@ -32,11 +32,11 @@
  NB. Filtrate goes to solvent extraction
 
 
-   + Decantation Steady-State Operation:
+   + Decantation Steady-State Operation Typical Data:
      1) Single-Tank Decantation  (STD)
        - volume of thickener:                3402.33 m^3
        - preleach feed mass flowrate:        4540 kg/hr
-       - wash water volumetric flowrate:     118735 gallons/min or 99(feed flow rate)
+       - wash water volumetric flowrate:     118735 gallons/min or 99 x feed flow rate
        - overflow volumetric flowrate:       38 gallons/min
        - overflow mass fraction of solids:   100 ppm
        - feed mass fraction of solids:       10000 ppm
@@ -134,7 +134,7 @@ class DecantationFiltration(Module):
             self.single_tank_decantation_preleach_feed_mass_density = 0 * unit.kg/unit.liter
             self.single_tank_decantation_preleach_feed_solids_massfrac = 0 * unit.ppm
         else:
-            self.single_tank_decantation_preleach_feed_mass_flowrate = 4540 * unit.kg/unit.minute
+            self.single_tank_decantation_preleach_feed_mass_flowrate = 4540 * unit.kg/unit.hour
             self.single_tank_decantation_preleach_feed_mass_density = 7.8 * unit.kg/unit.liter
             self.single_tank_decantation_preleach_feed_solids_massfrac = 100 * unit.ppm
 
