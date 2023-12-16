@@ -73,23 +73,30 @@ def main():
         # Decantation plots
         decant_filt = plant_net.modules[0]
 
+        (quant, time_unit) = decant_filt.single_tank_decantation_state_phase.get_quantity_history('liquid-volume')
+
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('decant-filt-std-state-liq-volume.png', dpi=300)
+
         (quant, time_unit) = decant_filt.single_tank_decantation_overflow_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1/unit.hour, x_label='Time [m]',
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('decant-filt-std-overflow-mass-flowrate.png', dpi=300)
 
         (quant, time_unit) = decant_filt.single_tank_decantation_underflow_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1 / unit.hour, x_label='Time [m]',
+        quant.plot(x_scaling=1 / unit.hour, x_label='Time [h]',
                    y_label=quant.latex_name + ' [' + quant.unit + ']')
         plt.grid()
         plt.savefig('decant-filt-std-underflow-mass-flowrate.png', dpi=300)
 
         (quant, time_unit) = decant_filt.ccd_underflow_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1 / unit.hour, x_label='Time [m]',
+        quant.plot(x_scaling=1 / unit.hour, x_label='Time [h]',
                    y_label=quant.latex_name + ' [' + quant.unit + ']')
         plt.grid()
         plt.savefig('decant-filt-ccd-underflow-mass-flowrate.png', dpi=300)
