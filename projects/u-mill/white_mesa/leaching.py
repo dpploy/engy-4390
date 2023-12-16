@@ -12,12 +12,12 @@
                        |
                        |
                        v
-               |----------------|
-               |                |
- Pre-Leach     |  Pre-leaching  |<-------- Pre-Leach Feed (CCD overflow from Decantation Module)
- Product <-----|                |
+ Pre-Leach     |----------------|
+ Product       |                |
+         <-----|  Pre-leaching  |<-------- Pre-Leach Feed (CCD overflow from Decantation Module)
  (to STD       |                |
-  Decant.)     |                |<-------- Acid-Leach Feed (STD underflow from Decantation Module)
+ Decant.)      |                |
+               |                |<-------- Acid-Leach Feed (STD underflow from Decantation Module)
                |  Acid-leaching |
                |                |<-------- Acids (internal) H2S04, NaCI03, Steam)
                |________________|
@@ -28,7 +28,7 @@
         Acid-leach Product (to CCD Decantation)
 
 
-   + Pre-Leaching
+   + Pre-Leaching Steady-State Typical Data:
 
      what oxidation process?
 
