@@ -117,15 +117,14 @@ class DecantationFiltration(Module):
 
         # Configuration parameters
         self.std_tank_volume = 3402.33 * unit.meter**3 # STD
-        self.ccd_tank_volume = 7*339.29 * unit.meter**3 # CCD
-
         self.std_wash_water_vol_flowrate = 1067 * unit.gallon/unit.minute
-        self.ccd_wash_water_vol_flowrate = 1067 * unit.gallon/unit.minute
-
         self.wash_water_preleach_feed_ratio = 99.0
         self.std_underflow_overflow_mass_flowrate_ratio = 99.0
-        self.ccd_underflow_overflow_mass_flowrate_ratio = 99.0
         self.wash_water_acidleach_feed_ratio = 1.69
+
+        self.ccd_tank_volume = 7*339.29 * unit.meter**3 # CCD
+        self.ccd_wash_water_vol_flowrate = 1067 * unit.gallon/unit.minute
+        self.ccd_underflow_overflow_mass_flowrate_ratio = 99.0
 
         # Initialization
         self.wash_water_mass_density = 1.0 * unit.kg/unit.meter**3
@@ -690,10 +689,11 @@ class DecantationFiltration(Module):
         rho_std = rho_preleach_feed + rho_wash_water
         mass_flowrate_initial = std_underflow_mass_flowrate_initial + std_overlow_mass_flowrate_initial
 
-        # Mass balance
+        # Place holder for mass balance
         vol_flowrate_initial = mass_flowrate_initial/rho_std
 
         flow_residence_time = self.std_tank_volume/vol_flowrate_initial
+        print(flow_residence_time)
 
         mass_flowrate = mass_flowrate_inflow + \
                         math.exp(-self.time_step/flow_residence_time) * \
@@ -746,6 +746,7 @@ class DecantationFiltration(Module):
 
         rho_std = rho_acidleach_feed + rho_wash_water
 
+        # Place holder for mass balance
         vol_flowrate_initial = mass_flowrate_initial / rho_std
 
         flow_residence_time = self.ccd_tank_volume / vol_flowrate_initial

@@ -58,21 +58,28 @@ def main():
 
         (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1/unit.hour, x_label='Time [m]',
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-preleach-mass-flowrate.png', dpi=300)
 
         (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass-density')
 
-        quant.plot(x_scaling=1/unit.hour, x_label='Time [m]',
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-preleach-mass-density.png', dpi=300)
 
+        (quant, time_unit) = leaching.preleach_phase.get_quantity_history('liquid-volume')
+
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('leaching-preleach-liq-volume.png', dpi=300)
+
         (quant, time_unit) = leaching.acidleach_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1/unit.hour, x_label='Time [m]',
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-acidleach-mass-flowrate.png', dpi=300)
@@ -83,21 +90,14 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-acidleach-mass-density.png', dpi=300)
+
+        (quant, time_unit) = leaching.acidleach_phase.get_quantity_history('liquid-volume')
+
+        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('leaching-acidleach-liq-volume.png', dpi=300)
         '''
-
-        (quant, time_unit) = leaching.secondary_inflow_phase.get_quantity_history('temp')
-
-        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
-                   y_label=quant.latex_name+' [C]')
-        plt.grid()
-        plt.savefig('leaching-secondary-inflow-temp.png', dpi=300)
-
-        (quant, time_unit) = leaching.secondary_outflow_phase.get_quantity_history('temp')
-
-        quant.plot(x_scaling=1/unit.minute, y_shift=273.15, x_label='Time [m]',
-                   y_label=quant.latex_name+' [C]')
-        plt.grid()
-        plt.savefig('leaching-secondary-outflow-temp.png', dpi=300)
 
         (quant, time_unit) = leaching.secondary_inflow_phase.get_quantity_history('flowrate')
 
