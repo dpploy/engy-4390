@@ -653,7 +653,7 @@ class Leaching(Module):
         vol_flowrate_initial = mass_flowrate_initial/rho_preleach
 
         preleach_liq_volume = preleach_liq_volume_initial + \
-                              (vol_flowrate_inflow-vol_flowrate_initial) * self.time_step
+                              (vol_flowrate_inflow - vol_flowrate_initial) * self.time_step
 
         # Place-holder for mass balance
         if preleach_liq_volume >= 0.9 * self.preleach_tank_vol:
