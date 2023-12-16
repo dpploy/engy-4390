@@ -693,7 +693,6 @@ class DecantationFiltration(Module):
         vol_flowrate_initial = mass_flowrate_initial/rho_std
 
         flow_residence_time = self.std_tank_volume/vol_flowrate_initial
-        print(flow_residence_time)
 
         mass_flowrate = mass_flowrate_inflow + \
                         math.exp(-self.time_step/flow_residence_time) * \
