@@ -13,7 +13,7 @@
     <--------|  + Single Tank  |<-------- Wash water (internal)
  underflow   |                 |<-------- Pre-Leach Feed (from Leaching Module pre-leach product)
              |                 |
- CCD         |                 |<-------- Acid-Leach Feed
+ CCD         |                 |<-------- Acid-Leach Feed (from Leaching Module acid-leach product)
     <--------|  + CC Bank Tank |<-------- Wash water (internal)
  overflow    |                 |<-------- Raffinate Feed (from solvent extraction)
              |-----------------|
@@ -35,7 +35,7 @@
    + Decantation Steady-State Operation Typical Data:
      1) Single-Tank Decantation  (STD)
        - volume of thickener:                3402.33 m^3
-       - preleach feed mass flowrate:        4540 kg/hr
+       - preleach feed mass flowrate:        4540 kg/hr  kg/min??????? (vfda)
        - wash water volumetric flowrate:     118735 gallons/min or 99 x feed flow rate
        - overflow volumetric flowrate:       38 gallons/min
        - overflow mass fraction of solids:   100 ppm
@@ -46,9 +46,9 @@
 
      2) Counter-Current Decantation (CCD)
        - # of thickeners:                    7
-       - volume per thickener:               339.29 m^3
+       - volume per thickener:               339.29 m^3  (12 m diameter, 3 m height)
        - acid leach feed mass flowrate:
-       - wash water volumetric flowrate:     gallons/min or 1.69(feed flow rate)
+       - wash water volumetric flowrate:     gallons/min or 1.69 x feed flow rate
        - feed mass fraction of solids:       10000 ppm
        - wash water mass fraction of solids: 500 ppm
        - overflow mass fraction of solids:   100 ppm
@@ -134,7 +134,7 @@ class DecantationFiltration(Module):
             self.single_tank_decantation_preleach_feed_mass_density = 0 * unit.kg/unit.liter
             self.single_tank_decantation_preleach_feed_solids_massfrac = 0 * unit.ppm
         else:
-            self.single_tank_decantation_preleach_feed_mass_flowrate = 4540 * unit.kg/unit.hour
+            self.single_tank_decantation_preleach_feed_mass_flowrate = 4540 * unit.kg/unit.minute
             self.single_tank_decantation_preleach_feed_mass_density = 7.8 * unit.kg/unit.liter
             self.single_tank_decantation_preleach_feed_solids_massfrac = 100 * unit.ppm
 
@@ -518,7 +518,7 @@ class DecantationFiltration(Module):
             if self.show_time[0] and \
                (print_time <= time < print_time+print_time_step):
 
-                msg = self.name+'::run():time[m]='+ str(round(time/unit.minute, 1))
+                msg = self.name+'::run():time[d]='+ str(round(time/unit.day, 1))
                 self.log.info(msg)
 
                 self.__logit = True
