@@ -19,12 +19,12 @@ def main():
     # Debugging
     make_run   = True
     make_plots = True
-    attach_leaching = False
+    attach_leaching = True
 
     # Preamble
-    end_time = 7.0*unit.hour
-    time_step = 1.0*unit.minute
-    show_time = (True, 5*unit.minute)
+    end_time = 3.0*unit.day
+    time_step = 5.0*unit.minute
+    show_time = (True, unit.hour)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -75,28 +75,28 @@ def main():
 
         (quant, time_unit) = decant_filt.single_tank_decantation_state_phase.get_quantity_history('liquid-volume')
 
-        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
+        quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('decant-filt-std-state-liq-volume.png', dpi=300)
 
         (quant, time_unit) = decant_filt.single_tank_decantation_overflow_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
+        quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('decant-filt-std-overflow-mass-flowrate.png', dpi=300)
 
         (quant, time_unit) = decant_filt.single_tank_decantation_underflow_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1 / unit.hour, x_label='Time [h]',
+        quant.plot(x_scaling=1 / unit.day, x_label='Time [d]',
                    y_label=quant.latex_name + ' [' + quant.unit + ']')
         plt.grid()
         plt.savefig('decant-filt-std-underflow-mass-flowrate.png', dpi=300)
 
         (quant, time_unit) = decant_filt.ccd_underflow_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1 / unit.hour, x_label='Time [h]',
+        quant.plot(x_scaling=1 / unit.day, x_label='Time [d]',
                    y_label=quant.latex_name + ' [' + quant.unit + ']')
         plt.grid()
         plt.savefig('decant-filt-ccd-underflow-mass-flowrate.png', dpi=300)
@@ -107,28 +107,28 @@ def main():
 
             (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass-flowrate')
 
-            quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
+            quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                        y_label=quant.latex_name+' ['+quant.unit+']')
             plt.grid()
             plt.savefig('leaching-preleach-mass-flowrate.png', dpi=300)
 
             (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass-density')
 
-            quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
+            quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                        y_label=quant.latex_name+' ['+quant.unit+']')
             plt.grid()
             plt.savefig('leaching-preleach-mass-density.png', dpi=300)
 
             (quant, time_unit) = leaching.acidleach_phase.get_quantity_history('mass-flowrate')
 
-            quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
+            quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                        y_label=quant.latex_name+' ['+quant.unit+']')
             plt.grid()
             plt.savefig('leaching-acidleach-mass-flowrate.png', dpi=300)
 
             (quant, time_unit) = leaching.acidleach_phase.get_quantity_history('mass-density')
 
-            quant.plot(x_scaling=1/unit.hour, x_label='Time [h]',
+            quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                        y_label=quant.latex_name+' ['+quant.unit+']')
             plt.grid()
             plt.savefig('leaching-acidleach-mass-density.png', dpi=300)

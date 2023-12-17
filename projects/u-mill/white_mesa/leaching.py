@@ -57,6 +57,11 @@
 
    + Acid-Leaching
 
+     Hot strong acid contact. 7 tanks, each tank 7.6 m in diameter, 8.2 m in height, with
+     agitator axial flow propeller. Total residence time: 24 h. First two tanks at 75 C,
+     free acid 70 g/L. Acid leaching produces uranium recovery close to 95%.
+
+
       * Chemical Reactions
           -Uranium
               Typical oxidation of uranium from solid ore
@@ -116,7 +121,7 @@ from cortix import Species
 import unit
 
 class Leaching(Module):
-    """Heap Leach.
+    """2-Phase wet ore leaching on agitated tanks.
 
     Notes
     -----
@@ -157,26 +162,38 @@ class Leaching(Module):
         self.wet_ore_feed_solid_mass_fraction = 55/100
         self.wet_ore_solids_massfrac = 100 * unit.ppm
 
-        self.preleach_tank_vol = 45 * unit.meter**3
+        self.preleach_tank_vol = 6.7 * unit.meter * 6.7 * unit.meter**2
         self.five_tau_preleach_dissolution = 4.5 * unit.hour # 5 * relaxation time
 
-        self.acidleach_tank_vol = 70 * unit.meter**3
+        self.acidleach_tank_vol = 7 * math.pi*(7.6/2)**2 * unit.meter**2 * 8.2 * unit.meter
+        print(self.acidleach_tank_vol)
+
         self.five_tau_acidleach_dissolution = 2.5 * unit.hour # 5 * relaxation time
 
         # Initialization
 
         # Pre-leaching
-        self.preleach_feed_mass_flowrate = 3500 * unit.kg / unit.minute
-        self.preleach_feed_mass_density = 1.6 * unit.kg / unit.liter
-        #self.preleach_feed_solids_massfrac = 100 * unit.ppm
+        if self.get_port('pre-leach-feed').connected_port:
+            self.preleach_feed_mass_flowrate = 0 * unit.kg / unit.minute
+            self.preleach_feed_mass_density = 0 * unit.kg / unit.liter
+            #self.preleach_feed_solids_massfrac = 0 * unit.ppm
+        else:
+            self.preleach_feed_mass_flowrate = 3500 * unit.kg / unit.minute
+            self.preleach_feed_mass_density = 1.6 * unit.kg / unit.liter
+            #self.preleach_feed_solids_massfrac = 100 * unit.ppm
 
         # Acid-leaching
         self.acids_mass_flowrate = 400 * unit.kg / unit.minute
         self.acids_mass_density = 1.0 * unit.kg / unit.liter
 
-        self.acidleach_feed_mass_flowrate = 3500 * unit.kg / unit.minute
-        self.acidleach_feed_mass_density = 1.6 * unit.kg / unit.liter
-        #self.acidleach_feed_solids_massfrac = 100 * unit.ppm
+        if self.get_port('acid-leach-feed').connected_port:
+            self.acidleach_feed_mass_flowrate = 0 * unit.kg / unit.minute
+            self.acidleach_feed_mass_density = 0 * unit.kg / unit.liter
+            #self.acidleach_feed_solids_massfrac = 100 * unit.ppm
+        else:
+            self.acidleach_feed_mass_flowrate = 3500 * unit.kg / unit.minute
+            self.acidleach_feed_mass_density = 1.6 * unit.kg / unit.liter
+            #self.acidleach_feed_solids_massfrac = 100 * unit.ppm
 
         # ***************************************************************************************
         # P R E - L E A C H I N G
@@ -494,7 +511,7 @@ class Leaching(Module):
             if self.show_time[0] and \
                (print_time <= time < print_time+print_time_step):
 
-                msg = self.name+'::run():time[m]='+ str(round(time/unit.minute, 1))
+                msg = self.name+'::run():time[d]='+ str(round(time/unit.day, 1))
                 self.log.info(msg)
 
                 self.__logit = True
