@@ -20,8 +20,8 @@ def main():
     make_plots = True
 
     # Preamble
-    end_time = 3*unit.day
-    time_step = 5.0*unit.minute
+    end_time = 4*unit.day
+    time_step = 10.0*unit.minute
     show_time = (True, unit.hour)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
@@ -58,8 +58,9 @@ def main():
 
         (quant, time_unit) = leaching.preleach_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
+        quant.plot(x_scaling=1/unit.day, y_scaling=unit.minute, x_label='Time [d]',
+                   #y_label=quant.latex_name+' ['+quant.unit+']')
+                   y_label=quant.latex_name+' [kg/min]')
         plt.grid()
         plt.savefig('leaching-preleach-mass-flowrate.png', dpi=300)
 
@@ -97,63 +98,14 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-acidleach-liq-volume.png', dpi=300)
+
         '''
-
-        (quant, time_unit) = leaching.secondary_inflow_phase.get_quantity_history('flowrate')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('leaching-secondary-inflow-flowrate.png', dpi=300)
-
-        (quant, time_unit) = leaching.secondary_outflow_phase.get_quantity_history('flowrate')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('leaching-secondary-outflow-flowrate.png', dpi=300)
-
-        (quant, time_unit) = leaching.state_phase.get_quantity_history('tau_p')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('leaching-primary-tau.png', dpi=300)
-
-        (quant, time_unit) = leaching.state_phase.get_quantity_history('tau_s')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('leaching-secondary-tau.png', dpi=300)
-
-        (quant, time_unit) = leaching.secondary_outflow_phase.get_quantity_history('quality')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('leaching-secondary-quality.png', dpi=300)
-
         (quant, time_unit) = leaching.state_phase.get_quantity_history('heatflux')
 
         quant.plot(x_scaling=1/unit.minute, y_scaling=1/unit.kilo, x_label='Time [m]',
                    y_label=quant.latex_name+' [k'+quant.unit+']')
         plt.grid()
         plt.savefig('leaching-heatflux.png', dpi=300)
-
-        (quant, time_unit) = leaching.state_phase.get_quantity_history('nusselt_p')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('leaching-nusselt_p.png', dpi=300)
-
-        (quant, time_unit) = leaching.state_phase.get_quantity_history('nusselt_s')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('leaching-nusselt_s.png', dpi=300)
         '''
 
 if __name__ == '__main__':
