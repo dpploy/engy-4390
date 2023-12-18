@@ -35,14 +35,18 @@ This module is a model of the Solvent Extraction process in the White Mesa Urani
       0.1M Alamine 336 (TOA)
       Dilutent is Kerosene modified with 5% Isodecanol
       Aqueous/Organic = 3.0
-
+      4 Mixer-Settler Units
+      Settler Unit Area = 1400ft^2
+      Total Setter Area = 5600ft^2
+      
    + Scrubbing
-
+      Utilizes Acidic Water as Wash Stream
    + Stripping
+      Utilizes Acidic Sodium Chloride Solution
 
    Source of info:
-   -https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf (pg. 189 )
-   
+   -https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf (pg. 189)
+   -https://documents.deq.utah.gov/legacy/businesses/e/energy-fuels-resources-usa/docs/2007/05May/VOLUME%201.pdf (pg. 18)
 """
 
 import logging
