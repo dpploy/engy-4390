@@ -31,6 +31,7 @@
    + Pre-Leaching Steady-State Typical Data:
 
      what oxidation process?
+     Retention time: 24 h [2, p 337]
 
      - Carnotite sandstone 0.2% U3O8, 1.5-2.0% V2O5
      - Arizona Strip breccia pipe 0.5-0.9% U3O8
@@ -41,19 +42,19 @@
        compared to many mines but is well within the averages/usuals for most mines.
      - Uranium typically exists in the ores in the form of U3O8.
 
-      *Pre-Leach Ore Feed
-          -55-58% solids
-          -90t/hr ore. 1.5t/min
-          -1.5t/0.55=2.727t total feed. 2727.27 kg/min
-          -1227.27 kg/min of water and 1500 kg of "ore"
-      *Pre-Leach Output
-          -22% solids
-          -pH maintained below 2.0
-      *Process Information
-          -Agitated tank (Energy intensive usually)
-          -To maintain low pH conductivity readings with automatic control often work
-          -Iron Concentration of 7g/L to get extraction of 93%
-          - NEED SOLIDS MASS FRACTION PPM TO LINK WITH DECANT
+     * Pre-Leach Ore Feed
+         - 55-58% solids
+         - 90 t/hr ore. 1.5 t/min
+         - 1.5 t/0.55 = 2.727 t total feed. 2727.27 kg/min
+         - 1227.27 kg/min of water and 1500 kg of "ore"
+     * Pre-Leach Output
+         - 22% solids
+         - pH maintained below 2.0
+     * Process Information
+         - Agitated tank (Energy intensive usually)
+         - To maintain low pH conductivity readings with automatic control often work
+         - Iron Concentration of 7g/L to get extraction of 93%
+         -  NEED SOLIDS MASS FRACTION PPM TO LINK WITH DECANT
 
    + Acid-Leaching
 
@@ -96,15 +97,15 @@
         Lower temp might be better
       - Residual H2SO4: 50 g/L free acid
 
-   Source of info:
-      https://pubs.usgs.gov/sir/2010/5025/pdf/sir2010-5025_availability.pdf
-      https://www-pub.iaea.org/MTCD/publications/PDF/TE_1629_web.pdf
-      - Used to find chemical equations for Uranium+Look at kinetics
-      https://www.sciencedirect.com/science/article/pii/S1738573321005970
-      - Kinetic Equations?
-      https://repository.up.ac.za/bitstream/handle/2263/61336/Sililo_Modelling_2017.pdf?sequence=1
-      - Ore Data
-      https://www.sciencebase.gov/catalog/item/5eb9dff082ce25b5135d5822
+   Source of info: (vfda: this is not good enough! Where to find the data? page numbers? etc..)
+      1. https://pubs.usgs.gov/sir/2010/5025/pdf/sir2010-5025_availability.pdf
+      2. https://www-pub.iaea.org/MTCD/publications/PDF/TE_1629_web.pdf
+         - Used to find chemical equations for Uranium+Look at kinetics
+      3. https://www.sciencedirect.com/science/article/pii/S1738573321005970
+         - Kinetic Equations?
+      4. https://repository.up.ac.za/bitstream/handle/2263/61336/Sililo_Modelling_2017.pdf?sequence=1
+         - Ore Data
+      5. https://www.sciencebase.gov/catalog/item/5eb9dff082ce25b5135d5822
 """
 
 import logging
@@ -162,7 +163,7 @@ class Leaching(Module):
         self.wet_ore_feed_solid_mass_fraction = 55/100
         self.wet_ore_solids_massfrac = 100 * unit.ppm
 
-        self.preleach_tank_vol = 6.7 * unit.meter * 6.7 * unit.meter**2
+        self.preleach_tank_vol = 2 * 6.7 * unit.meter * 6.7 * unit.meter**2
         self.five_tau_preleach_dissolution = 4.5 * unit.hour # 5 * relaxation time
 
         self.acidleach_tank_vol = 7 * math.pi*(7.6/2)**2 * unit.meter**2 * 8.2 * unit.meter
@@ -178,7 +179,7 @@ class Leaching(Module):
             self.preleach_feed_mass_density = 0 * unit.kg / unit.liter
             #self.preleach_feed_solids_massfrac = 0 * unit.ppm
         else:
-            self.preleach_feed_mass_flowrate = 3500 * unit.kg / unit.minute
+            self.preleach_feed_mass_flowrate = 8500 * unit.kg / unit.minute
             self.preleach_feed_mass_density = 1.6 * unit.kg / unit.liter
             #self.preleach_feed_solids_massfrac = 100 * unit.ppm
 
@@ -673,7 +674,7 @@ class Leaching(Module):
                               (vol_flowrate_inflow - vol_flowrate_initial) * self.time_step
 
         # Place-holder for mass balance
-        if preleach_liq_volume >= 0.9 * self.preleach_tank_vol:
+        if preleach_liq_volume >= 0.5 * self.preleach_tank_vol:
 
             flow_residence_time = self.preleach_tank_vol/vol_flowrate_inflow
 
@@ -718,7 +719,7 @@ class Leaching(Module):
                                (vol_flowrate_inflow-vol_flowrate_initial) * self.time_step
 
         # Place-holder for mass balance
-        if acidleach_liq_volume >= 0.9 * self.acidleach_tank_vol:
+        if acidleach_liq_volume >= 0.5 * self.acidleach_tank_vol:
 
             flow_residence_time = self.acidleach_tank_vol/vol_flowrate_inflow
 
