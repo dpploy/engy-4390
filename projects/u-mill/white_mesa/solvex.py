@@ -2,51 +2,62 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
-"""
-Cortix Module
-This module is a model of the Solvent Extraction process in the White Mesa Uranium Milling Plant
+"""Cortix Module
+   This module is a model of the Solvent Extraction process in the White Mesa Uranium Milling Plant
 
-   Stripping Feed
-(from Precipitation)
-            |             |
-            |             |  Extraction Feed (from Decantation-Filtration)
-            |             |
-            V             v
-           |----------------|
-           |    Solvent     |--------> Raffinate Stream (to Decantation-Filtration)
-           |   Extraction   |
-           |                |
-           |   Scrubbing    |
-           |                |<-------- Organic Feed (internal)
-           |   Stripping    |<-------- Scrub Stream (internal)
-           |________________|
-                   |
-                   |
-                   |
-                   v
-                 Product (Precipitation feed)
+
+                              |
+                              |  Extraction Feed (from Decantation-Filtration filtrate)
+                              |
+                              v
+                      |----------------|
+                      |                |
+ Organic Feed ------->|                |------> Organic Product (to Scrubbing internal)
+ (internal source)    |    Solvent     |
+                      |   Extraction   |
+ Raffinate <----------|                |<------ Scrub Raffinate (from Scrubbing internal)
+ Stream (to CCD Bank) |                |
+                      |----------------|
+  Organic Product <---|                |<------ Organic Feed (Organic Product from Solv. Extr. internal)
+  (to Strip internal) |                |
+                      |   Scrubbing    |
+   Scrub Feed ------->|                |-------> Scrub Raffinate (to Solvent Extraction internal)
+   (internal source)  |                |
+                      |----------------|
+  Organic Feed ------>|                |-------> Organic Regeneration (to Solvent Extraction not done)
+(from Scrub internal) |   Stripping    |
+                      |                |<------ Stripping Feed (internal source)
+                      |________________|<------ Stripping Feed (from Precipitation not implemented)
+                              |
+                              |
+                              |
+                              v
+                       Stripping Product (Precipitation feed)
 
  NB. Extraction Feed (from decantation-filtration) goes to solvent extraction
- NB. Stripping Feed (from precipitation) goes to Stripping
- NB. Product Stream goes to Precipitation
-
 
    + Solvent Extraction
-      0.1M Alamine 336 (TOA)
-      Dilutent is Kerosene modified with 5% Isodecanol
-      Aqueous/Organic = 3.0
-      4 Mixer-Settler Units
-      Settler Unit Area = 1400ft^2
-      Total Setter Area = 5600ft^2
-      
+
+      - 4 Mixer-settlers units. Area per unit 1400 ft^2, height ?
+      - Flowrates:
+      - Aqueous/Organic = 3.0
+      - 0.1M Alamine 336 (tri-octylamine TOA)
+      - Dilutent is kerosene modified with 5% isodecanol
+      - Solvent mixture: 2.5% TOA, 2.5% isodecanol, and 95% kerosene
+
    + Scrubbing
-      Utilizes Acidic Water as Wash Stream
+      - 1 Mixer-settlers units. Area per unit 1400 ft^2, height ?
+
    + Stripping
-      Utilizes Acidic Sodium Chloride Solution
+      - 4 Mixer-settlers units. Area per unit 1400 ft^2, height ?
+
+   + Solvent Regeneration
+      - 1 Mixer-settlers units. Area per unit 1400 ft^2, height ?
 
    Source of info:
-   -https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf (pg. 189)
+   -https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf (pg. 189, 337)
    -https://documents.deq.utah.gov/legacy/businesses/e/energy-fuels-resources-usa/docs/2007/05May/VOLUME%201.pdf (pg. 18)
+
 """
 
 import logging
@@ -100,50 +111,25 @@ class Solvex(Module):
         # Domain attributes
 
         # Configuration parameters
-        '''
-        self.discard_tau_recording_before = 2*unit.minute
-        self.heat_transfer_area = 1665.57*unit.meter**2
 
-        self.helicoil_outer_radius = 16/2*unit.milli*unit.meter
-        self.helicoil_tube_wall = 0.9*unit.milli*unit.meter
-        self.helicoil_inner_radius = self.helicoil_outer_radius - self.helicoil_tube_wall
-        self.helicoil_length = 22.3*unit.meter
-        self.n_helicoil_tubes = 1380
+        # Solvex
+        self.solvex_tank_volume = 4 * 1400 * unit.ft**2 * 12 * unit.ft
 
-        self.wall_temp_delta_primary = 1.5*unit.K
-        self.wall_temp_delta_secondary = 1.5*unit.K
+        # Scrubbing
+        self.scrub_tank_volume = 1 * 1400 * unit.ft**2 * 12 * unit.ft
 
-        self.iconel690_k = 12.1*unit.watt/unit.meter/unit.kelvin
-
-        self.helix_to_cylinder = 1./.928
-
-        self.secondary_volume = math.pi * self.helicoil_inner_radius**2 * \
-                                self.helicoil_length * self.n_helicoil_tubes *\
-                                self.helix_to_cylinder
-
-        self.primary_volume = 0.5 * self.secondary_volume
-
-        # Ratio of the tube bundle pithc transverse to flow to parallel to flow
-        self.tube_bundle_pitch_ratio = 1.5  # st/sl
-        '''
+        # Stripping
+        self.strip_tank_volume = 4 * 1400 * unit.ft**2 * 12 * unit.ft
 
         # Initialization
-        # Placeholder Values to Test Code
-        
-        self.extraction_feed_mass_flowrate = 1.0 * unit.liter / unit.minute
-        self.extraction_feed_mass_density = 1.0 * unit.kg / unit.liter
 
-        self.extraction_raffinate_mass_flowrate = 1.0 * unit.liter / unit.minute
-        self.extraction_raffinate_mass_density = 1.0 * unit.kg / unit.liter
-
-        self.extraction_product_mass_flowrate = 1.0 * unit.liter / unit.minute
-        self.extraction_product_mass_density = 1.0 * unit.kg / unit.liter
-
-        self.stripping_feed_mass_flowrate = 1.0 * unit.liter / unit.minute
-        self.stripping_feed_mass_density = 1.0 * unit.kg / unit.liter
-
-        self.stripping_product_mass_flowrate = 1.0 * unit.liter / unit.minute
-        self.stripping_product_mass_density = 1.0 * unit.kg / unit.liter
+        # Solvent Extraction
+        if self.get_port('extraction-feed').connected_port:
+            self.solvex_feed_mass_flowrate = 0.0 * unit.liter / unit.minute
+            self.solvex_feed_mass_density = 0.0 * unit.kg / unit.liter
+        else:
+            self.solvex_feed_mass_flowrate = 1.0 * unit.kg / unit.minute
+            self.solvex_feed_mass_density = 1.6 * unit.kg / unit.liter
 
         # Derived quantities
         '''
@@ -160,6 +146,7 @@ class Solvex(Module):
         # E X T R A C T I O N
         #***************************************************************************************
 
+        '''
         # Extraction Feed Phase History (internal state/external)
         quantities = list()
         species = list()
@@ -202,7 +189,7 @@ class Solvex(Module):
                 atoms=['H'],
                 info='H$^+$')
         species.append(hPlus_aqu)
-        
+
         toaso4 = Species(name='C24H51N-SO4',formula_name='C24H51NSO4(org)',
                          atoms=['24*C','51*H','N','S','4*O'],
                          info='C24H51N-SO4')
@@ -213,9 +200,10 @@ class Solvex(Module):
                              atoms=['24*C','51*H','N','U','3*S','14*O'],
                              info='C24H51N-UO2-(SO4)3')
         species.append(toauo2so43)
-        
+
         self.extraction_feed_phase = Phase(time_stamp=self.initial_time,
                                            time_unit='s', quantities=quantities, species=species)
+        '''
 
         # Extraction Raffinate Phase History (internal state/external)
         quantities = list()
@@ -223,14 +211,14 @@ class Solvex(Module):
 
         extraction_raffinate_mass_flowrate = Quantity(name='mass_flowrate',
                                           formal_name='mdot', unit='kg/s',
-                                          value=self.extraction_raffinate_mass_flowrate,
+                                          value=0.0,
                                           latex_name=r'$\dot{m}_2$',
                                           info='Extraction Raffinate Mass Flowrate')
         quantities.append(extraction_raffinate_mass_flowrate)
 
         extraction_raffinate_mass_density = Quantity(name='mass_density',
                                          formal_name='rho', unit='kg/m^3',
-                                         value=self.extraction_raffinate_mass_density,
+                                         value=0.0,
                                          latex_name=r'$\rho$',
                                          info='Extraction Raffinate Mass Density')
         quantities.append(extraction_raffinate_mass_density)
@@ -260,8 +248,8 @@ class Solvex(Module):
                 info='H$^+$')
         species.append(hPlus_aqu)
 
-        self.extraction_raffinate_phase = Phase(time_stamp=self.initial_time,
-                                                time_unit='s', quantities=quantities, species=species)
+        self.solvex_raffinate_phase = Phase(time_stamp=self.initial_time,
+                                            time_unit='s', quantities=quantities, species=species)
 
         # Extraction Product Phase History (internal state/external)
         quantities = list()
@@ -269,14 +257,14 @@ class Solvex(Module):
 
         extraction_product_mass_flowrate = Quantity(name='mass_flowrate',
                                           formal_name='mdot', unit='kg/s',
-                                          value=self.extraction_product_mass_flowrate,
+                                          value=0.0,
                                           latex_name=r'$\dot{m}_3$',
                                           info='Extraction Product Mass Flowrate')
         quantities.append(extraction_product_mass_flowrate)
 
         extraction_product_mass_density = Quantity(name='mass_density',
                                          formal_name='rho', unit='kg/m^3',
-                                         value=self.extraction_product_mass_density,
+                                         value=0.0,
                                          latex_name=r'$\rho$',
                                          info='Extraction Product Mass Density')
         quantities.append(extraction_product_mass_density)
@@ -305,7 +293,7 @@ class Solvex(Module):
                 atoms=['H'],
                 info='H$^+$')
         species.append(hPlus_aqu)
-        
+
         toaso4 = Species(name='C24H51N-SO4',formula_name='C24H51NSO4(org)',
                          atoms=['24*C','51*H','N','S','4*O'],
                          info='C24H51N-SO4')
@@ -317,8 +305,57 @@ class Solvex(Module):
                              info='C24H51N-UO2-(SO4)3')
         species.append(toauo2so43)
 
-        self.extraction_product_phase = Phase(time_stamp=self.initial_time,
-                                              time_unit='s', quantities=quantities, species=species)
+        self.solvex_product_phase = Phase(time_stamp=self.initial_time,
+                                          time_unit='s', quantities=quantities, species=species)
+        #***************************************************************************************
+        # S C R U B
+        #***************************************************************************************
+
+        # Scrub Raffinate Phase History (internal state/external)
+        quantities = list()
+        species = list()
+
+        extraction_raffinate_mass_flowrate = Quantity(name='mass_flowrate',
+                                          formal_name='mdot', unit='kg/s',
+                                          value=0.0,
+                                          latex_name=r'$\dot{m}_2$',
+                                          info='Scrubbing Raffinate Mass Flowrate')
+        quantities.append(extraction_raffinate_mass_flowrate)
+
+        extraction_raffinate_mass_density = Quantity(name='mass_density',
+                                         formal_name='rho', unit='kg/m^3',
+                                         value=0.0,
+                                         latex_name=r'$\rho$',
+                                         info='Scrubbing Raffinate Mass Density')
+        quantities.append(extraction_raffinate_mass_density)
+
+        uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
+                           atoms=['U','2*O','3*S','12*O'],
+                           info='UO2-(SO4)3^4-')
+        species.append(uo2so434minus_feed)
+
+        h2o_feed = Species(name='H2O',formula_name='H2O(a)',
+                           atoms=['2*H','O'],
+                           info='H2O')
+        species.append(h2o_feed)
+
+        u6_aqu = Species( name='U-VI',formula_name='UO2^2+(a)',
+                atoms=['U','2*O'],
+                info='UO2$^{2+}$')
+        species.append(u6_aqu)
+
+        h2so4_feed = Species(name='H2SO4',formula_name='H2SO4(a)',
+                           atoms=['2*H','S','4*O'],
+                           info='H2SO4')
+        species.append(h2so4_feed)
+
+        hPlus_aqu = Species( name='H+',formula_name='H^+(a)',
+                atoms=['H'],
+                info='H$^+$')
+        species.append(hPlus_aqu)
+
+        self.scrub_raffinate_phase = Phase(time_stamp=self.initial_time,
+                                           time_unit='s', quantities=quantities, species=species)
 
         #***************************************************************************************
         # S T R I P P I N G
@@ -366,12 +403,12 @@ class Solvex(Module):
                 atoms=['H'],
                 info='H$^+$')
         species.append(hPlus_aqu)
-        
+
         toaso4 = Species(name='C24H51N-SO4',formula_name='C24H51NSO4(org)',
                          atoms=['24*C','51*H','N','S','4*O'],
                          info='C24H51N-SO4')
         species.append(toaso4)
-        
+
         toauo2so43 = Species(name='C24H51N-UO2-(SO4)3',
                              formula_name='C24H51NUO2(SO4)3(org)',
                              atoms=['24*C','51*H','N','U','3*S','14*O'],
@@ -381,11 +418,11 @@ class Solvex(Module):
         nh4oh = Species(name='NH4-OH',formula_name='NH4OH',
                         atoms=['N','5*H','O'],info='NH4-OH')
         species.append(nh4oh)
-        
+
         toa = Species(name='C24H51N',formula_name='C24H51N',
                        atoms=['24*C','51*H','N'],info='C24H51N')
         species.append(toa)
-        
+
         self.stripping_feed_phase = Phase(time_stamp=self.initial_time,
                                           time_unit='s', quantities=quantities, species=species)
 
@@ -439,52 +476,26 @@ class Solvex(Module):
         # S T A T E  P H A S E
         #***************************************************************************************
 
-        '''
+        # Solvent Extraction State
         quantities = list()
+        species = list()
 
-        tau_p = Quantity(name='tau_p',
-                        formal_name='Tau_p', unit='s',
+        liq_volume = Quantity(name='aqueous-volume',
+                        formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$\tau_{p}$',
-                        info='Steamer Primary Residence Time')
+                        latex_name=r'$V_\text{std}$',
+                        info='Solvent Extraction Aqueous Volume')
+        quantities.append(liq_volume)
 
-        quantities.append(tau_p)
-
-        tau_s = Quantity(name='tau_s',
-                        formal_name='Tau_s', unit='s',
+        liq_volume = Quantity(name='organic-volume',
+                        formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$\tau_{s}$',
-                        info='Steamer Secondary Residence Time')
+                        latex_name=r'$V_\text{std}$',
+                        info='Solvent Extraction Organic Volume')
+        quantities.append(liq_volume)
 
-        quantities.append(tau_s)
-
-        heatflux = Quantity(name='heatflux',
-                        formal_name="q''", unit='W/m$^2$',
-                        value=0.0,
-                        latex_name=r"$q''$",
-                        info='Steamer Heat Flux')
-
-        quantities.append(heatflux)
-
-        nusselt_p = Quantity(name='nusselt_p',
-                        formal_name='Nu_p', unit='',
-                        value=0.0,
-                        latex_name=r'$Nu_p$',
-                        info='Steamer Primary Nusselt Number')
-
-        quantities.append(nusselt_p)
-
-        nusselt_s = Quantity(name='nusselt_s',
-                        formal_name='Nu_s', unit='',
-                        value=0.0,
-                        latex_name=r'$Nu_s$',
-                        info='Steamer Secondary Nusselt Number')
-
-        quantities.append(nusselt_s)
-
-        self.state_phase = Phase(time_stamp=self.initial_time,
-                                 time_unit='s', quantities=quantities)
-        '''
+        self.solvex_state_phase = Phase(time_stamp=self.initial_time, time_unit='s',
+                                        quantities=quantities, species=species)
 
     def run(self, *args):
 
@@ -505,7 +516,7 @@ class Solvex(Module):
             if self.show_time[0] and \
                (print_time <= time < print_time+print_time_step):
 
-                msg = self.name+'::run():time[m]='+ str(round(time/unit.minute, 1))
+                msg = self.name+'::run():time[d]='+ str(round(time/unit.day, 1))
                 self.log.info(msg)
 
                 self.__logit = True
@@ -637,13 +648,40 @@ class Solvex(Module):
         steamer = self.state_phase.get_row(time)
         '''
 
+        #------------------------------------
+        # Evolve the Solvent Extraction State
+        #------------------------------------
+        # Ideal flow mixing
+
+        # Aqueous
+        solvex_raffinate_mass_flowrate_initial = self.solvex_raffinate_phase.get_value('mass-flowrate', time)
+        scrub_raffinatet_mass_flowrate_initial = self.scrub_raffinate_phase.get_value('mass-flowrate', time)
+
+        feed_mass_flowrate = self.solvex_feed_mass_flowrate
+        rho_feed = self.solvex_feed_mass_density
+
+        if feed_mass_flowrate == 0.0:
+            feed_vol_flowrate = 0.0
+        else:
+            feed_vol_flowrate = feed_mass_flowrate/rho_feed
+
+        # Ideal solution
+        aqueous_mass_flowrate_inflow = feed_mass_flowrate + scrub_raffinate_mass_flowrate_initial
+
+        aqueous_volume_initial = self.solvex_state_phase.get_value('aqueous-volume', time)
+
+        aqueous_volume = aqueous_volume_initial + \
+                         (vol_flowrate_inflow - vol_flowrate_initial) * self.time_step
+        # Organic
         #Time Step with Constant Value to Test Code
-        tmp = self.extraction_feed_phase.get_row(time)
-        print(tmp)
         mass_flowrate = self.extraction_feed_phase.get_value('mass_flowrate', time)
 
+        #----------------------------
+        # Step All Quantities in Time
+        #----------------------------
+
         time += self.time_step
-        
+
         self.extraction_feed_phase.add_row(time, tmp)
 
         self.extraction_feed_phase.set_value('mass_flowrate', mass_flowrate, time)

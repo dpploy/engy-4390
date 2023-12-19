@@ -9,16 +9,20 @@
              |-----------------|
              |                 |
              |   DECANTATION   |
- STD         |                 |
-    <--------|  + Single Tank  |<-------- Wash water (internal)
- underflow   |                 |<-------- Pre-Leach Feed (from Leaching Module pre-leach product)
-             |                 |
- CCD         |                 |<-------- Acid-Leach Feed (from Leaching Module acid-leach product)
-    <--------|  + CC Bank Tank |<-------- Wash water (internal)
- overflow    |                 |<-------- Raffinate Feed (from solvent extraction)
+STD underflow|                 |
+    <--------|                 |<-------- Wash water (internal source)
+(to Leaching)|                 |<-------- Pre-Leach Feed (from Leaching Module pre-leach product)
+             |  + Single Tank  |
+ STD overflow|                 |
+ <-----------|                 |
+ (to Filtr.) |                 |
+             |.................|
+CCD overflow |                 |<-------- Acid-Leach Feed (from Leaching Module acid-leach product)
+    <--------|  + CC Bank Tank |<-------- Wash water (internal source)
+             |                 |<-------- Raffinate Feed (from Solvent Extraction)
              |-----------------|
              |                 |
-             |   FILTRATION    |<-------- STD Overflow (internal)
+             |   FILTRATION    |<-------- STD Overflow (internal from STD overflow)
              |                 |
              |-----------------|
                   |       |
@@ -29,13 +33,13 @@
 
  NB. STD underflow goes to acid leaching
  NB. CCD overflow goes to Leaching Pre-Leaching
- NB. Filtrate goes to solvent extraction
+ NB. Filtrate goes to Solvent Extraction Feed
 
 
    + Decantation Steady-State Operation Typical Data:
      1) Single-Tank Decantation  (STD)
        - volume of thickener:                3402.33 m^3
-       - pre-leach feed mass flowrate:        4540 kg/hr  kg/min??????? (vfda: this can't be right!)
+       - pre-leach feed mass flowrate:       4540 kg/hr  kg/min??????? (vfda: this can't be right!)
        - wash water volumetric flowrate:     118735 gallons/min or 99 x feed flow rate
        - overflow volumetric flowrate:       38 gallons/min
        - overflow mass fraction of solids:   100 ppm
@@ -116,6 +120,7 @@ class DecantationFiltration(Module):
         # Domain attributes
 
         # Configuration parameters
+
         # STD
         self.std_tank_volume = 3402.33 * unit.meter**3  # vfda: this is supposed to be 38 m in diam.
         self.wash_water_std_feed_ratio = 99.0
@@ -726,7 +731,6 @@ class DecantationFiltration(Module):
         vol_flowrate_inflow = mass_flowrate_inflow/rho_std
 
         mass_flowrate_initial = std_underflow_mass_flowrate_initial + std_overflow_mass_flowrate_initial
-
         # Place holder for mass balance
         vol_flowrate_initial = mass_flowrate_initial/rho_std
 
@@ -874,7 +878,12 @@ class DecantationFiltration(Module):
         tmp_filtrate = self.filtration_filtrate_phase.get_row(time)
         tmp_slurry = self.filtration_slurry_phase.get_row(time)
 
+        #----------------------------
+        # Step All Quantities in Time
+        #----------------------------
+
         time += self.time_step
+
 
         self.std_state_phase.add_row(time, tmp_std_state)
         self.std_state_phase.set_value('liquid-volume', std_liq_volume, time)
