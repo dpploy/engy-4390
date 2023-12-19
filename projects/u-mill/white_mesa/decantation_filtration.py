@@ -884,6 +884,7 @@ class DecantationFiltration(Module):
 
         time += self.time_step
 
+        # STD
         self.std_state_phase.add_row(time, tmp_std_state)
         self.std_state_phase.set_value('liquid-volume', std_liq_volume, time)
 
@@ -893,6 +894,7 @@ class DecantationFiltration(Module):
         self.std_underflow_phase.add_row(time, tmp_std_underflow)
         self.std_underflow_phase.set_value('mass-flowrate', std_underflow_mass_flowrate, time)
 
+        # CCD
         self.ccd_state_phase.add_row(time, tmp_ccd_state)
         self.ccd_state_phase.set_value('liquid-volume', ccd_liq_volume, time)
 
@@ -902,6 +904,7 @@ class DecantationFiltration(Module):
         self.ccd_underflow_phase.add_row(time, tmp_ccd_underflow)
         self.ccd_underflow_phase.set_value('mass-flowrate', ccd_underflow_mass_flowrate, time)
 
+        # Filtration
         self.filtration_filtrate_phase.add_row(time, tmp_filtrate)
         self.filtration_filtrate_phase.set_value('mass-flowrate', m_dot_f, time)
 
