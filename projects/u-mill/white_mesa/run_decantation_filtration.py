@@ -19,10 +19,10 @@ def main():
     # Debugging
     make_run   = True
     make_plots = True
-    attach_leaching = True
+    attach_leaching = False
 
     # Preamble
-    end_time = 15.0*unit.day
+    end_time = 25.0*unit.day
     time_step = 10.0*unit.minute
     show_time = (True, unit.hour)
 
@@ -57,6 +57,7 @@ def main():
     # Balance of Plant Network Connectivity
 
         plant_net.connect([leaching, 'pre-leach-product'], [decant_filt, 'std-feed'])
+        plant_net.connect([decant_filt, 'ccd-overflow'], [leaching, 'pre-leach-feed'])
 
     #plant_net.draw(engine='circo', node_shape='folder')
     plant_net.draw(engine='dot', node_shape='folder', size='600,1200')
@@ -73,14 +74,14 @@ def main():
         # Decantation plots
         decant_filt = plant_net.modules[0]
 
-        (quant, time_unit) = decant_filt.single_tank_decantation_state_phase.get_quantity_history('liquid-volume')
+        (quant, time_unit) = decant_filt.std_state_phase.get_quantity_history('liquid-volume')
 
         quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('decant-filt-std-state-liq-volume.png', dpi=300)
 
-        (quant, time_unit) = decant_filt.single_tank_decantation_overflow_phase.get_quantity_history('mass-flowrate')
+        (quant, time_unit) = decant_filt.std_overflow_phase.get_quantity_history('mass-flowrate')
 
         quant.plot(x_scaling=1/unit.day, y_scaling=unit.minute, x_label='Time [d]',
                    #y_label=quant.latex_name+' ['+quant.unit+']')
@@ -88,13 +89,28 @@ def main():
         plt.grid()
         plt.savefig('decant-filt-std-overflow-mass-flowrate.png', dpi=300)
 
-        (quant, time_unit) = decant_filt.single_tank_decantation_underflow_phase.get_quantity_history('mass-flowrate')
+        (quant, time_unit) = decant_filt.std_underflow_phase.get_quantity_history('mass-flowrate')
 
         quant.plot(x_scaling=1/unit.day, y_scaling=unit.minute, x_label='Time [d]',
                    #y_label=quant.latex_name + ' [' + quant.unit + ']')
                    y_label=quant.latex_name + ' [kg/min]')
         plt.grid()
         plt.savefig('decant-filt-std-underflow-mass-flowrate.png', dpi=300)
+
+        (quant, time_unit) = decant_filt.ccd_state_phase.get_quantity_history('liquid-volume')
+
+        quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('decant-filt-ccd-state-liq-volume.png', dpi=300)
+
+        (quant, time_unit) = decant_filt.ccd_overflow_phase.get_quantity_history('mass-flowrate')
+
+        quant.plot(x_scaling=1/unit.day, y_scaling=unit.minute, x_label='Time [d]',
+                   #y_label=quant.latex_name + ' [' + quant.unit + ']')
+                   y_label=quant.latex_name + ' [kg/min]')
+        plt.grid()
+        plt.savefig('decant-filt-ccd-overflow-mass-flowrate.png', dpi=300)
 
         (quant, time_unit) = decant_filt.ccd_underflow_phase.get_quantity_history('mass-flowrate')
 
