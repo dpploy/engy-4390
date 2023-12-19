@@ -15,7 +15,7 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 
 |  |
 |:---:|
-| <img height="500" src="pics/network-0.gv.png" title="Plant Layout"> |
+| <img width="800" src="pics/network-0.gv.png" title="Plant Layout"> |
 | <p style="text-align:center;"><b>Mill Network Graph (Based on White Mesa, Utah, USA).</b></p> |
 
 
