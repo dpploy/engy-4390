@@ -884,7 +884,6 @@ class DecantationFiltration(Module):
 
         time += self.time_step
 
-
         self.std_state_phase.add_row(time, tmp_std_state)
         self.std_state_phase.set_value('liquid-volume', std_liq_volume, time)
 
