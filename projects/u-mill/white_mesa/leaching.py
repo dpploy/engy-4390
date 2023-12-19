@@ -19,7 +19,7 @@
   Decant.)     |----------------|
                |                |<-------- Acid-Leach Feed (STD underflow from Decantation Module)
                |  Acid-leaching |
-               |                |<-------- Acids (internal) H2S04, NaCI03, Steam)
+               |                |<-------- Acids (internal source) H2S04, NaCI03, Steam)
                |________________|
                         |
                         |

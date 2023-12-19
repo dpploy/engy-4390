@@ -19,7 +19,7 @@ def main():
     # Debugging
     make_run   = True
     make_plots = True
-    attach_leaching = False
+    attach_leaching = True
 
     # Preamble
     end_time = 25.0*unit.day
