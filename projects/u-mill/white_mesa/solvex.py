@@ -113,13 +113,13 @@ class Solvex(Module):
         # Configuration parameters
 
         # Solvex
-        self.solvex_tank_volume = 4 * 1400 * unit.ft**2 * 12 * unit.ft
+        self.solvex_tank_volume = 4 * 1400 * unit.ft**2 * 8 * unit.ft
 
         # Scrubbing
-        self.scrub_tank_volume = 1 * 1400 * unit.ft**2 * 12 * unit.ft
+        self.scrub_tank_volume = 1 * 1400 * unit.ft**2 * 8 * unit.ft
 
         # Stripping
-        self.strip_tank_volume = 4 * 1400 * unit.ft**2 * 12 * unit.ft
+        self.strip_tank_volume = 4 * 1400 * unit.ft**2 * 8 * unit.ft
 
         # Initialization
 
@@ -128,7 +128,7 @@ class Solvex(Module):
             self.solvex_feed_mass_flowrate = 0.0 * unit.liter / unit.minute
             self.solvex_feed_mass_density = 0.0 * unit.kg / unit.liter
         else:
-            self.solvex_feed_mass_flowrate = 1.0 * unit.kg / unit.minute
+            self.solvex_feed_mass_flowrate = 20.0 * unit.kg / unit.minute
             self.solvex_feed_mass_density = 1.6 * unit.kg / unit.liter
 
         # Derived quantities
@@ -209,14 +209,14 @@ class Solvex(Module):
         quantities = list()
         species = list()
 
-        extraction_raffinate_mass_flowrate = Quantity(name='mass_flowrate',
+        extraction_raffinate_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
                                           value=0.0,
                                           latex_name=r'$\dot{m}_2$',
                                           info='Extraction Raffinate Mass Flowrate')
         quantities.append(extraction_raffinate_mass_flowrate)
 
-        extraction_raffinate_mass_density = Quantity(name='mass_density',
+        extraction_raffinate_mass_density = Quantity(name='mass-density',
                                          formal_name='rho', unit='kg/m^3',
                                          value=0.0,
                                          latex_name=r'$\rho$',
@@ -255,14 +255,14 @@ class Solvex(Module):
         quantities = list()
         species = list()
 
-        extraction_product_mass_flowrate = Quantity(name='mass_flowrate',
+        extraction_product_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
                                           value=0.0,
                                           latex_name=r'$\dot{m}_3$',
                                           info='Extraction Product Mass Flowrate')
         quantities.append(extraction_product_mass_flowrate)
 
-        extraction_product_mass_density = Quantity(name='mass_density',
+        extraction_product_mass_density = Quantity(name='mass-density',
                                          formal_name='rho', unit='kg/m^3',
                                          value=0.0,
                                          latex_name=r'$\rho$',
@@ -308,21 +308,21 @@ class Solvex(Module):
         self.solvex_product_phase = Phase(time_stamp=self.initial_time,
                                           time_unit='s', quantities=quantities, species=species)
         #***************************************************************************************
-        # S C R U B
+        # S C R U B B I N G
         #***************************************************************************************
 
         # Scrub Raffinate Phase History (internal state/external)
         quantities = list()
         species = list()
 
-        extraction_raffinate_mass_flowrate = Quantity(name='mass_flowrate',
+        extraction_raffinate_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
                                           value=0.0,
                                           latex_name=r'$\dot{m}_2$',
                                           info='Scrubbing Raffinate Mass Flowrate')
         quantities.append(extraction_raffinate_mass_flowrate)
 
-        extraction_raffinate_mass_density = Quantity(name='mass_density',
+        extraction_raffinate_mass_density = Quantity(name='mass-density',
                                          formal_name='rho', unit='kg/m^3',
                                          value=0.0,
                                          latex_name=r'$\rho$',
@@ -365,16 +365,16 @@ class Solvex(Module):
         quantities = list()
         species = list()
 
-        stripping_feed_mass_flowrate = Quantity(name='mass_flowrate',
+        stripping_feed_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
-                                          value=self.stripping_feed_mass_flowrate,
+                                          value=0.0,
                                           latex_name=r'$\dot{m}_4$',
                                           info='Stripping Feed Mass Flowrate')
         quantities.append(stripping_feed_mass_flowrate)
 
-        stripping_feed_mass_density = Quantity(name='mass_density',
+        stripping_feed_mass_density = Quantity(name='mass-density',
                                          formal_name='rho', unit='kg/m^3',
-                                         value=self.stripping_feed_mass_density,
+                                         value=0.0,
                                          latex_name=r'$\rho$',
                                          info='Stripping Feed Mass Density')
         quantities.append(stripping_feed_mass_density)
@@ -430,16 +430,16 @@ class Solvex(Module):
         quantities = list()
         species = list()
 
-        stripping_product_mass_flowrate = Quantity(name='mass_flowrate',
+        stripping_product_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
-                                          value=self.stripping_product_mass_flowrate,
+                                          value=0.0,
                                           latex_name=r'$\dot{m}_5$',
                                           info='Stripping Product Mass Flowrate')
         quantities.append(stripping_product_mass_flowrate)
 
-        stripping_product_mass_density = Quantity(name='mass_density',
+        stripping_product_mass_density = Quantity(name='mass-density',
                                          formal_name='rho', unit='kg/m^3',
-                                         value=self.stripping_product_mass_density,
+                                         value=0.0,
                                          latex_name=r'$\rho$',
                                          info='Stripping Product Mass Density')
         quantities.append(stripping_product_mass_density)
@@ -483,7 +483,7 @@ class Solvex(Module):
         liq_volume = Quantity(name='aqueous-volume',
                         formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$V_\text{std}$',
+                        latex_name=r'$V_\text{a}$',
                         info='Solvent Extraction Aqueous Volume')
         quantities.append(liq_volume)
 
@@ -655,7 +655,9 @@ class Solvex(Module):
 
         # Aqueous
         solvex_raffinate_mass_flowrate_initial = self.solvex_raffinate_phase.get_value('mass-flowrate', time)
-        scrub_raffinatet_mass_flowrate_initial = self.scrub_raffinate_phase.get_value('mass-flowrate', time)
+
+        scrub_raffinate_mass_flowrate_inflow = self.scrub_raffinate_phase.get_value('mass-flowrate', time)
+        scrub_raffinate_mass_density_inflow = self.scrub_raffinate_phase.get_value('mass-density', time)
 
         feed_mass_flowrate = self.solvex_feed_mass_flowrate
         rho_feed = self.solvex_feed_mass_density
@@ -666,15 +668,27 @@ class Solvex(Module):
             feed_vol_flowrate = feed_mass_flowrate/rho_feed
 
         # Ideal solution
-        aqueous_mass_flowrate_inflow = feed_mass_flowrate + scrub_raffinate_mass_flowrate_initial
+        aqueous_mass_flowrate_inflow = feed_mass_flowrate + scrub_raffinate_mass_flowrate_inflow
+        aqueous_rho = rho_feed + scrub_raffinate_mass_density_inflow
+        aqueous_vol_flowrate_inflow = aqueous_mass_flowrate_inflow/aqueous_rho
+
+        aqueous_mass_flowrate_initial = solvex_raffinate_mass_flowrate_initial
+        aqueous_vol_flowrate_initial = aqueous_mass_flowrate_initial/aqueous_rho
 
         aqueous_volume_initial = self.solvex_state_phase.get_value('aqueous-volume', time)
 
         aqueous_volume = aqueous_volume_initial + \
-                         (vol_flowrate_inflow - vol_flowrate_initial) * self.time_step
-        # Organic
-        #Time Step with Constant Value to Test Code
-        mass_flowrate = self.extraction_feed_phase.get_value('mass_flowrate', time)
+                         (aqueous_vol_flowrate_inflow - aqueous_vol_flowrate_initial) * self.time_step
+
+        tmp_solvex_state = self.solvex_state_phase.get_row(time)
+        tmp_solvex_raffinate = self.solvex_raffinate_phase.get_row(time)
+
+        #---------------------------
+        # Evolve the Scrubbing State
+        #---------------------------
+        # Ideal flow mixing
+
+        tmp_scrub_raffinate = self.solvex_raffinate_phase.get_row(time)
 
         #----------------------------
         # Step All Quantities in Time
@@ -682,11 +696,13 @@ class Solvex(Module):
 
         time += self.time_step
 
-        self.extraction_feed_phase.add_row(time, tmp)
+        self.solvex_state_phase.add_row(time, tmp_solvex_state)
+        self.solvex_state_phase.set_value('aqueous-volume', aqueous_volume, time)
 
-        self.extraction_feed_phase.set_value('mass_flowrate', mass_flowrate, time)
-        #self.extraction_feed_phase.set_value('mass_density', rho_preleach, time)
+        self.solvex_raffinate_phase.add_row(time, tmp_solvex_raffinate)
 
+
+        self.scrub_raffinate_phase.add_row(time, tmp_scrub_raffinate)
 
         '''
         self.primary_outflow_phase.add_row(time, primary_outflow)
