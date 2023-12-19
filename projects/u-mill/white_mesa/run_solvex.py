@@ -20,7 +20,7 @@ def main():
     make_plots = True
 
     # Preamble
-    end_time = 5.0 * unit.day
+    end_time = 10.0 * unit.day
     time_step = 10.0 * unit.minute
     show_time = (True, unit.hour)
 
@@ -62,6 +62,28 @@ def main():
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
         plt.savefig('solvex-state-aqueous-volume.png', dpi=300)
+
+        (quant, time_unit) = solvex.solvex_state_phase.get_quantity_history('organic-volume')
+
+        quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('solvex-state-organic-volume.png', dpi=300)
+
+        (quant, time_unit) = solvex.solvex_state_phase.get_quantity_history('liquid-volume')
+
+        quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('solvex-state-liquid-volume.png', dpi=300)
+
+        (quant, time_unit) = solvex.solvex_raffinate_phase.get_quantity_history('mass-flowrate')
+
+        quant.plot(x_scaling=1/unit.day, y_scaling=unit.minute, x_label='Time [d]',
+                   #y_label=quant.latex_name+' ['+quant.unit+']')
+                   y_label=quant.latex_name+' [kg/m$3$]')
+        plt.grid()
+        plt.savefig('solvex-raffinate-mass-flowrate.png', dpi=300)
 
         '''
         (quant, time_unit) = solvex.primary_outflow_phase.get_quantity_history('temp')
