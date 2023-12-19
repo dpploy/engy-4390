@@ -1,4 +1,4 @@
-# Uranium Mill Network Dynamic Simulation
+# Uranium Mill Network Dynamics Simulation
 
 UMass Lowell Fall 2023 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
