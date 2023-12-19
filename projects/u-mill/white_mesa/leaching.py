@@ -15,8 +15,8 @@
  Pre-Leach     |----------------|
  Product       |                |
          <-----|  Pre-leaching  |<-------- Pre-Leach Feed (CCD overflow from Decantation Module)
- (to STD       |                |
- Decant.)      |                |
+ (to ST        |                |
+  Decant.)     |----------------|
                |                |<-------- Acid-Leach Feed (STD underflow from Decantation Module)
                |  Acid-leaching |
                |                |<-------- Acids (internal) H2S04, NaCI03, Steam)
@@ -534,6 +534,22 @@ class Leaching(Module):
 
     def __call_ports(self, time):
 
+        # Interactions in the pre-leach-product port
+        #-----------------------------------------
+        # One way "to" pre-leach-product port
+
+        # Send to
+        if self.get_port('pre-leach-product').connected_port:
+
+            msg_time = self.recv('pre-leach-product')
+
+            product = dict()
+            product['mass-flowrate'] = self.preleach_phase.get_value('mass-flowrate', msg_time)
+            product['mass-density'] = self.preleach_phase.get_value('mass-density', msg_time)
+            product['solids-massfrac'] = 0.0
+
+            self.send((msg_time, product), 'pre-leach-product')
+
         # Interactions in the pre-leach-feed port
         # Receive from
         if self.get_port('pre-leach-feed').connected_port:
@@ -544,10 +560,7 @@ class Leaching(Module):
             assert abs(check_time-time) <= 1e-6
 
             self.preleach_feed_mass_flowrate = preleach_feed['mass-flowrate']
-            '''
-            self.primary_ressure = primary_inflow['pressure']
-            self.primary_mass_flowrate = primary_inflow['mass_flowrate']
-            '''
+            self.preleach_feed_mass_density = preleach_feed['mass-density']
 
         # Interactions in the acid-leach-feed port
         #----------------------------------------
@@ -566,28 +579,6 @@ class Leaching(Module):
             self.secondary_pressure = secondary_inflow['pressure']
             self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
             '''
-
-        # Interactions in the pre-leach-product port
-        #-----------------------------------------
-        # One way "to" pre-leach-product port
-
-        # Send to
-        if self.get_port('pre-leach-product').connected_port:
-
-            msg_time = self.recv('pre-leach-product')
-
-            product = dict()
-            product['mass-flowrate'] = self.preleach_phase.get_value('mass-flowrate',msg_time)
-            product['mass-density'] = self.preleach_phase.get_value('mass-density',msg_time)
-            product['solids-massfrac'] = 0.0
-            '''
-            product['temperature'] = temp
-            product['pressure'] = self.primary_pressure
-            product['quality'] = 0.0
-            '''
-
-            self.send((msg_time, product), 'pre-leach-product')
-
         # Interactions in the acid-leach-product port
         #-----------------------------------------
         # One way "to" acid-leach-product-port
@@ -597,17 +588,12 @@ class Leaching(Module):
 
             msg_time = self.recv('acid-leach-product')
 
-            #temp = self.xxxx.get_value('temp', msg_time)
+            product = dict()
+            product['mass-flowrate'] = self.acidleach_phase.get_value('mass-flowrate',msg_time)
+            product['mass-density'] = self.acidleach_phase.get_value('mass-density',msg_time)
+            product['solids-massfrac'] = 0.0
 
-            raffinate = dict()
-            '''
-            raffinate['temperature'] = temp
-            raffinate['pressure'] = press
-            raffinate['mass_flowrate'] = flowrate
-            raffinate['total_heat_power'] = -self.heat_sink_pwr
-            '''
-
-            self.send((msg_time, raffinate), 'acid-leach-product')
+            self.send((msg_time, product), 'acid-leach-product')
 
     def __step(self, time=0.0):
         """Stepping Leaching in time
