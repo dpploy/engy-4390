@@ -109,7 +109,7 @@ def main():
     white_mesa_network.connect([solvex, 'product'], [precipt, 'uts-feed'])
     white_mesa_network.connect([precipt, 'adu-product'], [evap_calc, 'adu-feed'])
 
-    white_mesa_network.draw(engine='dot', node_shape='folder', size='600,1200')
+    white_mesa_network.draw(engine='dot', node_shape='folder', size='1200,600', lr=True)
     #white_mesa_network.draw()
 
     # Run
