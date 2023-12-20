@@ -122,7 +122,7 @@ class DecantationFiltration(Module):
         # Configuration parameters
 
         # STD
-        self.std_tank_volume = 380 * unit.meter**3  # 38m diameter, 10m tall
+        self.std_tank_volume = 3402.33 * unit.meter**3  # vfda: this is supposed to be 38 m in diam.
         self.wash_water_std_feed_ratio = 99.0
         self.std_underflow_overflow_mass_flowrate_ratio = 99.0
         self.wash_water_acidleach_feed_ratio = 1.69
@@ -337,14 +337,14 @@ class DecantationFiltration(Module):
         overflow_mass_flowrate = Quantity(name='mass-flowrate',
                         formal_name='mdot', unit='kg/s',
                         value=0.0,
-                        latex_name=r'$\dot{m}_{ccd-o}$',
+                        latex_name=r'$\dot{m}_\text{ccd-o}$',
                         info='Counter-Current Decantation Overflow Mass Flowrate')
         quantities.append(overflow_mass_flowrate)
 
         overflow_mass_density = Quantity(name='mass-density',
                         formal_name='rho', unit='kg/m$^3$',
                         value=0.0,
-                        latex_name=r'$\rho_{ccd-o}$',
+                        latex_name=r'$\rho_\text{ccd-o}$',
                         info='Counter-Current Decantation Overflow Mass Density')
         quantities.append(overflow_mass_density)
 
@@ -509,7 +509,7 @@ class DecantationFiltration(Module):
         liq_volume = Quantity(name='liquid-volume',
                         formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$V_{std}$',
+                        latex_name=r'$V_\text{std}$',
                         info='Decantation Single-Tank Liquid Volume')
         quantities.append(liq_volume)
 
@@ -523,7 +523,7 @@ class DecantationFiltration(Module):
         liq_volume = Quantity(name='liquid-volume',
                         formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$V_{ccd}$',
+                        latex_name=r'$V_\text{ccd}$',
                         info='Counter-Current Decantation Liquid Volume')
         quantities.append(liq_volume)
 
