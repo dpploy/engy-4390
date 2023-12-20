@@ -37,7 +37,6 @@
  NB. Extraction Feed (from decantation-filtration) goes to solvent extraction
 
    + Solvent Extraction
-
       - 4 Mixer-settlers units. Area per unit 1400 ft^2, height ?
       - Flowrates:
       - Aqueous/Organic = 3.0
