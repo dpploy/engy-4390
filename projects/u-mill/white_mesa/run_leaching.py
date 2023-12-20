@@ -42,7 +42,7 @@ def main():
 
     # Balance of Plant Network Connectivity
 
-    plant_net.draw(engine='circo', node_shape='folder')
+    plant_net.draw(engine='circo', node_shape='folder', ports=True)
 
     # Run
     if make_run:

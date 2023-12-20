@@ -110,6 +110,9 @@ def main():
     white_mesa_network.connect([precipt, 'adu-product'], [evap_calc, 'adu-feed'])
 
     white_mesa_network.draw(engine='dot', node_shape='folder', size='1200,600', lr=True)
+    #white_mesa_network.draw(engine='osage', node_shape='folder', size='1200,600', 
+                            #graph_attr={'splines':'true', 'overlap':'scale', 'ranksep':'1.8'})
+    #                        graph_attr={'splines':'true', 'ranksep':'3.0'})
     #white_mesa_network.draw()
 
     # Run
