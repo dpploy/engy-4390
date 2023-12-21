@@ -13,9 +13,9 @@ This module is a model of the Evaporation/Calcination process
                        v
              ____________________
              |                  |
-             |   Evaporation    |<----- Evaporator Heat
+             |   Evaporation    |<----- Evaporator Heat (internal)
              |                  |
-             |   Calcination    |<----- Calciner Heat
+             |   Calcination    |<----- Calciner Heat (internal)
              |__________________|
                 |            |
                 |            |
