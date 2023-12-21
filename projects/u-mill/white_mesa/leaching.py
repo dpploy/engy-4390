@@ -147,10 +147,10 @@ class Leaching(Module):
         # General attributes
         self.initial_time = 0.0*unit.second
         self.end_time = 1.0*unit.hour
-        self.time_step = 10.0*unit.second
-
-        self.show_time = (False, 10.0*unit.second)
+        self.time_step = 10.0*unit.minute
+        self.show_time = (True, unit.hour)
         self.save = True
+        self.name = 'Leaching'
 
         self.log = logging.getLogger('cortix')
         self.__logit = True # flag indicating when to log
@@ -167,7 +167,6 @@ class Leaching(Module):
         self.five_tau_preleach_dissolution = 4.5 * unit.hour # 5 * relaxation time
 
         self.acidleach_tank_vol = 7 * math.pi*(7.6/2)**2 * unit.meter**2 * 8.2 * unit.meter
-        print(self.acidleach_tank_vol)
 
         self.five_tau_acidleach_dissolution = 2.5 * unit.hour # 5 * relaxation time
 
