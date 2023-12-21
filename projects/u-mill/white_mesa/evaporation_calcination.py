@@ -37,7 +37,7 @@ This module is a model of the Evaporation/Calcination process
 + Calcination:
      1) Calciner Heat Parameters
        - # of Rotary Calciners:                    2
-       - Volume per Calciner:                    1000 m^3
+       - Volume per Calciner:                    350 m^3
        - Temperature Setpoint per Calciner:     850.0 C 
        - Feed Flowrate Entering Evaporator:    0.07 gallons/min
        - feed mass fraction of solids:             
@@ -99,7 +99,7 @@ class EvaporationCalcination(Module):
 
         # Configuration parameters
         self.diuranate_volume = 0.988 * unit.meter**3
-        self.entering_DUO_flowrate = 0.04 * unit.gallon/unit.minute
+        self.entering_DUO_flowrate = 0.07 * unit.gallon/unit.minute
         self.calcination_flash_time = 80 * unit.minute
 
         #Evaporation
