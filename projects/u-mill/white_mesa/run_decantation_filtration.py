@@ -22,7 +22,7 @@ def main():
     attach_leaching = True
 
     # Preamble
-    end_time = 8.0*unit.day
+    end_time = 10.0*unit.day
     time_step = 10.0*unit.minute
     show_time = (True, unit.hour)
 
