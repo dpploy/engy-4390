@@ -551,37 +551,23 @@ class Leaching(Module):
             self.send((msg_time, product), 'pre-leach-product')
 
         # Interactions in the pre-leach-feed port
+        #-----------------------------------------
+        # One way "from" pre-leach-product port
+
         # Receive from
         if self.get_port('pre-leach-feed').connected_port:
 
             self.send(time, 'pre-leach-feed')
 
-            (check_time, preleach_feed) = self.recv('pre-leach-feed')
+            (check_time, feed) = self.recv('pre-leach-feed')
             assert abs(check_time-time) <= 1e-6
 
-            self.preleach_feed_mass_flowrate = preleach_feed['mass-flowrate']
-            self.preleach_feed_mass_density = preleach_feed['mass-density']
+            self.preleach_feed_mass_flowrate = feed['mass-flowrate']
+            self.preleach_feed_mass_density = feed['mass-density']
 
-        # Interactions in the acid-leach-feed port
-        #----------------------------------------
-        # One way "from" acid-leach-feed port
-
-        # Receive from
-        if self.get_port('acid-leach-feed').connected_port:
-
-            self.send(time, 'acid-leach-feed')
-
-            (check_time, stripping_feed) = self.recv('acid-leach-feed')
-            assert abs(check_time-time) <= 1e-6
-
-            '''
-            self.secondary_inflow_temp = secondary_inflow['temperature']
-            self.secondary_pressure = secondary_inflow['pressure']
-            self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
-            '''
         # Interactions in the acid-leach-product port
         #-----------------------------------------
-        # One way "to" acid-leach-product-port
+        # One way "to" acid-leach-product port
 
         # Send to
         if self.get_port('acid-leach-product').connected_port:
@@ -594,6 +580,22 @@ class Leaching(Module):
             product['solids-massfrac'] = 0.0
 
             self.send((msg_time, product), 'acid-leach-product')
+
+        # Interactions in the acid-leach-feed port
+        #----------------------------------------
+        # One way "from" acid-leach-feed port
+
+        # Receive from
+        if self.get_port('acid-leach-feed').connected_port:
+
+            self.send(time, 'acid-leach-feed')
+
+            (check_time, feed) = self.recv('acid-leach-feed')
+            assert abs(check_time-time) <= 1e-6
+
+            self.acidleach_feed_mass_flowrate = feed['mass-flowrate']
+            self.acidleach_feed_mass_density = feed['mass-density']
+
 
     def __step(self, time=0.0):
         """Stepping Leaching in time

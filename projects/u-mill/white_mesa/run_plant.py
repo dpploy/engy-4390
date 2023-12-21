@@ -103,6 +103,8 @@ def main():
     # White Mesa Network Connectivity
 
     white_mesa_network.connect([leaching, 'pre-leach-product'], [decant_filt, 'std-feed'])
+    white_mesa_network.connect([decant_filt, 'ccd-overflow'], [leaching, 'pre-leach-feed'])
+    white_mesa_network.connect([leaching, 'acid-leach-product'], [decant_filt, 'ccd-feed'])
     white_mesa_network.connect([decant_filt, 'std-underflow'], [leaching, 'acid-leach-feed'])
     white_mesa_network.connect([decant_filt, 'filtrate'], [solvex, 'extraction-feed'])
     white_mesa_network.connect([solvex, 'raffinate'], [decant_filt, 'raffinate-feed'])
