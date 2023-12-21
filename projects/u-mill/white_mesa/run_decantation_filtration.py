@@ -58,6 +58,8 @@ def main():
 
         plant_net.connect([leaching, 'pre-leach-product'], [decant_filt, 'std-feed'])
         plant_net.connect([decant_filt, 'ccd-overflow'], [leaching, 'pre-leach-feed'])
+        plant_net.connect([leaching, 'acid-leach-product'], [decant_filt, 'ccd-feed'])
+        plant_net.connect([decant_filt, 'std-underflow'], [leaching, 'acid-leach-feed'])
 
     #plant_net.draw(engine='circo', node_shape='folder')
     plant_net.draw(engine='dot', node_shape='folder', size='600,1200')
