@@ -186,14 +186,14 @@ class DecantationFiltration(Module):
         feed_mass_flowrate = Quantity(name='mass-flowrate',
                         formal_name='mdot', unit='kg/s',
                         value=0.0,
-                        latex_name=r'$\dot{m}_\text{ccd-u}$',
+                        latex_name=r'$\dot{m}_{ccd-u}$',
                         info='Decantation Single-Tank Overflow Mass Flowrate')
         quantities.append(feed_mass_flowrate)
 
         feed_mass_density = Quantity(name='mass_density',
                         formal_name='rho', unit='kg/m^3',
                         value=0.0,
-                        latex_name=r'$\rho_\text{ccd-u}$',
+                        latex_name=r'$\rho_{ccd-u}$',
                         info='Decantation Single-Tank Overflow Feed Mass Density')
         quantities.append(feed_mass_density)
 
@@ -237,7 +237,7 @@ class DecantationFiltration(Module):
         underflow_mass_flowrate = Quantity(name='mass-flowrate',
                                       formal_name='mdot', unit='kg/s',
                                       value=0.0,
-                                      latex_name=r'$\dot{m}_\text{std-u}$',
+                                      latex_name=r'$\dot{m}_{std-u}$',
                                       info='Decantation Single-Tank Underflow Mass Flowrate')
         quantities.append(underflow_mass_flowrate)
 
@@ -340,14 +340,14 @@ class DecantationFiltration(Module):
         overflow_mass_flowrate = Quantity(name='mass-flowrate',
                         formal_name='mdot', unit='kg/s',
                         value=0.0,
-                        latex_name=r'$\dot{m}_\text{ccd-o}$',
+                        latex_name=r'$\dot{m}_{ccd-o}$',
                         info='Counter-Current Decantation Overflow Mass Flowrate')
         quantities.append(overflow_mass_flowrate)
 
         overflow_mass_density = Quantity(name='mass-density',
                         formal_name='rho', unit='kg/m$^3$',
                         value=0.0,
-                        latex_name=r'$\rho_\text{ccd-o}$',
+                        latex_name=r'$\rho_{ccd-o}$',
                         info='Counter-Current Decantation Overflow Mass Density')
         quantities.append(overflow_mass_density)
 
@@ -512,7 +512,7 @@ class DecantationFiltration(Module):
         liq_volume = Quantity(name='liquid-volume',
                         formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$V_\text{std}$',
+                        latex_name=r'$V_{std}$',
                         info='Decantation Single-Tank Liquid Volume')
         quantities.append(liq_volume)
 
@@ -526,7 +526,7 @@ class DecantationFiltration(Module):
         liq_volume = Quantity(name='liquid-volume',
                         formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$V_\text{ccd}$',
+                        latex_name=r'$V_{ccd}$',
                         info='Counter-Current Decantation Liquid Volume')
         quantities.append(liq_volume)
 
