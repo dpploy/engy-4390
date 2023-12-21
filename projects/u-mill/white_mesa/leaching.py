@@ -268,14 +268,14 @@ class Leaching(Module):
         preleach_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
                                           value=0.0,
-                                          latex_name=r'$\dot{m}_\text{pl}$',
+                                          latex_name=r'$\dot{m}_{pl}$',
                                           info='Pre-Leach Mass Flowrate')
         quantities.append(preleach_mass_flowrate)
 
         preleach_mass_density = Quantity(name='mass-density',
                                          formal_name='rho', unit='kg/m$^3$',
                                          value=0.0,
-                                         latex_name=r'$\rho_\text{pl}$',
+                                         latex_name=r'$\rho_{pl}$',
                                          info='Pre-Leach Mass Density')
         quantities.append(preleach_mass_density)
 
@@ -289,7 +289,7 @@ class Leaching(Module):
         liq_volume = Quantity(name='liquid-volume',
                               formal_name='vol', unit='m$^3$',
                               value=0.0,
-                              latex_name=r'$V_\text{pl}$',
+                              latex_name=r'$V_{pl}$',
                               info='Pre-Leach Liquid Volume')
         quantities.append(liq_volume)
 
@@ -435,14 +435,14 @@ class Leaching(Module):
         acid_leach_mass_flowrate = Quantity(name='mass-flowrate',
                                            formal_name='mdot', unit='kg/s',
                                            value=0.0,
-                                           latex_name=r'$\dot{m}_\text{al}$',
+                                           latex_name=r'$\dot{m}_{al}$',
                                            info='Acid Leach Mass Flowrate')
         quantities.append(acid_leach_mass_flowrate)
 
         acid_leach_mass_density = Quantity(name='mass-density',
                                            formal_name='rho', unit='kg/m$^3$',
                                            value=0.0,
-                                           latex_name=r'$\rho_\text{al}$',
+                                           latex_name=r'$\rho_{al}$',
                                            info='Acid Leach Mass Density')
         quantities.append(acid_leach_mass_density)
 
@@ -456,7 +456,7 @@ class Leaching(Module):
         liq_volume = Quantity(name='liquid-volume',
                               formal_name='vol', unit='m$^3$',
                               value=0.0,
-                              latex_name=r'$V_\text{al}$',
+                              latex_name=r'$V_{al}$',
                               info='Acid Leach Liquid Volume')
         quantities.append(liq_volume)
 
