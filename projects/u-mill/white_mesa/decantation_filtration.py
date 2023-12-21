@@ -186,14 +186,14 @@ class DecantationFiltration(Module):
         feed_mass_flowrate = Quantity(name='mass-flowrate',
                         formal_name='mdot', unit='kg/s',
                         value=0.0,
-                        latex_name=r'$\dot{m}_{ccd-u}$',
+                        latex_name=r'$\dot{m}_{std-o}$',
                         info='Decantation Single-Tank Overflow Mass Flowrate')
         quantities.append(feed_mass_flowrate)
 
         feed_mass_density = Quantity(name='mass_density',
                         formal_name='rho', unit='kg/m^3',
                         value=0.0,
-                        latex_name=r'$\rho_{ccd-u}$',
+                        latex_name=r'$\rho_{std-o}$',
                         info='Decantation Single-Tank Overflow Feed Mass Density')
         quantities.append(feed_mass_density)
 
@@ -244,7 +244,7 @@ class DecantationFiltration(Module):
         underflow_solids_massfrac = Quantity(name='solids_massfrac',
                                              formal_name='solids_massfrac', unit='ppm',
                                              value=0.0,
-                                             latex_name=r'$C_1$',
+                                             latex_name=r'$C_{std-u}$',
                                              info='STD Underflow Solids Mass Fraction')
         quantities.append(underflow_solids_massfrac)
 
@@ -288,14 +288,14 @@ class DecantationFiltration(Module):
         ccd_underflow_mass_flowrate = Quantity(name='mass-flowrate',
                                        formal_name='mdot', unit='kg/s',
                                        value=0.0,
-                                       latex_name=r'$\dot{m}_4$',
+                                       latex_name=r'$\dot{m}_{ccd-u}$',
                                        info='Counter-Current Decantation Underflow Mass Flowrate')
         quantities.append(ccd_underflow_mass_flowrate)
 
         underflow_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=0.0,
-                        latex_name=r'$C_1$',
+                        latex_name=r'$C_{ccd-u}$',
                         info='Counter-Current Decantation Underflow Solids Mass Fraction')
 
         quantities.append(underflow_solids_massfrac)
@@ -354,7 +354,7 @@ class DecantationFiltration(Module):
         overflow_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=0.0,
-                        latex_name=r'$C_1$',
+                        latex_name=r'$C_{ccd-o}$',
                         info='Counter-Current Decantation Overflow Solids Mass Fraction')
 
         quantities.append(overflow_solids_massfrac)
@@ -404,14 +404,14 @@ class DecantationFiltration(Module):
         slurry_mass_flowrate = Quantity(name='mass-flowrate',
                                        formal_name='mdot', unit='kg/s',
                                        value=self.filtration_slurry_mass_flowrate,
-                                       latex_name=r'$\dot{m}_4$',
+                                       latex_name=r'$\dot{m}_{filt-slurry}$',
                                        info='Filtration Slurry Mass Flowrate')
         quantities.append(slurry_mass_flowrate)
 
         slurry_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=self.filtration_slurry_solids_massfrac,
-                        latex_name=r'$C_1$',
+                        latex_name=r'$C_{filt-slurry}$',
                         info='Filtration Slurry Solids Mass Fraction')
 
         quantities.append(slurry_solids_massfrac)
@@ -456,14 +456,14 @@ class DecantationFiltration(Module):
         filtrate_mass_flowrate = Quantity(name='mass-flowrate',
                                        formal_name='mdot', unit='kg/s',
                                        value=self.filtration_filtrate_mass_flowrate,
-                                       latex_name=r'$\dot{m}_4$',
+                                       latex_name=r'$\dot{m}_{filt_filtrate}$',
                                        info='Filtration Filtrate Mass Flowrate')
         quantities.append(filtrate_mass_flowrate)
 
         filtrate_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=self.filtration_filtrate_solids_massfrac,
-                        latex_name=r'$C_1$',
+                        latex_name=r'$C_{filt_filtrate}$',
                         info='Filtration Filtrate Solids Mass Fraction')
 
         quantities.append(filtrate_solids_massfrac)
@@ -893,8 +893,8 @@ class DecantationFiltration(Module):
 
         c_f = 10 * unit.ppm
         c_sl = 990 * unit.ppm
-        m_dot_f = 0.991*m_dot_o
-        m_dot_sl = 0.009*m_dot_o
+        m_dot_f = 0.991*ccd_overflow_mass_flowrate
+        m_dot_sl = 0.009*ccd_overflow_mass_flowrate
 
         tmp_filtrate = self.filtration_filtrate_phase.get_row(time)
         tmp_slurry = self.filtration_slurry_phase.get_row(time)

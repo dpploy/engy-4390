@@ -120,6 +120,20 @@ def main():
         plt.grid()
         plt.savefig('decant-filt-ccd-underflow-mass-flowrate.png', dpi=300)
 
+        (quant, time_unit) = decant_filt.filtration_filtrate_phase.get_quantity_history('mass-flowrate')
+
+        quant.plot(x_scaling=1 / unit.day, x_label='Time [d]',
+                   y_label=quant.latex_name + ' [' + quant.unit + ']')
+        plt.grid()
+        plt.savefig('decant-filt-filtrate-mass-flowrate.png', dpi=300)
+
+        (quant, time_unit) = decant_filt.filtration_slurry_phase.get_quantity_history('mass-flowrate')
+
+        quant.plot(x_scaling=1 / unit.day, x_label='Time [d]',
+                   y_label=quant.latex_name + ' [' + quant.unit + ']')
+        plt.grid()
+        plt.savefig('decant-filt-slurry-mass-flowrate.png', dpi=300)
+
         if attach_leaching:
         # Leaching plots
             leaching = plant_net.modules[1]
