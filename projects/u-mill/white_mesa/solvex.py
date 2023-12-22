@@ -219,14 +219,14 @@ class Solvex(Module):
         extraction_raffinate_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
                                           value=0.0,
-                                          latex_name=r'$\dot{m}_\text{r}$',
+                                          latex_name=r'$\dot{m}_{r}$',
                                           info='Extraction Raffinate Mass Flowrate')
         quantities.append(extraction_raffinate_mass_flowrate)
 
         extraction_raffinate_mass_density = Quantity(name='mass-density',
                                          formal_name='rho', unit='kg/m^3',
                                          value=0.0,
-                                         latex_name=r'$\rho_\text{r}$',
+                                         latex_name=r'$\rho_{r}$',
                                          info='Extraction Raffinate Mass Density')
         quantities.append(extraction_raffinate_mass_density)
 
@@ -490,21 +490,21 @@ class Solvex(Module):
         liq_volume = Quantity(name='aqueous-volume',
                         formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$V_\text{a}$',
+                        latex_name=r'$V_{a}$',
                         info='Solvent Extraction Aqueous Volume')
         quantities.append(liq_volume)
 
         liq_volume = Quantity(name='organic-volume',
                         formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$V_\text{o}$',
+                        latex_name=r'$V_{o}$',
                         info='Solvent Extraction Organic Volume')
         quantities.append(liq_volume)
 
         liq_volume = Quantity(name='liquid-volume',
                         formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$V_\text{oa}$',
+                        latex_name=r'$V_{oa}$',
                         info='Solvent Extraction Liquid (Aqueous + Organic)  Volume')
         quantities.append(liq_volume)
 

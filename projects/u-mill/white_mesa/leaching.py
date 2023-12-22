@@ -147,10 +147,10 @@ class Leaching(Module):
         # General attributes
         self.initial_time = 0.0*unit.second
         self.end_time = 1.0*unit.hour
-        self.time_step = 10.0*unit.second
-
-        self.show_time = (False, 10.0*unit.second)
+        self.time_step = 10.0*unit.minute
+        self.show_time = (True, unit.hour)
         self.save = True
+        self.name = 'Leaching'
 
         self.log = logging.getLogger('cortix')
         self.__logit = True # flag indicating when to log
@@ -167,7 +167,6 @@ class Leaching(Module):
         self.five_tau_preleach_dissolution = 4.5 * unit.hour # 5 * relaxation time
 
         self.acidleach_tank_vol = 7 * math.pi*(7.6/2)**2 * unit.meter**2 * 8.2 * unit.meter
-        print(self.acidleach_tank_vol)
 
         self.five_tau_acidleach_dissolution = 2.5 * unit.hour # 5 * relaxation time
 
@@ -268,14 +267,14 @@ class Leaching(Module):
         preleach_mass_flowrate = Quantity(name='mass-flowrate',
                                           formal_name='mdot', unit='kg/s',
                                           value=0.0,
-                                          latex_name=r'$\dot{m}_\text{pl}$',
+                                          latex_name=r'$\dot{m}_{pl}$',
                                           info='Pre-Leach Mass Flowrate')
         quantities.append(preleach_mass_flowrate)
 
         preleach_mass_density = Quantity(name='mass-density',
                                          formal_name='rho', unit='kg/m$^3$',
                                          value=0.0,
-                                         latex_name=r'$\rho_\text{pl}$',
+                                         latex_name=r'$\rho_{pl}$',
                                          info='Pre-Leach Mass Density')
         quantities.append(preleach_mass_density)
 
@@ -289,7 +288,7 @@ class Leaching(Module):
         liq_volume = Quantity(name='liquid-volume',
                               formal_name='vol', unit='m$^3$',
                               value=0.0,
-                              latex_name=r'$V_\text{pl}$',
+                              latex_name=r'$V_{pl}$',
                               info='Pre-Leach Liquid Volume')
         quantities.append(liq_volume)
 
@@ -435,14 +434,14 @@ class Leaching(Module):
         acid_leach_mass_flowrate = Quantity(name='mass-flowrate',
                                            formal_name='mdot', unit='kg/s',
                                            value=0.0,
-                                           latex_name=r'$\dot{m}_\text{al}$',
+                                           latex_name=r'$\dot{m}_{al}$',
                                            info='Acid Leach Mass Flowrate')
         quantities.append(acid_leach_mass_flowrate)
 
         acid_leach_mass_density = Quantity(name='mass-density',
                                            formal_name='rho', unit='kg/m$^3$',
                                            value=0.0,
-                                           latex_name=r'$\rho_\text{al}$',
+                                           latex_name=r'$\rho_{al}$',
                                            info='Acid Leach Mass Density')
         quantities.append(acid_leach_mass_density)
 
@@ -456,7 +455,7 @@ class Leaching(Module):
         liq_volume = Quantity(name='liquid-volume',
                               formal_name='vol', unit='m$^3$',
                               value=0.0,
-                              latex_name=r'$V_\text{al}$',
+                              latex_name=r'$V_{al}$',
                               info='Acid Leach Liquid Volume')
         quantities.append(liq_volume)
 
@@ -551,37 +550,23 @@ class Leaching(Module):
             self.send((msg_time, product), 'pre-leach-product')
 
         # Interactions in the pre-leach-feed port
+        #-----------------------------------------
+        # One way "from" pre-leach-product port
+
         # Receive from
         if self.get_port('pre-leach-feed').connected_port:
 
             self.send(time, 'pre-leach-feed')
 
-            (check_time, preleach_feed) = self.recv('pre-leach-feed')
+            (check_time, feed) = self.recv('pre-leach-feed')
             assert abs(check_time-time) <= 1e-6
 
-            self.preleach_feed_mass_flowrate = preleach_feed['mass-flowrate']
-            self.preleach_feed_mass_density = preleach_feed['mass-density']
+            self.preleach_feed_mass_flowrate = feed['mass-flowrate']
+            self.preleach_feed_mass_density = feed['mass-density']
 
-        # Interactions in the acid-leach-feed port
-        #----------------------------------------
-        # One way "from" acid-leach-feed port
-
-        # Receive from
-        if self.get_port('acid-leach-feed').connected_port:
-
-            self.send(time, 'acid-leach-feed')
-
-            (check_time, stripping_feed) = self.recv('acid-leach-feed')
-            assert abs(check_time-time) <= 1e-6
-
-            '''
-            self.secondary_inflow_temp = secondary_inflow['temperature']
-            self.secondary_pressure = secondary_inflow['pressure']
-            self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
-            '''
         # Interactions in the acid-leach-product port
         #-----------------------------------------
-        # One way "to" acid-leach-product-port
+        # One way "to" acid-leach-product port
 
         # Send to
         if self.get_port('acid-leach-product').connected_port:
@@ -594,6 +579,21 @@ class Leaching(Module):
             product['solids-massfrac'] = 0.0
 
             self.send((msg_time, product), 'acid-leach-product')
+
+        # Interactions in the acid-leach-feed port
+        #----------------------------------------
+        # One way "from" acid-leach-feed port
+
+        # Receive from
+        if self.get_port('acid-leach-feed').connected_port:
+
+            self.send(time, 'acid-leach-feed')
+
+            (check_time, feed) = self.recv('acid-leach-feed')
+            assert abs(check_time-time) <= 1e-6
+
+            self.acidleach_feed_mass_flowrate = feed['mass-flowrate']
+            self.acidleach_feed_mass_density = feed['mass-density']
 
     def __step(self, time=0.0):
         """Stepping Leaching in time

@@ -22,7 +22,7 @@ def main():
     attach_leaching = True
 
     # Preamble
-    end_time = 25.0*unit.day
+    end_time = 10.0*unit.day
     time_step = 10.0*unit.minute
     show_time = (True, unit.hour)
 
@@ -58,6 +58,8 @@ def main():
 
         plant_net.connect([leaching, 'pre-leach-product'], [decant_filt, 'std-feed'])
         plant_net.connect([decant_filt, 'ccd-overflow'], [leaching, 'pre-leach-feed'])
+        plant_net.connect([leaching, 'acid-leach-product'], [decant_filt, 'ccd-feed'])
+        plant_net.connect([decant_filt, 'std-underflow'], [leaching, 'acid-leach-feed'])
 
     #plant_net.draw(engine='circo', node_shape='folder')
     plant_net.draw(engine='dot', node_shape='folder', size='600,1200')
@@ -119,6 +121,20 @@ def main():
                    y_label=quant.latex_name + ' [kg/min]')
         plt.grid()
         plt.savefig('decant-filt-ccd-underflow-mass-flowrate.png', dpi=300)
+
+        (quant, time_unit) = decant_filt.filtration_filtrate_phase.get_quantity_history('mass-flowrate')
+
+        quant.plot(x_scaling=1 / unit.day, x_label='Time [d]',
+                   y_label=quant.latex_name + ' [' + quant.unit + ']')
+        plt.grid()
+        plt.savefig('decant-filt-filtrate-mass-flowrate.png', dpi=300)
+
+        (quant, time_unit) = decant_filt.filtration_slurry_phase.get_quantity_history('mass-flowrate')
+
+        quant.plot(x_scaling=1 / unit.day, x_label='Time [d]',
+                   y_label=quant.latex_name + ' [' + quant.unit + ']')
+        plt.grid()
+        plt.savefig('decant-filt-slurry-mass-flowrate.png', dpi=300)
 
         if attach_leaching:
         # Leaching plots

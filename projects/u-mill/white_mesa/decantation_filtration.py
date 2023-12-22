@@ -3,42 +3,46 @@
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
 """Cortix Module.
-   Decantation/Filtration process in the White Mesa Uranium Milling Plant.
+  Decantation/Filtration process in the White Mesa Uranium Milling Plant.
 
 
-             |-----------------|
-             |                 |
-             |   DECANTATION   |
-STD underflow|                 |
-    <--------|                 |<-------- Wash water (internal source)
-(to Leaching)|                 |<-------- Pre-Leach Feed (from Leaching Module pre-leach product)
-             |  + Single Tank  |
- STD overflow|                 |
- <-----------|                 |
- (to Filtr.) |                 |
-             |.................|
-CCD overflow |                 |<-------- Acid-Leach Feed (from Leaching Module acid-leach product)
-    <--------|  + CC Bank Tank |<-------- Wash water (internal source)
-             |                 |<-------- Raffinate Feed (from Solvent Extraction)
-             |-----------------|
-             |                 |
-             |   FILTRATION    |<-------- STD Overflow (internal from STD overflow)
-             |                 |
-             |-----------------|
-                  |       |
-                  |       |
-                  |       |
-                  v       v
-               Filtrate  Slurry Waste (TBD)
+                   |-----------------|
+                   |                 |
+                   |   DECANTATION   |
+ STD underflow     |                 |
+       <-----------|                 |<-------- Wash water (internal source)
+ (to Leaching)     |                 |<-------- Feed (from Leaching Module pre-leach product)
+                   |  + Single Tank  |
+ STD overflow      |                 |
+       <-----------|                 |
+(to Filtration)    |                 |
+                   |.................|
+ CCD overflow      |                 |<-------- Feed (from Leaching Module acid-leach product)
+       <-----------|                 |<-------- Wash water (internal source)
+ (to Leaching)     |                 |<-------- Raffinate Feed (from Solvent Extraction)
+                   |  + CC Bank Tank |
+ CCD underflow     |                 |
+       <-----------|                 |
+ (to tailings)     |                 |
+                   |-----------------|
+                   |                 |
+                   |   FILTRATION    |<-------- STD Overflow (internal from STD overflow)
+                   |                 |
+                   |-----------------|
+                        |       |
+                        |       |
+                        |       |
+                        v       v
+                     Filtrate  Slurry Waste (TBD)
 
- NB. STD underflow goes to acid leaching
- NB. CCD overflow goes to Leaching Pre-Leaching
+ NB. STD underflow goes to Leaching: Acid Leaching feed
+ NB. CCD overflow goes to Leaching: Pre-Leaching feed
  NB. Filtrate goes to Solvent Extraction Feed
 
 
    + Decantation Steady-State Operation Typical Data:
      1) Single-Tank Decantation  (STD)
-       - volume of thickener:                3402.33 m^3
+       - volume of thickener:                3402.33 m^3  (38 m in diameter; assuming 10 m height)
        - pre-leach feed mass flowrate:       4540 kg/hr  kg/min??????? (vfda: this can't be right!)
        - wash water volumetric flowrate:     118735 gallons/min or 99 x feed flow rate
        - overflow volumetric flowrate:       38 gallons/min
@@ -57,7 +61,7 @@ CCD overflow |                 |<-------- Acid-Leach Feed (from Leaching Module 
        - wash water mass fraction of solids: 500 ppm
        - overflow mass fraction of solids:   100 ppm
        - underflow mass fraction of solids:  9900 ppm
-       - wash water ratio (R):               1.69
+       - wash water ratio to acid-leach feed: 1.69
 
    + Filtration Steady-State Operation:
        - volume of Drum Filter:              32.04 m^3
@@ -109,10 +113,10 @@ class DecantationFiltration(Module):
         # General attributes
         self.initial_time = 0.0*unit.second
         self.end_time = 1.0*unit.hour
-        self.time_step = 10.0*unit.second
-
-        self.show_time = (False, 10.0*unit.second)
+        self.time_step = 10.0*unit.minute
+        self.show_time = (True, unit.hour)
         self.save = True
+        self.name = 'Decantation-Filtration'
 
         self.log = logging.getLogger('cortix')
         self.__logit = True # flag indicating when to log
@@ -122,15 +126,18 @@ class DecantationFiltration(Module):
         # Configuration parameters
 
         # STD
-        self.std_tank_volume = 3402.33 * unit.meter**3  # vfda: this is supposed to be 38 m in diam.
-        self.wash_water_std_feed_ratio = 99.0
+        self.std_tank_volume = 3402.33 * unit.meter**3
         self.std_underflow_overflow_mass_flowrate_ratio = 99.0
-        self.wash_water_acidleach_feed_ratio = 1.69
+        self.std_wash_water_feed_ratio = 1.69
+        self.std_flow_residence_time_factor = 120 # reduction factor for std fill-up: higher value, slower 
+                                                  # transient
 
         # CCD
         self.ccd_tank_volume = 7*339.29 * unit.meter**3
         self.ccd_wash_water_vol_flowrate = 1067 * unit.gallon/unit.minute
         self.ccd_underflow_overflow_mass_flowrate_ratio = 99.0
+        self.ccd_wash_water_feed_ratio = 1.69
+        self.ccd_flow_residence_time_factor = 110 # reduction factor for std fill-up: higher value, slower 
 
         # Initialization
         self.wash_water_mass_density = 1.0 * unit.kg/unit.meter**3
@@ -138,24 +145,24 @@ class DecantationFiltration(Module):
         # Decantation
         # STD
         if self.get_port('std-feed').connected_port:
-            self.single_tank_decantation_feed_mass_flowrate = 0 * unit.kg/unit.minute
-            self.single_tank_decantation_feed_mass_density = 0 * unit.kg/unit.liter
-            self.single_tank_decantation_feed_solids_massfrac = 0 * unit.ppm
+            self.std_feed_mass_flowrate = 0 * unit.kg/unit.minute
+            self.std_feed_mass_density = 0 * unit.kg/unit.liter
+            self.std_feed_solids_massfrac = 0 * unit.ppm
         else:
-            #self.single_tank_decantation_feed_mass_flowrate = 4540 * unit.kg/unit.minute
-            self.single_tank_decantation_feed_mass_flowrate = 15540 * unit.kg/unit.minute
-            self.single_tank_decantation_feed_mass_density = 7.8 * unit.kg/unit.liter
-            self.single_tank_decantation_feed_solids_massfrac = 100 * unit.ppm
+            self.std_feed_mass_flowrate = 4540 * unit.kg/unit.minute
+            #self.std_feed_mass_flowrate = 15540 * unit.kg/unit.minute
+            self.std_feed_mass_density = 7.8 * unit.kg/unit.liter
+            self.std_feed_solids_massfrac = 100 * unit.ppm
 
         # CCD
         if self.get_port('ccd-feed').connected_port:
-            self.ccd_acidleach_feed_mass_flowrate = 0 * unit.kg/unit.minute
-            self.ccd_acidleach_feed_mass_density = 0 * unit.kg/unit.liter
-            self.ccd_acidleach_feed_solids_massfrac = 0 * unit.ppm
+            self.ccd_feed_mass_flowrate = 0 * unit.kg/unit.minute
+            self.ccd_feed_mass_density = 0 * unit.kg/unit.liter
+            self.ccd_feed_solids_massfrac = 0 * unit.ppm
         else:
-            self.ccd_acidleach_feed_mass_flowrate = 2270 * unit.kg/unit.minute
-            self.ccd_acidleach_feed_mass_density = 7.8 * unit.kg/unit.liter
-            self.ccd_acidleach_feed_solids_massfrac = 100 * unit.ppm
+            self.ccd_feed_mass_flowrate = 2270 * unit.kg/unit.minute
+            self.ccd_feed_mass_density = 7.8 * unit.kg/unit.liter
+            self.ccd_feed_solids_massfrac = 100 * unit.ppm
 
         #? vfda
         #?self.single_tank_decantation_raffinate_feed_mass_flowrate = 1.0 * unit.kg/unit.minute
@@ -183,14 +190,14 @@ class DecantationFiltration(Module):
         feed_mass_flowrate = Quantity(name='mass-flowrate',
                         formal_name='mdot', unit='kg/s',
                         value=0.0,
-                        latex_name=r'$\dot{m}$',
+                        latex_name=r'$\dot{m}_{std-o}$',
                         info='Decantation Single-Tank Overflow Mass Flowrate')
         quantities.append(feed_mass_flowrate)
 
-        feed_mass_density = Quantity(name='mass_density',
+        feed_mass_density = Quantity(name='mass-density',
                         formal_name='rho', unit='kg/m^3',
                         value=0.0,
-                        latex_name=r'$\rho$',
+                        latex_name=r'$\rho_{std-o}$',
                         info='Decantation Single-Tank Overflow Feed Mass Density')
         quantities.append(feed_mass_density)
 
@@ -234,14 +241,21 @@ class DecantationFiltration(Module):
         underflow_mass_flowrate = Quantity(name='mass-flowrate',
                                       formal_name='mdot', unit='kg/s',
                                       value=0.0,
-                                      latex_name=r'$\dot{m}$',
+                                      latex_name=r'$\dot{m}_{std-u}$',
                                       info='Decantation Single-Tank Underflow Mass Flowrate')
         quantities.append(underflow_mass_flowrate)
+
+        feed_mass_density = Quantity(name='mass-density',
+                        formal_name='rho', unit='kg/m^3',
+                        value=0.0,
+                        latex_name=r'$\rho_{std-u}$',
+                        info='Decantation Single-Tank Underflow Feed Mass Density')
+        quantities.append(feed_mass_density)
 
         underflow_solids_massfrac = Quantity(name='solids_massfrac',
                                              formal_name='solids_massfrac', unit='ppm',
                                              value=0.0,
-                                             latex_name=r'$C_1$',
+                                             latex_name=r'$C_{std-u}$',
                                              info='STD Underflow Solids Mass Fraction')
         quantities.append(underflow_solids_massfrac)
 
@@ -285,14 +299,14 @@ class DecantationFiltration(Module):
         ccd_underflow_mass_flowrate = Quantity(name='mass-flowrate',
                                        formal_name='mdot', unit='kg/s',
                                        value=0.0,
-                                       latex_name=r'$\dot{m}_4$',
+                                       latex_name=r'$\dot{m}_{ccd-u}$',
                                        info='Counter-Current Decantation Underflow Mass Flowrate')
         quantities.append(ccd_underflow_mass_flowrate)
 
         underflow_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=0.0,
-                        latex_name=r'$C_1$',
+                        latex_name=r'$C_{ccd-u}$',
                         info='Counter-Current Decantation Underflow Solids Mass Fraction')
 
         quantities.append(underflow_solids_massfrac)
@@ -337,21 +351,21 @@ class DecantationFiltration(Module):
         overflow_mass_flowrate = Quantity(name='mass-flowrate',
                         formal_name='mdot', unit='kg/s',
                         value=0.0,
-                        latex_name=r'$\dot{m}_\text{ccd-o}$',
+                        latex_name=r'$\dot{m}_{ccd-o}$',
                         info='Counter-Current Decantation Overflow Mass Flowrate')
         quantities.append(overflow_mass_flowrate)
 
         overflow_mass_density = Quantity(name='mass-density',
                         formal_name='rho', unit='kg/m$^3$',
                         value=0.0,
-                        latex_name=r'$\rho_\text{ccd-o}$',
+                        latex_name=r'$\rho_{ccd-o}$',
                         info='Counter-Current Decantation Overflow Mass Density')
         quantities.append(overflow_mass_density)
 
         overflow_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=0.0,
-                        latex_name=r'$C_1$',
+                        latex_name=r'$C_{ccd-o}$',
                         info='Counter-Current Decantation Overflow Solids Mass Fraction')
 
         quantities.append(overflow_solids_massfrac)
@@ -400,15 +414,15 @@ class DecantationFiltration(Module):
 
         slurry_mass_flowrate = Quantity(name='mass-flowrate',
                                        formal_name='mdot', unit='kg/s',
-                                       value=self.filtration_slurry_mass_flowrate,
-                                       latex_name=r'$\dot{m}_4$',
+                                       value=0.0,
+                                       latex_name=r'$\dot{m}_{filt-slurry}$',
                                        info='Filtration Slurry Mass Flowrate')
         quantities.append(slurry_mass_flowrate)
 
         slurry_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=self.filtration_slurry_solids_massfrac,
-                        latex_name=r'$C_1$',
+                        latex_name=r'$C_{filt-slurry}$',
                         info='Filtration Slurry Solids Mass Fraction')
 
         quantities.append(slurry_solids_massfrac)
@@ -452,15 +466,15 @@ class DecantationFiltration(Module):
 
         filtrate_mass_flowrate = Quantity(name='mass-flowrate',
                                        formal_name='mdot', unit='kg/s',
-                                       value=self.filtration_filtrate_mass_flowrate,
-                                       latex_name=r'$\dot{m}_4$',
+                                       value=0.0,
+                                       latex_name=r'$\dot{m}_{filt_filtrate}$',
                                        info='Filtration Filtrate Mass Flowrate')
         quantities.append(filtrate_mass_flowrate)
 
         filtrate_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=self.filtration_filtrate_solids_massfrac,
-                        latex_name=r'$C_1$',
+                        latex_name=r'$C_{filt_filtrate}$',
                         info='Filtration Filtrate Solids Mass Fraction')
 
         quantities.append(filtrate_solids_massfrac)
@@ -509,7 +523,7 @@ class DecantationFiltration(Module):
         liq_volume = Quantity(name='liquid-volume',
                         formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$V_\text{std}$',
+                        latex_name=r'$V_{std}$',
                         info='Decantation Single-Tank Liquid Volume')
         quantities.append(liq_volume)
 
@@ -523,7 +537,7 @@ class DecantationFiltration(Module):
         liq_volume = Quantity(name='liquid-volume',
                         formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$V_\text{ccd}$',
+                        latex_name=r'$V_{ccd}$',
                         info='Counter-Current Decantation Liquid Volume')
         quantities.append(liq_volume)
 
@@ -581,13 +595,13 @@ class DecantationFiltration(Module):
 
             self.send(time, 'std-feed')
 
-            (check_time, feed_stream) = self.recv('std-feed')
+            (check_time, feed) = self.recv('std-feed')
             assert abs(check_time-time) <= 1e-6
 
-            # Update feed stream data
-            self.single_tank_decantation_feed_mass_flowrate = feed_stream['mass-flowrate']
-            self.single_tank_decantation_feed_mass_density = feed_stream['mass-density']
-            self.single_tank_decantation_feed_solids_massfrac = feed_stream['solids-massfrac']
+            # Update STD feed data
+            self.std_feed_mass_flowrate = feed['mass-flowrate']
+            self.std_feed_mass_density = feed['mass-density']
+            self.std_feed_solids_massfrac = feed['solids-massfrac']
 
         # Interactions in the ccd overflow port
         # ----------------------------------
@@ -606,17 +620,35 @@ class DecantationFiltration(Module):
 
         # Interactions in the ccd feed port
         #------------------------------
-        # One way "from" feed port
+        # One way "from" ccd feed port
 
         # Receive from
         if self.get_port('ccd-feed').connected_port:
 
             self.send(time, 'ccd-feed')
 
-            (check_time, feed_phase) = self.recv('ccd-feed')
+            (check_time, feed) = self.recv('ccd-feed')
             assert abs(check_time-time) <= 1e-6
 
-            # insert data from ccd-feed_phase into decantation_feed_phase history
+            # Update CCD feed data
+            self.ccd_feed_mass_flowrate = feed['mass-flowrate']
+            self.ccd_feed_mass_density = feed['mass-density']
+            self.ccd_feed_solids_massfrac = feed['solids-massfrac']
+
+        # Interactions in the std-underflow port
+        # ----------------------------------
+        # One way "to" std underflow port
+
+        # Send to
+        if self.get_port('std-underflow').connected_port:
+
+            msg_time = self.recv('std-underflow')
+
+            std_underflow = dict()
+            std_underflow['mass-flowrate'] = self.std_underflow_phase.get_value('mass-flowrate', msg_time)
+            std_underflow['mass-density'] = self.std_underflow_phase.get_value('mass-density', msg_time)
+
+            self.send((msg_time, std_underflow), 'std-underflow')
 
         # Interactions in the raffinate feed port
         #------------------------------
@@ -652,27 +684,6 @@ class DecantationFiltration(Module):
             # extract filtration_filtrate_phase data at msg_time to send 
 
             self.send((msg_time, self.filtration_filtrate_phase), 'filtrate')
-
-
-        # Interactions in the std-underflow port
-        # ----------------------------------
-        # One way "to" std underflow port
-
-        # Send to
-        if self.get_port('std-underflow').connected_port:
-            msg_time = self.recv('std-underflow')
-
-            '''
-            temp = self.primary_outflow_phase.get_value('temp', msg_time)
-            primary_outflow = dict()
-            primary_outflow['temperature'] = temp
-            primary_outflow['pressure'] = self.primary_pressure
-            primary_outflow['mass_flowrate'] = self.primary_mass_flowrate
-            primary_outflow['quality'] = 0.0
-            '''
-            # extract filtration_filtrate_phase data at msg_time to send
-
-            self.send((msg_time, self.filtration_filtrate_phase), 'std-underflow')
 
     def __step(self, time=0.0):
         """Stepping Decantation-Filtration in time
@@ -713,15 +724,15 @@ class DecantationFiltration(Module):
         std_underflow_mass_flowrate_initial = self.std_underflow_phase.get_value('mass-flowrate', time)
         std_overflow_mass_flowrate_initial = self.std_overflow_phase.get_value('mass-flowrate', time)
 
-        feed_mass_flowrate = self.single_tank_decantation_feed_mass_flowrate
-        rho_feed = self.single_tank_decantation_feed_mass_density
+        feed_mass_flowrate = self.std_feed_mass_flowrate
+        rho_feed = self.std_feed_mass_density
 
         if feed_mass_flowrate == 0.0:
             feed_vol_flowrate = 0.0
         else:
             feed_vol_flowrate = feed_mass_flowrate/rho_feed
 
-        wash_water_vol_flowrate = self.wash_water_std_feed_ratio * feed_vol_flowrate
+        wash_water_vol_flowrate = self.std_wash_water_feed_ratio * feed_vol_flowrate
         rho_wash_water = self.wash_water_mass_density
         wash_water_mass_flowrate = wash_water_vol_flowrate * rho_wash_water
 
@@ -731,6 +742,7 @@ class DecantationFiltration(Module):
         vol_flowrate_inflow = mass_flowrate_inflow/rho_std
 
         mass_flowrate_initial = std_underflow_mass_flowrate_initial + std_overflow_mass_flowrate_initial
+
         # Place holder for mass balance
         vol_flowrate_initial = mass_flowrate_initial/rho_std
 
@@ -744,6 +756,10 @@ class DecantationFiltration(Module):
                 flow_residence_time = self.std_tank_volume/vol_flowrate_inflow
             else:
                 flow_residence_time = self.std_tank_volume/vol_flowrate_initial
+                #print('made here')
+
+            # Flow residense time correction for overflow/underflow
+            flow_residence_time /= self.std_flow_residence_time_factor
 
             mass_flowrate = mass_flowrate_inflow + \
                             math.exp(-self.time_step/flow_residence_time) * \
@@ -757,8 +773,8 @@ class DecantationFiltration(Module):
         std_underflow_mass_flowrate = u_over_o/(u_over_o + 1) * mass_flowrate
 
         # STD Math (??? what does this math mean? documentation)
-        m_dot_pl_std = self.single_tank_decantation_feed_mass_flowrate
-        c_pl_std = self.single_tank_decantation_feed_solids_massfrac
+        m_dot_pl_std = self.std_feed_mass_flowrate
+        c_pl_std = self.std_feed_solids_massfrac
         #?m_dot_o = self.single_tank_decantation_raffinate_feed_mass_flowrate
         #?c_o = self.single_tank_decantation_raffinate_feed_solids_massfrac
         m_dot_u = std_underflow_mass_flowrate
@@ -781,23 +797,23 @@ class DecantationFiltration(Module):
         ccd_overflow_mass_flowrate_initial = self.ccd_overflow_phase.get_value('mass-flowrate', time)
         std_overflow_mass_flowrate_initial = self.std_overflow_phase.get_value('mass-flowrate', time)
 
-        acidleach_feed_mass_flowrate = self.ccd_acidleach_feed_mass_flowrate
-        rho_acidleach_feed = self.ccd_acidleach_feed_mass_density
+        feed_mass_flowrate = self.ccd_feed_mass_flowrate
+        rho_feed = self.ccd_feed_mass_density
 
         # Missing the SolvEx raffinate
 
-        if acidleach_feed_mass_flowrate == 0.0:
-            acidleach_feed_vol_flowrate = 0.0
+        if feed_mass_flowrate == 0.0:
+            feed_vol_flowrate = 0.0
         else:
-            acidleach_feed_vol_flowrate = acidleach_feed_mass_flowrate / rho_acidleach_feed
+            feed_vol_flowrate = feed_mass_flowrate / rho_feed
 
-        ccd_wash_water_vol_flowrate = self.wash_water_acidleach_feed_ratio * acidleach_feed_vol_flowrate
+        ccd_wash_water_vol_flowrate = self.ccd_wash_water_feed_ratio * feed_vol_flowrate
         rho_wash_water = self.wash_water_mass_density
         ccd_wash_water_mass_flowrate = ccd_wash_water_vol_flowrate * rho_wash_water
 
         # Ideal solution
-        mass_flowrate_inflow = acidleach_feed_mass_flowrate + ccd_wash_water_mass_flowrate
-        rho_ccd = rho_acidleach_feed + rho_wash_water
+        mass_flowrate_inflow = feed_mass_flowrate + ccd_wash_water_mass_flowrate
+        rho_ccd = rho_feed + rho_wash_water
         vol_flowrate_inflow = mass_flowrate_inflow/rho_ccd
 
         mass_flowrate_initial = ccd_underflow_mass_flowrate_initial + \
@@ -819,6 +835,9 @@ class DecantationFiltration(Module):
             else:
                 flow_residence_time = self.ccd_tank_volume/vol_flowrate_initial
 
+            # Flow residense time correction for overflow/underflow
+            flow_residence_time /= self.ccd_flow_residence_time_factor
+
             mass_flowrate = mass_flowrate_inflow + \
                             math.exp(-self.time_step/flow_residence_time) * \
                            (mass_flowrate_initial - mass_flowrate_inflow)
@@ -831,8 +850,8 @@ class DecantationFiltration(Module):
         ccd_underflow_mass_flowrate = u_over_o / (u_over_o + 1) * mass_flowrate
 
         # CCD Math (??? what does this math mean? documentation)
-        m_dot_al = self.ccd_acidleach_feed_mass_flowrate
-        c_al = self.ccd_acidleach_feed_solids_massfrac
+        m_dot_al = self.ccd_feed_mass_flowrate
+        c_al = self.ccd_feed_solids_massfrac
         #m_dot_t = self.ccd_underflow_mass_flowrate
         #c_t = self.ccd_underflow_solids_massfrac
         #m_dot_pl_ccd = self.ccd_overflow_mass_flowrate
@@ -872,8 +891,8 @@ class DecantationFiltration(Module):
 
         c_f = 10 * unit.ppm
         c_sl = 990 * unit.ppm
-        m_dot_f = 0.991*m_dot_o
-        m_dot_sl = 0.009*m_dot_o
+        m_dot_f = 0.991*ccd_overflow_mass_flowrate
+        m_dot_sl = 0.009*ccd_overflow_mass_flowrate
 
         tmp_filtrate = self.filtration_filtrate_phase.get_row(time)
         tmp_slurry = self.filtration_slurry_phase.get_row(time)
