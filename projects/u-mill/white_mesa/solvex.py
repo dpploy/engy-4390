@@ -37,7 +37,7 @@
  NB. Extraction Feed (from decantation-filtration) goes to solvent extraction
 
    + Solvent Extraction
-      - 4 Mixer-settlers units. Area per unit 1400 ft^2, height ?
+      - 4 Mixer-settlers units. Area per unit 1400 ft^2, height 8 ft
       - Flowrates:
       - Aqueous/Organic = 3.0
       - 0.1M Alamine 336 (tri-octylamine TOA)
@@ -45,13 +45,13 @@
       - Solvent mixture: 2.5% TOA, 2.5% isodecanol, and 95% kerosene
 
    + Scrubbing
-      - 1 Mixer-settlers units. Area per unit 1400 ft^2, height ?
+      - 1 Mixer-settlers units. Area per unit 1400 ft^2, height 8 ft
 
    + Stripping
-      - 4 Mixer-settlers units. Area per unit 1400 ft^2, height ?
+      - 4 Mixer-settlers units. Area per unit 1400 ft^2, height 8 ft
 
    + Solvent Regeneration
-      - 1 Mixer-settlers units. Area per unit 1400 ft^2, height ?
+      - 1 Mixer-settlers units. Area per unit 1400 ft^2, height 8 ft
 
    Source of info:
    -https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf (pg. 189, 337)
@@ -532,8 +532,8 @@ class Solvex(Module):
             msg_time = self.recv('raffinate')
 
             raffinate = dict()
-            product['mass-flowrate'] = self.extraction_raffinate_phase.get_value('mass-flowrate',msg_time)
-            product['mass-density'] = self.extraction_raffinate_phase.get_value('mass-density',msg_time)
+            raffinate['mass-flowrate'] = self.extraction_raffinate_phase.get_value('mass-flowrate',msg_time)
+            raffinate['mass-density'] = self.extraction_raffinate_phase.get_value('mass-density',msg_time)
 
             self.send((msg_time, raffinate), 'raffinate')
 
@@ -562,8 +562,8 @@ class Solvex(Module):
 
         # Ideal solution
         aqueous_mass_flowrate_inflow = aq_feed_mass_flowrate + scrub_raffinate_mass_flowrate_inflow
-        aqueous_rho = aq_rho_feed * self.aqueous_raffinate_to_feed_rho_ratio + \
-                      scrub_raffinate_mass_density_inflow
+        aqueous_rho = (aq_rho_feed * self.aqueous_raffinate_to_feed_rho_ratio + \
+                      scrub_raffinate_mass_density_inflow) / 2
         aqueous_vol_flowrate_inflow = aqueous_mass_flowrate_inflow/aqueous_rho
 
         aqueous_mass_flowrate_initial = solvex_raffinate_mass_flowrate_initial
@@ -577,8 +577,8 @@ class Solvex(Module):
         # Organic
         solvex_organic_mass_flowrate_initial = self.solvex_product_phase.get_value('mass-flowrate', time)
 
-        org_feed_mass_flowrate = self.solvex_organic_feed_mass_flowrate + \
-                                 self.aqueous_to_organic_volume_ratio * solvex_raffinate_mass_flowrate_initial
+        org_feed_mass_flowrate = self.solvex_organic_feed_mass_flowrate
+
         org_rho_feed = self.solvex_organic_feed_mass_density
 
         #if org_feed_mass_flowrate == 0.0:
@@ -604,16 +604,12 @@ class Solvex(Module):
         # Place-holder for mass balance
         if liquid_volume >= 0.5 * self.solvex_tank_volume:
 
-            print('made here')
-
             flow_residence_time = self.solvex_tank_volume /\
                                   (aqueous_vol_flowrate_inflow + organic_vol_flowrate_inflow)
 
             mass_flowrate_raffinate = aqueous_mass_flowrate_inflow + \
                                       math.exp(-self.time_step/flow_residence_time) * \
                                       (aqueous_mass_flowrate_initial - aqueous_mass_flowrate_inflow)
-
-            print('mass_flowrate_raffinate=',mass_flowrate_raffinate)
 
             mass_flowrate_organic = organic_mass_flowrate_inflow + \
                                     math.exp(-self.time_step/flow_residence_time) * \
