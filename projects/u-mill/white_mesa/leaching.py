@@ -595,7 +595,6 @@ class Leaching(Module):
             self.acidleach_feed_mass_flowrate = feed['mass-flowrate']
             self.acidleach_feed_mass_density = feed['mass-density']
 
-
     def __step(self, time=0.0):
         """Stepping Leaching in time
         """

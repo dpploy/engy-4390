@@ -20,9 +20,9 @@ def main():
     make_plots = True
 
     # Preamble
-    end_time = 1.0*unit.minute
-    time_step = 1.0*unit.second
-    show_time = (True, 20*unit.second)
+    end_time = 5.0*unit.day
+    time_step = 10.0*unit.minute
+    show_time = (True, unit.hour)
 
     plant = Cortix(use_mpi=False, splash=True) # System top level
 
@@ -53,23 +53,28 @@ def main():
     # Evaporation and Calcination Plots
     if make_plots and plant.use_multiprocessing or plant.rank == 0:
 
-        evaporation_calcination = plant_net.modules[0]
+        evap_calc = plant_net.modules[0]
 
-        (quant, time_unit) = evaporation_calcination.calcination_product_phase.get_quantity_history('mass_flowrate')
-
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+        (quant, time_unit) = evap_calc.evap_state_phase.get_quantity_history('liquid-volume')
+        quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('Calcination-u3o8-product-mass-flowrate.png', dpi=300)
+        plt.savefig('evap-calc-evap-state-liquid-volume.png', dpi=300)
 
-        '''(quant, time_unit) = leaching.acidleach_phase.get_quantity_history('mass_flowrate')
+        (quant, time_unit) = evap_calc.evap_product_phase.get_quantity_history('mass-flowrate')
+        quant.plot(x_scaling=1/unit.day, y_scaling=unit.minute, x_label='Time [d]',
+                   #y_label=quant.latex_name+' ['+quant.unit+']')
+                   y_label=quant.latex_name+' [kg/min]')
+        plt.grid()
+        plt.savefig('evap-calc-evap-product-mass-flowrate.png', dpi=300)
 
-        quant.plot(x_scaling=1/unit.minute, x_label='Time [m]',
+        (quant, time_unit) = evap_calc.evap_product_phase.get_quantity_history('mass-density')
+        quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('leaching-acidleach-mass-flowrate.png', dpi=300)'''
-        
-        
+        plt.savefig('evap-calc-evap-product-mass-density.png', dpi=300)
+
+
         '''steamer = plant_net.modules[0]
 
         (quant, time_unit) = steamer.primary_outflow_phase.get_quantity_history('temp')
