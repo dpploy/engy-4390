@@ -37,7 +37,7 @@
  NB. Extraction Feed (from decantation-filtration) goes to solvent extraction
 
    + Solvent Extraction
-      - 4 Mixer-settlers units. Area per unit 1400 ft^2, height 8 ft
+      - 4 Mixer-settlers units. Area per unit 1400 ft^2, height 6 ft
       - Flowrates:
       - Aqueous/Organic = 3.0
       - 0.1M Alamine 336 (tri-octylamine TOA)
@@ -45,13 +45,13 @@
       - Solvent mixture: 2.5% TOA, 2.5% isodecanol, and 95% kerosene
 
    + Scrubbing
-      - 1 Mixer-settlers units. Area per unit 1400 ft^2, height 8 ft
+      - 1 Mixer-settlers units. Area per unit 1400 ft^2, height 6 ft
 
    + Stripping
-      - 4 Mixer-settlers units. Area per unit 1400 ft^2, height 8 ft
+      - 4 Mixer-settlers units. Area per unit 1400 ft^2, height 6 ft
 
    + Solvent Regeneration
-      - 1 Mixer-settlers units. Area per unit 1400 ft^2, height 8 ft
+      - 1 Mixer-settlers units. Area per unit 1400 ft^2, height 6 ft
 
    Source of info:
    -https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf (pg. 189, 337)
@@ -112,16 +112,16 @@ class Solvex(Module):
         # Configuration parameters
 
         # Solvex
-        self.solvex_tank_volume = 4 * 1400 * unit.ft**2 * 8 * unit.ft
+        self.solvex_tank_volume = 4 * 1400 * unit.ft**2 * 6 * unit.ft
         self.aqueous_to_organic_volume_ratio = 3
         self.aqueous_raffinate_to_feed_rho_ratio = 0.73
         self.organic_product_to_feed_rho_ratio = 1.25
 
         # Scrubbing
-        self.scrub_tank_volume = 1 * 1400 * unit.ft**2 * 8 * unit.ft
+        self.scrub_tank_volume = 1 * 1400 * unit.ft**2 * 6 * unit.ft
 
         # Stripping
-        self.strip_tank_volume = 4 * 1400 * unit.ft**2 * 8 * unit.ft
+        self.strip_tank_volume = 4 * 1400 * unit.ft**2 * 6 * unit.ft
 
         # Initialization
 
