@@ -138,79 +138,9 @@ class Solvex(Module):
 
         self.solvex_organic_feed_mass_density = 0.8 * unit.kg/unit.liter
 
-        # Derived quantities
-        '''
-        self.rho_p = 0.0
-        self.rey_p = 0.0
-        self.nusselt_p = 0.0
-
-        self.nusselt_s = 0.0
-
-        self.heat_sink_pwr = 0.0
-        '''
-
         #***************************************************************************************
         # E X T R A C T I O N
         #***************************************************************************************
-
-        '''
-        # Extraction Feed Phase History (internal state/external)
-        quantities = list()
-        species = list()
-
-        extraction_feed_mass_flowrate = Quantity(name='mass_flowrate',
-                                          formal_name='mdot', unit='kg/s',
-                                          value=self.extraction_feed_mass_flowrate,
-                                          latex_name=r'$\dot{m}_1$',
-                                          info='Extraction Feed Mass Flowrate')
-        quantities.append(extraction_feed_mass_flowrate)
-
-        extraction_feed_mass_density = Quantity(name='mass_density',
-                                         formal_name='rho', unit='kg/m^3',
-                                         value=self.extraction_feed_mass_density,
-                                         latex_name=r'$\rho$',
-                                         info='Extraction Feed Mass Density')
-        quantities.append(extraction_feed_mass_density)
-
-        uo2so434minus_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(a)',
-                           atoms=['U','2*O','3*S','12*O'],
-                           info='UO2-(SO4)3^4-')
-        species.append(uo2so434minus_feed)
-
-        h2o_feed = Species(name='H2O',formula_name='H2O(a)',
-                           atoms=['2*H','O'],
-                           info='H2O')
-        species.append(h2o_feed)
-
-        u6_aqu = Species( name='U-VI',formula_name='UO2^2+(a)',
-                atoms=['U','2*O'],
-                info='UO2$^{2+}$')
-        species.append(u6_aqu)
-
-        h2so4_feed = Species(name='H2-SO4',formula_name='H2SO4(a)',
-                           atoms=['2*H','S','4*O'],
-                           info='H2-SO4')
-        species.append(h2so4_feed)
-
-        hPlus_aqu = Species( name='H+',formula_name='H^+(a)',
-                atoms=['H'],
-                info='H$^+$')
-        species.append(hPlus_aqu)
-
-        toaso4 = Species(name='C24H51N-SO4',formula_name='C24H51NSO4(org)',
-                         atoms=['24*C','51*H','N','S','4*O'],
-                         info='C24H51N-SO4')
-        species.append(toaso4)
-
-        toauo2so43 = Species(name='C24H51N-UO2-(SO4)3',
-                             formula_name='C24H51NUO2(SO4)3(org)',
-                             atoms=['24*C','51*H','N','U','3*S','14*O'],
-                             info='C24H51N-UO2-(SO4)3')
-        species.append(toauo2so43)
-
-        self.extraction_feed_phase = Phase(time_stamp=self.initial_time,
-                                           time_unit='s', quantities=quantities, species=species)
-        '''
 
         # Extraction Raffinate Phase History (internal state/external)
         quantities = list()
@@ -314,6 +244,7 @@ class Solvex(Module):
 
         self.solvex_product_phase = Phase(time_stamp=self.initial_time,
                                           time_unit='s', quantities=quantities, species=species)
+
         #***************************************************************************************
         # S C R U B B I N G
         #***************************************************************************************
@@ -564,12 +495,6 @@ class Solvex(Module):
             (check_time, extraction_feed) = self.recv('extraction-feed')
             assert abs(check_time-time) <= 1e-6
 
-            '''
-            self.primary_inflow_temp = primary_inflow['temperature']
-            self.primary_ressure = primary_inflow['pressure']
-            self.primary_mass_flowrate = primary_inflow['mass_flowrate']
-            '''
-
         # Interactions in the secondary-inflow port
         #----------------------------------------
         # One way "from" stripping-feed
@@ -581,12 +506,6 @@ class Solvex(Module):
 
             (check_time, stripping_feed) = self.recv('striping-feed')
             assert abs(check_time-time) <= 1e-6
-
-            '''
-            self.secondary_inflow_temp = secondary_inflow['temperature']
-            self.secondary_pressure = secondary_inflow['pressure']
-            self.secondary_mass_flowrate = secondary_inflow['mass_flowrate']
-            '''
 
         # Interactions in the primary-outflow port
         #-----------------------------------------
@@ -600,12 +519,6 @@ class Solvex(Module):
             product = dict()
             product['mass-flowrate'] = self.stripping_product_phase.get_value('mass-flowrate',msg_time)
             product['mass-density'] = self.stripping_product_phase.get_value('mass-density',msg_time)
-            '''
-            product['temperature'] = temp
-            product['pressure'] = self.primary_pressure
-            product['mass_flowrate'] = self.primary_mass_flowrate
-            product['quality'] = 0.0
-            '''
 
             self.send((msg_time, product), 'product')
 
@@ -621,46 +534,12 @@ class Solvex(Module):
             raffinate = dict()
             product['mass-flowrate'] = self.extraction_raffinate_phase.get_value('mass-flowrate',msg_time)
             product['mass-density'] = self.extraction_raffinate_phase.get_value('mass-density',msg_time)
-            '''
-            raffinate['temperature'] = temp
-            raffinate['pressure'] = press
-            raffinate['mass_flowrate'] = flowrate
-            raffinate['total_heat_power'] = -self.heat_sink_pwr
-            '''
 
             self.send((msg_time, raffinate), 'raffinate')
 
     def __step(self, time=0.0):
         """Stepping Solvex in time
         """
-
-        '''
-        # Get state values
-        u_0 = self.__get_state_vector(time)
-
-        t_interval_sec = np.linspace(time, time+self.time_step, num=2)
-
-        max_n_steps_per_time_step = 1500 # max number of nonlinear algebraic solver
-                                         # iterations per time step
-
-        (u_vec_hist, info_dict) = odeint(self.__f_vec, u_0, t_interval_sec,
-                                         rtol=1e-7, atol=1e-8,
-                                         mxstep=max_n_steps_per_time_step,
-                                         full_output=True, tfirst=False)
-
-        assert info_dict['message'] == 'Integration successful.', info_dict['message']
-
-        u_vec = u_vec_hist[1, :]  # solution vector at final time step
-
-        temp_p = u_vec[0] # primary outflow temp
-        temp_s = u_vec[1] # secondary outflow temp
-
-        # Update phases
-        primary_outflow = self.primary_outflow_phase.get_row(time)
-        secondary_inflow = self.secondary_inflow_phase.get_row(time)
-        secondary_outflow = self.secondary_outflow_phase.get_row(time)
-        steamer = self.state_phase.get_row(time)
-        '''
 
         #------------------------------------
         # Evolve the Solvent Extraction State
@@ -779,37 +658,5 @@ class Solvex(Module):
 
 
         self.scrub_raffinate_phase.add_row(time, tmp_scrub_raffinate)
-
-        '''
-        self.primary_outflow_phase.add_row(time, primary_outflow)
-        self.primary_outflow_phase.set_value('temp', temp_p, time)
-        self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
-
-        self.secondary_inflow_phase.add_row(time, secondary_inflow)
-        self.secondary_inflow_phase.set_value('temp', self.secondary_inflow_temp, time)
-        self.secondary_inflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
-
-        self.secondary_outflow_phase.add_row(time, secondary_outflow)
-        self.secondary_outflow_phase.set_value('temp', temp_s, time)
-        self.secondary_outflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
-        self.secondary_outflow_phase.set_value('pressure', self.secondary_pressure, time)
-        self.secondary_outflow_phase.set_value('quality', self.secondary_outflow_quality, time)
-
-        self.state_phase.add_row(time, steamer)
-
-        # Primary residence time
-        self.state_phase.set_value('tau_p', self.tau_p, time)
-
-        # Secondary residence time
-        self.state_phase.set_value('tau_s', self.tau_s, time)
-
-        # Heat flux and Nusselt number
-        heatflux = -self.heat_sink_pwr/self.heat_transfer_area
-        self.state_phase.set_value('heatflux', heatflux, time)
-
-        self.state_phase.set_value('nusselt_p', self.nusselt_p, time)
-
-        self.state_phase.set_value('nusselt_s', self.nusselt_s, time)
-        '''
 
         return time
