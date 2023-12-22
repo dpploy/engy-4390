@@ -22,7 +22,7 @@ def main():
     attach_leaching = True
 
     # Preamble
-    end_time = 10.0*unit.day
+    end_time = 14.0*unit.day
     time_step = 10.0*unit.minute
     show_time = (True, unit.hour)
 
@@ -124,15 +124,15 @@ def main():
 
         (quant, time_unit) = decant_filt.filtration_filtrate_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1 / unit.day, x_label='Time [d]',
-                   y_label=quant.latex_name + ' [' + quant.unit + ']')
+        quant.plot(x_scaling=1 / unit.day, x_label='Time [d]',y_scaling = unit.minute,
+                   y_label=quant.latex_name + ' [kg/min]')
         plt.grid()
         plt.savefig('decant-filt-filtrate-mass-flowrate.png', dpi=300)
 
         (quant, time_unit) = decant_filt.filtration_slurry_phase.get_quantity_history('mass-flowrate')
 
-        quant.plot(x_scaling=1 / unit.day, x_label='Time [d]',
-                   y_label=quant.latex_name + ' [' + quant.unit + ']')
+        quant.plot(x_scaling=1 / unit.day, x_label='Time [d]',y_scaling = unit.minute,
+                   y_label=quant.latex_name + ' [kg/min]')
         plt.grid()
         plt.savefig('decant-filt-slurry-mass-flowrate.png', dpi=300)
 

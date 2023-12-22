@@ -891,8 +891,8 @@ class DecantationFiltration(Module):
 
         c_f = 10 * unit.ppm
         c_sl = 990 * unit.ppm
-        m_dot_f = 0.991*ccd_overflow_mass_flowrate
-        m_dot_sl = 0.009*ccd_overflow_mass_flowrate
+        m_dot_f = 0.991*std_overflow_mass_flowrate
+        m_dot_sl = 0.009*std_overflow_mass_flowrate
 
         tmp_filtrate = self.filtration_filtrate_phase.get_row(time)
         tmp_slurry = self.filtration_slurry_phase.get_row(time)
