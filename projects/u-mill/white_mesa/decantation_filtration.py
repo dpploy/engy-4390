@@ -685,8 +685,6 @@ class DecantationFiltration(Module):
 
             self.send((msg_time, self.filtration_filtrate_phase), 'filtrate')
 
-
-
     def __step(self, time=0.0):
         """Stepping Decantation-Filtration in time
         """

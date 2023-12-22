@@ -2,49 +2,49 @@
 # -*- coding: utf-8 -*-
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
-"""
-Cortix Module
-This module is a model of the Evaporation/Calcination process
+"""Cortix Module.
+   Evaporation/Calcination process in the White Mesa Uranium Milling Plant.
 
 
-             Ammonium Diuranate Feed
-                       |
-                       |
-                       v
+            Ammonium Diuranate Feed
+                     |
+                     |
+                     v
              ____________________
-             |                  |
-             |   Evaporation    |<----- Evaporator Heat (internal)
-             |                  |
-             |   Calcination    |<----- Calciner Heat (internal)
+ Off-Gas     |                  |
+    <--------|   Evaporation    |<----- Steam Sparging (internal)
+             |                  |<----- Resistance Heating (internal)
+             |------------------|
+             |                  |<----- Sweeping Gas
+             |   Calcination    |<----- Resistance Heating (internal)
              |__________________|
                 |            |
                 |            |
                 v            v
              Product      Off-Gas
               (U3O8)
-"" 
 + Evaporation:
      1) Evaporator Base Parameters
        - # of Evaporator Columns:                 5
        - Volume per Evaporator:                 200 m^3
        - Temperature Setpoint per Evaporator:   351.85 C
        - Feed Flowrate Entering Evaporator:    0.09 gallons/min
-       - feed mass fraction of solids:           
-       - wash water mass fraction of solids: 
-       - overflow mass fraction of solids:   
-       - underflow mass fraction of solids:  
+       - feed mass fraction of solids:
+       - wash water mass fraction of solids:
+       - overflow mass fraction of solids:
+       - underflow mass fraction of solids:
 
 + Calcination:
      1) Calciner Heat Parameters
        - # of Rotary Calciners:                    2
        - Volume per Calciner:                    350 m^3
-       - Temperature Setpoint per Calciner:     850.0 C 
+       - Temperature Setpoint per Calciner:     850.0 C
        - Feed Flowrate Entering Evaporator:    0.07 gallons/min
-       - feed mass fraction of solids:             
-       - wash water mass fraction of solids:      
-       - overflow mass fraction of solids:   
-       - underflow mass fraction of solids:  
-      
+       - feed mass fraction of solids:
+       - wash water mass fraction of solids:
+       - overflow mass fraction of solids:
+       - underflow mass fraction of solids:
+
    Source of info:
 """
 
@@ -98,43 +98,34 @@ class EvaporationCalcination(Module):
         # Domain attributes
 
         # Configuration parameters
-        self.diuranate_volume = 0.988 * unit.meter**3
-        self.entering_DUO_flowrate = 0.07 * unit.gallon/unit.minute
-        self.calcination_flash_time = 80 * unit.minute
 
-        #Evaporation
-        self.evaporation_feed_mass_flowrate = 1.0 * unit.kg / unit.minute
-        self.evaporation_feed_mass_density = 7.8 * unit.kg/unit.liter
-        self.evaporation_feed_solids_massfrac = 100 * unit.ppm
-        
-        #Calcination
-        self.calcination_product_mass_flowrate = 1.0 * unit.kg / unit.minute
-        self.calcination_product_mass_density = 7.8 * unit.kg/unit.liter
-        self.calcination_product_solids_massfrac = 100 * unit.ppm
+        # Evaporation
+        self.evaporator_tank_volume = 2 * 200 * unit.meter**3
+        self.five_tau_evaporation = 48 * unit.hour
+        self.evap_densification_factor = 1.2
+        self.evap_shrink_factor = 1.1
+        self.evap_volume_reduction = 50/100
+        self.product_discharge_time = 1.0 * unit.day
+        self.evaporator_status = 'empty' # filling-up, evaporating, discharging
+
+        # Calcination
 
         # Initialization
-        '''
-        self.primary_inflow_temp = primary_inflow_temp
 
-        self.primary_pressure = 127.6*unit.bar
+        # Evaporation
+        if self.get_port('adu-feed').connected_port:
+            self.evap_feed_mass_flowrate = 0 * unit.kg/unit.minute
+            self.evap_feed_mass_density = 0 * unit.kg/unit.liter
+            self.evap_feed_solids_massfrac = 0 * unit.ppm
+        else:
+            self.evap_feed_mass_flowrate = 5800.0 * unit.kg/unit.minute
+            self.evap_feed_mass_density = 8.7 * unit.kg/unit.liter
+            self.evap_feed_solids_massfrac = 100 * unit.ppm
 
-        self.primary_mass_flowrate = 4.66e6*unit.lb/unit.hour
-
-        self.primary_outflow_temp = self.primary_inflow_temp #- 2*unit.K
-        '''
+        # Calcination
 
         # Derived quantities
-        '''
-        self.rho_p = 0.0
-        self.cp_p = 0.0
-        self.mu_p = 0.0
-        self.k_p = 0.0
-        self.prtl_p = 0.0
-        self.rey_p = 0.0
-        self.nusselt_p = 0.0
 
-        self.heat_sink_pwr = 0.0
-        '''
         #***************************************************************************************
         # E V A P O R A T I O N
         #***************************************************************************************
@@ -143,35 +134,69 @@ class EvaporationCalcination(Module):
         quantities = list()
         species = list()
 
-        feed_mass_flowrate = Quantity(name='mass_flowrate',
+        mass_flowrate = Quantity(name='mass-flowrate',
                         formal_name='mdot', unit='kg/s',
-                        value=self.evaporation_feed_mass_flowrate,
+                        value=0.0,
                         latex_name=r'$\dot{m}$',
-                        info='Evaporation Feed Mass Flowrate')
-        quantities.append(feed_mass_flowrate)
+                        info='Evaporation Product Mass Flowrate')
+        quantities.append(mass_flowrate)
 
-        feed_mass_density = Quantity(name='mass_density',
+        mass_density = Quantity(name='mass-density',
                         formal_name='rho', unit='kg/m^3',
-                        value=self.evaporation_feed_mass_density,
+                        value=0.0,
                         latex_name=r'$\rho$',
-                        info='Evaporation Feed Mass Density')
-        quantities.append(feed_mass_density)
+                        info='Evaporation Product Mass Density')
+        quantities.append(mass_density)
 
-        feed_solids_massfrac = Quantity(name='solids_massfrac',
+        solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
-                        value=self.evaporation_feed_solids_massfrac,
+                        value=0.0,
                         latex_name=r'$C_1$',
-                        info='Evaporation Feed Solids Mass Fraction')
+                        info='Evaporation Product Solids Mass Fraction')
 
-        quantities.append(feed_solids_massfrac)
+        quantities.append(solids_massfrac)
 
-        diuranate_feed = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(s)',
-                           atoms=['U','2*O','3*S','12*O'],
-                           info='UO2-(SO4)3^4-')
-        species.append(diuranate_feed)
+        diuranate = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(s)',
+                            atoms=['U','2*O','3*S','12*O'],
+                            info='UO2-(SO4)3^4-')
+        species.append(diuranate)
 
-        self.evaporation_feed_phase = Phase(time_stamp=self.initial_time,
-                                            time_unit='s', quantities=quantities, species=species)
+        self.evap_product_phase = Phase(time_stamp=self.initial_time,
+                                        time_unit='s', quantities=quantities, species=species)
+
+        # Evaporation Off-Gas Phase History
+        quantities = list()
+        species = list()
+
+        mass_flowrate = Quantity(name='mass-flowrate',
+                        formal_name='mdot', unit='kg/s',
+                        value=0.0,
+                        latex_name=r'$\dot{m}$',
+                        info='Evaporation Off-Gas Mass Flowrate')
+        quantities.append(mass_flowrate)
+
+        mass_density = Quantity(name='mass-density',
+                        formal_name='rho', unit='kg/m^3',
+                        value=0.0,
+                        latex_name=r'$\rho$',
+                        info='Evaporation Off-Gas Mass Density')
+        quantities.append(mass_density)
+
+        solids_massfrac = Quantity(name='solids_massfrac',
+                        formal_name='solids_massfrac', unit='ppm',
+                        value=0.0,
+                        latex_name=r'$C_1$',
+                        info='Evaporation Off-Gas Solids Mass Fraction')
+
+        quantities.append(solids_massfrac)
+
+        diuranate = Species(name='UO2-(SO4)3^4-',formula_name='UO2(SO4)3^4-(s)',
+                            atoms=['U','2*O','3*S','12*O'],
+                            info='UO2-(SO4)3^4-')
+        species.append(diuranate)
+
+        self.evap_offgas_phase = Phase(time_stamp=self.initial_time,
+                                       time_unit='s', quantities=quantities, species=species)
 
         #***************************************************************************************
         # C A L C I N A T I O N
@@ -181,23 +206,23 @@ class EvaporationCalcination(Module):
         quantities = list()
         species = list()
 
-        product_mass_flowrate = Quantity(name='mass_flowrate',
+        product_mass_flowrate = Quantity(name='mass-flowrate',
                         formal_name='mdot', unit='kg/s',
-                        value=self.calcination_product_mass_flowrate,
+                        value=0.0,
                         latex_name=r'$\dot{m}$',
                         info='Calcination Product Mass Flowrate')
         quantities.append(product_mass_flowrate)
 
         product_mass_density = Quantity(name='mass_density',
                         formal_name='rho', unit='kg/m^3',
-                        value=self.calcination_product_mass_density,
+                        value=0.0,
                         latex_name=r'$\rho$',
                         info='Calcination Product Mass Density')
         quantities.append(product_mass_density)
 
         product_solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
-                        value=self.calcination_product_solids_massfrac,
+                        value=0.0,
                         latex_name=r'$C_1$',
                         info='Calcination Product Solids Mass Fraction')
 
@@ -215,51 +240,19 @@ class EvaporationCalcination(Module):
         # S T A T E  P H A S E
         #***************************************************************************************
 
-        '''
+        # Evaporation
         quantities = list()
+        species = list()
 
-        tau_p = Quantity(name='tau_p',
-                        formal_name='Tau_p', unit='s',
+        liq_volume = Quantity(name='liquid-volume',
+                        formal_name='v', unit='m$^3$',
                         value=0.0,
-                        latex_name=r'$\tau_{p}$',
-                        info='Steamer Primary Residence Time')
+                        latex_name=r'$V_{e}$',
+                        info='Evaporation Tank Liquid Volume')
+        quantities.append(liq_volume)
 
-        quantities.append(tau_p)
-
-        tau_s = Quantity(name='tau_s',
-                        formal_name='Tau_s', unit='s',
-                        value=0.0,
-                        latex_name=r'$\tau_{s}$',
-                        info='Steamer Secondary Residence Time')
-
-        quantities.append(tau_s)
-
-        heatflux = Quantity(name='heatflux',
-                        formal_name="q''", unit='W/m$^2$',
-                        value=0.0,
-                        latex_name=r"$q''$",
-                        info='Steamer Heat Flux')
-
-        quantities.append(heatflux)
-
-        nusselt_p = Quantity(name='nusselt_p',
-                        formal_name='Nu_p', unit='',
-                        value=0.0,
-                        latex_name=r'$Nu_p$',
-                        info='Steamer Primary Nusselt Number')
-
-        quantities.append(nusselt_p)
-
-        nusselt_s = Quantity(name='nusselt_s',
-                        formal_name='Nu_s', unit='',
-                        value=0.0,
-                        latex_name=r'$Nu_s$',
-                        info='Steamer Secondary Nusselt Number')
-
-        quantities.append(nusselt_s)'''
-
-        self.evaporation_phase = Phase(time_stamp=self.initial_time,
-                                 time_unit='s', quantities=quantities)
+        self.evap_state_phase = Phase(time_stamp=self.initial_time, time_unit='s',
+                                      quantities=quantities, species=species)
 
     def run(self, *args):
 
@@ -280,7 +273,7 @@ class EvaporationCalcination(Module):
             if self.show_time[0] and \
                (print_time <= time < print_time+print_time_step):
 
-                msg = self.name+'::run():time[m]='+ str(round(time/unit.minute, 1))
+                msg = self.name+'::run():time[d]='+ str(round(time/unit.day, 1))
                 self.log.info(msg)
 
                 self.__logit = True
@@ -299,7 +292,6 @@ class EvaporationCalcination(Module):
             self.__call_ports(time)
 
         self.end_time = time # correct the final time if needed
-
 
     def __call_ports(self, time):
 
@@ -373,8 +365,71 @@ class EvaporationCalcination(Module):
         secondary_outflow = self.secondary_outflow_phase.get_row(time)
         steamer = self.state_phase.get_row(time)
         '''
-        
+
+        #-----------------------------
         # Evolve the Evaporation state
+        #-----------------------------
+        rho_evap_ideal = self.evap_feed_mass_density * self.evap_densification_factor
+
+        if self.evaporator_status == 'empty' or self.evaporator_status == 'filling-up':
+            rho_evap_feed = self.evap_feed_mass_density
+            mass_flowrate_evap_feed = self.evap_feed_mass_flowrate
+            vol_flowrate_feed = mass_flowrate_evap_feed/rho_evap_feed
+
+            rho_evap = rho_evap_feed
+            mass_flowrate_evap = 0
+        else:
+            rho_evap_feed = 0.0
+            mass_flowrate_evap_feed = 0.0
+            vol_flowrate_feed = 0.0
+
+        evap_liq_volume_initial = self.evap_state_phase.get_value('liquid-volume', time)
+
+        rho_evap_initial = self.evap_product_phase.get_value('mass-density', time)
+
+        if self.evaporator_status != 'discharging':
+            vol_flowrate_evap_initial = 0.0
+            mass_flowrate_evap = 0
+        else:
+            vol_flowrate_evap_initial = evap_liq_volume_initial/self.product_discharge_time
+            mass_flowrate_evap = rho_evap_initial * vol_flowrate_evap_initial
+            rho_evap = evap_liq_volume_initial
+
+        evap_liq_volume = evap_liq_volume_initial + \
+                          (vol_flowrate_feed - vol_flowrate_evap_initial) * self.time_step
+
+        assert evap_liq_volume >= 0.0
+
+        # Ideal evaporation
+
+        # Filling-up
+        if evap_liq_volume < self.evaporator_tank_volume and self.evaporator_status == 'empty':
+            self.evaporator_status = 'filling-up'
+
+        # Evaporating
+        if (evap_liq_volume > self.evaporator_tank_volume and self.evaporator_status == 'filling-up') or \
+           self.evaporator_status == 'evaporating':
+            self.evaporator_status = 'evaporating'
+            tau = self.five_tau_evaporation
+            rho_evap = rho_evap_ideal + math.exp(-self.time_step/tau) * (rho_evap_initial - rho_evap_ideal)
+            mass_flowrate_evap = 0.0
+
+            delta_rho = rho_evap - rho_evap_initial
+            delta_vol = self.evap_shrink_factor / delta_rho
+            evap_liq_volume = evap_liq_volume_initial - delta_vol
+
+            if evap_liq_volume <= self.evap_volume_reduction * self.evaporator_tank_volume:
+                self.evaporator_status = 'discharging'
+                print('Discharging')
+
+        # Discharge
+        if rho_evap_initial >= 0.95*rho_evap_ideal:
+            self.evaporator_status = 'discharging'
+
+        tmp_evap_state = self.evap_state_phase.get_row(time)
+        tmp_evap_product = self.evap_product_phase.get_row(time)
+
+
         '''mass_flowrate_initial = self.evaporation_phase.get_value('mass_flowrate', time)
 
         mass_flowrate_inflow = self.evaporation_feed_mass_flowrate
@@ -385,14 +440,15 @@ class EvaporationCalcination(Module):
 
         if vol_flowrate_initial == 0:
             vol_flowrate_initial = mass_flowrate_inflow
-            tau = self.diuranate_volume/vol_flowrate_initial
+            tau = self.evaporator_volume/vol_flowrate_initial
         else:
-            tau = self.diuranate_volume/vol_flowrate_initial
+            tau = self.evaporator_volume/vol_flowrate_initial
 
         # Mass balance
         mass_flowrate_evaporation = mass_flowrate_inflow + \
                                  math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_inflow)
 '''
+        '''
         # Evolve the u3o8 Product state
         mass_flowrate_initial = self.calcination_product_phase.get_value('mass_flowrate', time)
 
@@ -404,19 +460,33 @@ class EvaporationCalcination(Module):
 
         if vol_flowrate_initial == 0:
             vol_flowrate_initial = mass_flowrate_outflow
-            tau = self.diuranate_volume/vol_flowrate_initial
+            tau = self.evaporator_volume/vol_flowrate_initial
         else:
-            tau = self.diuranate_volume/vol_flowrate_initial
+            tau = self.evaporator_volume/vol_flowrate_initial
 
         # Mass balance
         mass_flowrate_product = mass_flowrate_outflow + \
                                   math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_outflow)
 
         tmp_calcination = self.calcination_phase.get_row(time)
+        '''
 
-        # Advance time and store new state variables
+        #----------------------------
+        # Step All Quantities in Time
+        #----------------------------
+
         time += self.time_step
 
+        # Evaporation
+        self.evap_state_phase.add_row(time, tmp_evap_state)
+        self.evap_state_phase.set_value('liquid-volume', evap_liq_volume, time)
+
+        self.evap_product_phase.add_row(time, tmp_evap_product)
+        self.evap_product_phase.set_value('mass-flowrate', mass_flowrate_evap, time)
+        self.evap_product_phase.set_value('mass-density', rho_evap, time)
+
+        '''
+        # Calcination
         self.calcination_product_phase.add_row(time, tmp_calcination)
         #self.evaporation_phase.add_row(time, tmp_calcination)
 
@@ -424,37 +494,6 @@ class EvaporationCalcination(Module):
         self.calcination_product_phase.set_value('mass_density', rho_calcination, time)
 
         #self.evaporation_phase.set_value('mass_flowrate', mass_flowrate_evaporation, time)
-
-        '''
-        self.primary_outflow_phase.add_row(time, primary_outflow)
-        self.primary_outflow_phase.set_value('temp', temp_p, time)
-        self.primary_outflow_phase.set_value('flowrate', self.primary_mass_flowrate, time)
-
-        self.secondary_inflow_phase.add_row(time, secondary_inflow)
-        self.secondary_inflow_phase.set_value('temp', self.secondary_inflow_temp, time)
-        self.secondary_inflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
-
-        self.secondary_outflow_phase.add_row(time, secondary_outflow)
-        self.secondary_outflow_phase.set_value('temp', temp_s, time)
-        self.secondary_outflow_phase.set_value('flowrate', self.secondary_mass_flowrate, time)
-        self.secondary_outflow_phase.set_value('pressure', self.secondary_pressure, time)
-        self.secondary_outflow_phase.set_value('quality', self.secondary_outflow_quality, time)
-
-        self.state_phase.add_row(time, steamer)
-
-        # Primary residence time
-        self.state_phase.set_value('tau_p', self.tau_p, time)
-
-        # Secondary residence time
-        self.state_phase.set_value('tau_s', self.tau_s, time)
-
-        # Heat flux and Nusselt number
-        heatflux = -self.heat_sink_pwr/self.heat_transfer_area
-        self.state_phase.set_value('heatflux', heatflux, time)
-
-        self.state_phase.set_value('nusselt_p', self.nusselt_p, time)
-
-        self.state_phase.set_value('nusselt_s', self.nusselt_s, time)
         '''
 
         return time
