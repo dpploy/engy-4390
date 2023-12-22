@@ -54,7 +54,8 @@
       - 1 Mixer-settlers units. Area per unit 1400 ft^2, height ?
 
    Source of info:
-   -https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf (pg. 189)
+   -https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf (pg. 189, 337)
+   -https://documents.deq.utah.gov/legacy/businesses/e/energy-fuels-resources-usa/docs/2007/05May/VOLUME%201.pdf (pg. 18)
 
 """
 
