@@ -69,8 +69,7 @@ from cortix import Module
 from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
 from cortix import Species
-
-import unit
+from cortix import Units as unit
 
 class Solvex(Module):
     """Solvent Extraction system.

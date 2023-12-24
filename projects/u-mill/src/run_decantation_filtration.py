@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 
 from cortix import Cortix
 from cortix import Network
-
-import unit
+from cortix import Units as unit
 
 from leaching import Leaching
 from decantation_filtration import DecantationFiltration

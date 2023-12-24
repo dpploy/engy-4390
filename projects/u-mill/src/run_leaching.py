@@ -8,10 +8,9 @@ import matplotlib.pyplot as plt
 
 from cortix import Cortix
 from cortix import Network
+from cortix import Units as unit
 
-import unit
-
-from leaching import Leaching #Will have to add a leaching class in leaching.py file
+from leaching import Leaching
 
 def main():
 
