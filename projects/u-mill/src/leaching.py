@@ -3,8 +3,8 @@
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
 """Cortix Module.
-   Leaching process in the White Mesa Milling Plant.
 
+Leaching process in the White Mesa Milling Plant.
 
                     Wet Ore
                    (internal)
@@ -122,7 +122,7 @@ from cortix import Species
 import unit
 
 class Leaching(Module):
-    """2-Phase wet ore leaching on agitated tanks.
+    """Wet ore leaching on agitated tanks.
 
     Notes
     -----
