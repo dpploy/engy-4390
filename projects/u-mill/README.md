@@ -8,7 +8,7 @@ View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/j
 
 Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2Fu-mill%2Fproject-report.ipynb)
 
-Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2Fu-mill)
+Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2Fu-mill%2Fusecases)
 
  >**Students:** Kyle Rizzuto, Robert Townsend, Jacob Duprey, Kevin McMenemy  <br>
  >**Mentor/Collaborator:** [Prof. Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
