@@ -1,6 +1,8 @@
 # local
+readme-md-to-pdf.txt
 *.DS_Store
 *~
+*syllabus.md
 #projects/sm-pwr/*
 *.png
 *.gv
@@ -9,6 +11,24 @@
 *.swp
 *.pdf
 *.tar.gz
+*.svg
+toolkit.py
+moose-toolkit.py
+engy_5310
+p*moose*
+*solution*
+*.png
+*.PNG
+*vista*
+cubit
+projects/2024/tritium/*.C
+projects/2024/tritium/*.c
+projects/2024/tritium/*.cxx
+projects/2024/tritium/*.h
+projects/2024/xenon-removal/*.C
+projects/2024/xenon-removal/*.c
+projects/2024/xenon-removal/*.cxx
+projects/2024/xenon-removal/*.h
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
