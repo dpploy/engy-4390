@@ -1,6 +1,6 @@
 # Uranium Mill Network Dynamics Simulation
 
-UMass Lowell Fall 2023 <br>
+UMass Lowell Fall 2024 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
 Engy-4390: Nuclear Systems Design and Analysis
 
