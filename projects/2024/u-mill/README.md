@@ -1,6 +1,6 @@
 # Uranium Mill Network Dynamics Simulation
 
-UMass Lowell Fall 2023 <br>
+UMass Lowell Fall 2021 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
 Engy-4390: Nuclear Systems Design and Analysis
 
@@ -10,7 +10,7 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 
 Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2Fu-mill%2Fusecases)
 
- >**Students:** Kyle Rizzuto, Robert Townsend, Jacob Duprey, Kevin McMenemy  <br>
+ >**Students:** Alyssa Puglisi, Cole Connerty, Gui Lima  <br>
  >**Mentor/Collaborator:** [Prof. Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
  >[Dept. of Chemical Engineering (Nuclear Energy Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
  >University of Massachusetts Lowell, USA <br>
