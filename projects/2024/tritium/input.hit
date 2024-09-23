@@ -1,8 +1,10 @@
+# J. R. Frye
 # Tritium Transport: Poisson 2D FEM
 # UMass Lowell Nuclear Chemical Engineering
-# Student :Anthony Bowers
+# Student: James Frye
+# Original Student :Anthony Bowers
 # Personal Instructor (PI):Dr. Shubash Sharma
-# Date: 5/3/2021
+# 23Sep24
 
 # Parameters [cm]
 xmin = 0
