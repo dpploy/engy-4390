@@ -1,8 +1,8 @@
 # FIRES Brick
 
-UMass Lowell Fall 2021 <br>
+UMass Lowell Fall 2024 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
-Engy-5330: Computational Continuum Transport Phenomena
+Engy-4390: Nuclear System Design & Analysis  
 
 View the project (MOOSE) on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/projects/2024/fires-brick/report_moose.ipynb)
 <br>
@@ -10,7 +10,7 @@ View the project (python) on `NBViewer`: [![NBViewer](https://raw.githubusercont
 
 Run the project (python) on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Ffires-brick%2Freport.ipynb)
 
- >[Shubhojit and Julian](https://github.com/pukaishubho), and [prof. Stephen Lam](url) <br>
+ >[Shubhojit and ](https://github.com/pukaishubho), and [prof. Stephen Lam](url) <br>
  >[Dept. of Chemical Engineering (Nuclear Energy)](xxx) <br>
  >University of Massachusetts Lowell, USA <br>
 
