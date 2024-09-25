@@ -8,7 +8,7 @@ View the project (MOOSE) on `NBViewer`: [![NBViewer](https://raw.githubuserconte
 <br>
 View the project (python) on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/projects/2024/fires-brick/report.ipynb)
 
-Run the project (python) on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-5330/HEAD?filepath=projects%2Ffires-brick%2Freport_moose.ipynb)
+Run the project (python) on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Ffires-brick%2Freport.ipynb)
 
  >[Shubhojit and Julian](https://github.com/pukaishubho), and [prof. Stephen Lam](url) <br>
  >[Dept. of Chemical Engineering (Nuclear Energy)](xxx) <br>
