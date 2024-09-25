@@ -8,7 +8,7 @@ View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/j
 
 Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Ftritium%2Freport.ipynb)
 
- >[Subash Sharma](https://github.com/JamesFrye03), and [Prof. Subash L. Sharma](https://github.com/SubashSharma1008) <br>
+ >[Subash Sharma](https://github.com/SubashSharma1008), and [Prof. Subash L. Sharma](https://github.com/SubashSharma1008) <br>
  >[Dept. of Chemical Engineering (Nuclear Energy)](xxx) <br>
  >University of Massachusetts Lowell, USA <br>
 
