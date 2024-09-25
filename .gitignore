@@ -4,7 +4,7 @@ readme-md-to-pdf.txt
 *~
 *syllabus.md
 #projects/sm-pwr/*
-#*.png
+*.png
 *.gv
 .*saved
 *.log
@@ -32,7 +32,7 @@ projects/2024/u-mill/*.png
 projects/2024/u-mill/src/*.png
 projects/2024/u-mill/usecases/*.png
 projects/2024/u-mill/white_mesa/*.png
-projects/2024/neutron-ball/*/*.png
+#projects/2024/neutron-ball/*/*.png
 projects/2024/tritium/pics/*.png
 #
 projects/2024/sm-pwr/*.png
