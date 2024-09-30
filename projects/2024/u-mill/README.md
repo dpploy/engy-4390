@@ -31,14 +31,22 @@ Our goal is to provide user-friendly White Mesa Mill case scenarios, accessed an
 | <p style="text-align:center;"><b>Mill Network Graph (Based on White Mesa, Utah, USA).</b></p> |
 
 #### Installation Instructions
-+ Windows OS activate Symlinks
-- Enable developer mode in Windows Settings > System > For developers
-- Find .gitconfig file in User section of File Explorer
-- Edit .gitconfig file using Notepad application by adding the following section:
+
+###### Activating Symbolic Links on Windows OS
++ Enable developer mode in Windows Settings > System > For developers
++ Find .gitconfig file in User section of File Explorer
++ Edit .gitconfig file using Notepad application by adding the following section:
 [core] <br>
 &nbsp;&nbsp;&nbsp;&nbsp;symlinks = true
-- Reboot your machine
-- Clone engy-4390 into the desktop Github application to run any nb-cases
++ Reboot your machine
++ Clone engy-4390 into the desktop Github application to run any nb-cases
+
+###### Installing Python Graphviz
++ Open *Windows Powershell* or *Anaconda Prompt*
++ Type 'pip install pydot'
++ Reboot any running Jupyter Notebook files
+Graphviz should be properly installed on your Windows device & dynamic stage visuals will run
+
 
 References:
 
