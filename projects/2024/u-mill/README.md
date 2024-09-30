@@ -38,7 +38,7 @@ Our goal is to provide user-friendly White Mesa Mill case scenarios, accessed an
 [core] <br>
 &nbsp;&nbsp;&nbsp;&nbsp;symlinks = true
 - Reboot your machine
-- Clone solvex-ustc into the desktop Github application to run any nb-cases
+- Clone engy-4390 into the desktop Github application to run any nb-cases
 
 References:
 
