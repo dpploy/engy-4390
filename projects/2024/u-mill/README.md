@@ -10,7 +10,7 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 
 Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2Fu-mill%2Fusecases)
 
- >**Students:** Alyssa Puglisi, Cole Connerty, Gui Lima  <br>
+ >**Students:** [Alyssa Puglisi](https://github.com/alyssa-puglisi), [Cole Connerty](https://github.com/coleconn9), [Gui Lima](https://github.com/G00BLiMA)  <br>
  >**Mentor/Collaborator:** [Prof. Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
  >[Dept. of Chemical Engineering (Nuclear Energy Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
  >University of Massachusetts Lowell, USA <br>
