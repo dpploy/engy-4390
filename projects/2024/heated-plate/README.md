@@ -1,8 +1,8 @@
 # Heated Plate
 
-UMass Lowell Fall 2021 <br>
+UMass Lowell Fall 2024 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
-Engy-5330: Computational Continuum Transport Phenomena
+Engy-4390: Nuclear Systems and Design Analysis 
 
 View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-5330/blob/main/projects/heated-plate/report.ipynb)
 
