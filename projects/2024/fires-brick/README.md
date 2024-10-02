@@ -11,7 +11,7 @@ View the project (python) on `NBViewer`: [![NBViewer](https://raw.githubusercont
 Run the project (python) on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Ffires-brick%2Freport.ipynb)
 
  >[Kyle Mills](https://github.com/KMills245), [Billy Manco](https://github.com/Bmanco), and [Donaita Anglade](https://github.com/Donaita), and [Prof. Subash Sharma](https://github.com/SubashSharma1008) <br>
- >[Dept. of Chemical Engineering (Nuclear Energy)](xxx) <br>
+ >[Dept. of Chemical Engineering (Nuclear Energy)](https://www.uml.edu/Engineering/Chemical/) <br>
  >University of Massachusetts Lowell, USA <br>
 
 |  |
