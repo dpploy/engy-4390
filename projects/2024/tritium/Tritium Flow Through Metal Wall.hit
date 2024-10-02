@@ -1,10 +1,10 @@
 # J. R. Frye
-# Tritium Transport: Poisson 2D FEM
-# UMass Lowell Nuclear Chemical Engineering, Added Flow through pipe wall
+# Tritium Transport: Poisson 2D FEM, Tritium Diffusion Through Pipe Wall
+# UMass Lowell Nuclear Chemical Engineering, Added Flow through Pipe Wall
 # Student: James Frye
 # Original Student: Anthony Bowers
 # Personal Instructor (PI):Dr. Shubash Sharma
-# 29Sep24
+# 30Sep24
 
 
 
@@ -19,6 +19,7 @@ mesh_type=QUAD9
 n_felem_x=1
 n_felem_y=250
 # Add Pipe Thickness
+# Add Metal Properties (Starting With Stainless Steel)
 
 degree=Second
 flux_exit = 0   # Tritium is completely removed before leaving outflow
