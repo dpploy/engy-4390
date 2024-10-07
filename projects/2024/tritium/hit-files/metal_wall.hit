@@ -4,15 +4,15 @@
 # Student: James Frye
 # Original Student: Anthony Bowers
 # Personal Instructor (PI): Dr. Shubash Sharma
-# 29Sep24
+# 7Oct24
 
 # Parameters [cm]
 xmin = 0
 xmax = 150 
 ymin = 0
-ymax = 7.5
+ymax = 9.5
 wall_thickness = 2.0  # Thickness of the pipe wall in cm
-fluid_radius = ${ymax - wall_thickness}  # 5.5 cm
+fluid_radius = ${ymax - wall_thickness}  # 7.5 cm
 diff_coeff = 0.000266493  # Diffusion of Tritium in Bulk Fluid
 source_s = 0
 mesh_type = QUAD9
