@@ -1,0 +1,16 @@
+#addition of sodium hydroxide
+2 Na4UO2[CO3]3(o) + 6 NaOH(a) -> Na2U2O7(v) + 6 Na2CO3(s) + 3 H2O(a)
+#
+#amonium hydrate and gaseous amaonia reaction
+2 UO2[SO4]3^-4(a) + 6 NH3(a) -> [NH4]2U2O7(a) + 4 SO4^-2(a)
+#
+#
+#
+#The precipitation is usually carried out using a mixture of gaseous ammonia
+#and air at a ratio of 1:3. The temperature is held at 30 to 50°C, and the terminal
+#pH value is between seven and eight. 
+#
+#
+#
+#Precipitation from alkaline stripping solutions; using sodium hydroxide
+2 Na4UO2[CO3]3(a) + 6 NaOH(a) -> Na2U2O7(a) + 6 Na2CO3(a) + 3 H2O(a)
