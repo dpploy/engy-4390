@@ -10,6 +10,7 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 
  >[Noah Johnson](https://github.com/Noah-R_Johnson),and [prof. Sukesh Aghara](url) <br>
  >[Dept. of Chemical Engineering (Nuclear Energy)](xxx) <br>
+
  >University of Massachusetts Lowell, USA <br>
 
 |  |
