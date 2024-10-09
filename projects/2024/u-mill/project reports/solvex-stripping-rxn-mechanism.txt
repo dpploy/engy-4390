@@ -1,0 +1,10 @@
+# Mechanism of extraction and stripping
+# 1990 IAEA Manual on Laboratory Testing for Uranium Ore Processing p 67
+#
+2 [C11H20O2]3N(o) + H2SO4(a) <-> [[C11H20O2]3NH]2SO4(o)
+#
+[C11H20O2]3N(o) + H2SO4(a) <-> [C11H20O2]3NH*HSO4(o)
+#
+[[C11H20O2]3NH]2SO4(o) + UO2[SO4]2^-2(a) <-> [[C11H20O2]3NH]2UO2[SO4]2(o) + SO4^-2(a)
+#
+2 [[C11H20O2]3NH]2SO4(o) + UO2[SO4]2^-2(a) <-> [[C11H20O2]3NH]2UO2[SO4]2(o) + 2 HSO4^-(a)
