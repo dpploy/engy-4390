@@ -6,11 +6,11 @@ Engy-4390: Nuclear Systems Design and Analysis
 
 View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/projects/2024/u-mill/project-report.ipynb)
 
-Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2Fu-mill%2Fproject-report.ipynb)
+Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Fu-mill%2Fproject-report.ipynb)
 
-Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2Fu-mill%2Fusecases)
+Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Fu-mill%2Fusecases)
 
- >**Students:** Alyssa Puglisi, Cole Connerty, Gui Lima  <br>
+ >**Students:** [Alyssa Puglisi](https://github.com/alyssa-puglisi), [Cole Connerty](https://github.com/coleconn9), [Gui Lima](https://github.com/G00BLiMA)  <br>
  >**Mentor/Collaborator:** [Prof. Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
  >[Dept. of Chemical Engineering (Nuclear Energy Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
  >University of Massachusetts Lowell, USA <br>
@@ -31,14 +31,22 @@ Our goal is to provide user-friendly White Mesa Mill case scenarios, accessed an
 | <p style="text-align:center;"><b>Mill Network Graph (Based on White Mesa, Utah, USA).</b></p> |
 
 #### Installation Instructions
-+ Windows OS activate Symlinks
-- Enable developer mode in Windows Settings > System > For developers
-- Find .gitconfig file in User section of File Explorer
-- Edit .gitconfig file using Notepad application by adding the following section:
+
+###### Activating Symbolic Links on Windows OS
++ Enable developer mode in Windows Settings > System > For developers
++ Find .gitconfig file in User section of File Explorer
++ Edit .gitconfig file using Notepad application by adding the following section:
 [core] <br>
 &nbsp;&nbsp;&nbsp;&nbsp;symlinks = true
-- Reboot your machine
-- Clone engy-4390 into the desktop Github application to run any nb-cases
++ Reboot your machine
++ Clone engy-4390 into the desktop Github application to run any nb-cases
+
+###### Installing Python Graphviz
++ Open *Windows Powershell* or *Anaconda Prompt*
++ Type 'pip install pydot'
++ Reboot any running Jupyter Notebook files
+Graphviz should be properly installed on your Windows device & dynamic stage visuals will run
+
 
 References:
 
