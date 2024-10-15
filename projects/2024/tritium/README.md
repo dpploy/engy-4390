@@ -1,4 +1,4 @@
-# Tritium Calculation for MSR
+# Tritium Calculation for MSR, No Reaction
 
 UMass Lowell Fall 2024 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
@@ -16,14 +16,11 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 |:---:|
 | <img width="380" src="pics/problem.png" title="Problem domain"> |
 | <p style="text-align:center;"><b>Problem domain sketch.</b></p> |
-| <img width="380" src="pics/fem.png" title="finite element"> |
-| <p style="text-align:center;"><b>Quadratic finite element.</b></p> |
-| <img width="380" src="pics/results.png" title="Results"> |
-| <p style="text-align:center;"><b> Results.</b></p> |
 
 References:
 
 - [1] V. F. de Almeida, [*Engy-5330: Computational Continuum Transport Phenomena*](https://github.com/dpploy/engy-5330),  University of Massachusetts Lowell, Dept. of Chemical Engineering (Nuclear Energy Program).
+- [2] V. F. de Almeida, [*Engy-4390: Nuclear System Design and Analysis*](https://github.com/dpploy/engy-4390),  University of Massachusetts Lowell, Dept. of Chemical Engineering (Nuclear Energy Program).
 - [2] Multiphysics Object-Oriented Simulation Environment [(MOOSE)](https://mooseframework.org)
 - [3] Stempien D. John, “Tritium Transport, Corrosion, and Fuel Performance Modeling in Fluoride Salt-Cooled High-Temperature Reactor (FHR)”. Massachusetts Institute of Technology. PDF. June 2017
 - [4] R. Serrano-Lópeza, J. Fraderaa, S. Cuesta-Lópeza. “Molten salts database for energy applications”. PDF. September 2014.
