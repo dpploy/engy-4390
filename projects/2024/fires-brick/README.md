@@ -1,4 +1,4 @@
-# FIRES Brick
+# FIRES BRICK
 
 UMass Lowell Fall 2024 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
