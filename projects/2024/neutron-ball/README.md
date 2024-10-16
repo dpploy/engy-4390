@@ -4,7 +4,7 @@ UMass Lowell Fall 2024 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
 Engy-4390: Nuclear Systems Design and Analysis
 
-View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-5330/blob/main/projects-past/neutron-ball/report.ipynb)
+View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/projects/2024/neutron-ball/report.ipynb)
 
 Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-5330/HEAD?filepath=projects-past%2Fneutron-ball%2Freport.ipynb)
 
