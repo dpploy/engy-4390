@@ -1,9 +1,9 @@
 #addition of sodium hydroxide
-2 Na4UO2[CO3]3(o) + 6 NaOH(a) -> Na2U2O7(v) + 6 Na2CO3(s) + 3 H2O(a)
+2 Na4UO2[CO3]3(s) + 6 NaOH(a) -> Na2U2O7(s) + 6 Na2CO3(a) + 3 H2O(l)
+#
 #
 #amonium hydrate and gaseous amaonia reaction
-2 UO2[SO4]3^-4(a) + 6 NH3(a) -> [NH4]2U2O7(a) + 4 SO4^-2(a)
-#
+2 UO2[SO4]3^-4(a) + 6 NH3(a) -> [NH4]2U2O7(s) + 4 SO4^-2(a)
 #
 #
 #The precipitation is usually carried out using a mixture of gaseous ammonia
@@ -11,6 +11,18 @@
 #pH value is between seven and eight. 
 #
 #
+# forming ammonium diuranate (ADU)
+2 UO2[SO4]3^-4(a) + 2 NH3(a) + 6 H2O(l) -> [UO2]1SO4[OH]2(s) + 4 H2O(s)
+#
+#
+#both of the next two should have water terms on both sides of the equation but #were outputting errors as the water terms were repeated on both sides of the #equation
+#using milk magnesia
+UO2SO4(a) + MgO(s) -> UO3(s) + MgSO4(a)
+#
+#
+#acid along side hydrogen peroxide
+UO2^2(a) + H2O2(a) -> UO4(s) + 2 H^+(a)
+#
 #
 #Precipitation from alkaline stripping solutions; using sodium hydroxide
-2 Na4UO2[CO3]3(a) + 6 NaOH(a) -> Na2U2O7(a) + 6 Na2CO3(a) + 3 H2O(a)
+2 Na4UO2[CO3]3(a) + 6 NaOH(a) -> Na2U2O7(s) + 6 Na2CO3(a) + 3 H2O(l)
