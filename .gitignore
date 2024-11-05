@@ -12,9 +12,7 @@ readme-md-to-pdf.txt
 *.pdf
 *.tar.gz
 *.svg
-toolkit.py
-moose-toolkit.py
-engy_5310
+*fem1dpy
 p*moose*
 *solution*
 *.PNG
