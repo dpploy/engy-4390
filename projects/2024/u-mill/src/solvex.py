@@ -514,7 +514,8 @@ class Solvex(Module):
         if self.get_port('product').connected_port:
 
             msg_time = self.recv('product')
-            assert msg_time != None
+            if msg_time is None:
+                msg_time = 0.0
 
             product = dict()
             product['mass-flowrate'] = self.stripping_product_phase.get_value('mass-flowrate',msg_time)
