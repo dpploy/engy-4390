@@ -514,11 +514,10 @@ class Solvex(Module):
         if self.get_port('product').connected_port:
 
             msg_time = self.recv('product')
-            if msg_time is None:
-                raise ValueError("Received 'msg_time' is None, check the sending module.")
 
             product = dict()
             product['mass-flowrate'] = self.stripping_product_phase.get_value('mass-flowrate',msg_time)
+            print("msg_time= ", msg_time)
             product['mass-density'] = self.stripping_product_phase.get_value('mass-density',msg_time)
 
             self.send((msg_time, product), 'product')
