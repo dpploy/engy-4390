@@ -1,0 +1,95 @@
+# J. R. Frye
+# Tritium Transport: 1D Advection-Diffusion
+# UMass Lowell Nuclear Chemical Engineering, Added Flow through pipe wall
+# Student: James Frye
+# Original Student: Anthony Bowers
+# Personal Instructor (PI): Dr. Shubash Sharma
+# 16Nov24
+
+#Parameters
+#vel = 0.5 #m/s
+#D = -291015.73302994575 #Diffusion/Dispersion Coefficient, m^2/s
+#K = 2.1967650842762097e-06 #Source Constant m^2/s
+ 
+[Mesh]
+  type = GeneratedMesh
+  dim = 1
+  xmin = 0.0
+  xmax = 1500000.0
+  nx = 300
+  elem_type = EDGE3
+[]
+
+[Variables]
+  [u]
+    order = SECOND
+    family = LAGRANGE
+    initial_condition = 3.6e-07
+  []
+[]
+
+[Kernels]
+  [advection-term]
+    type = AdvectionTerm
+    variable = u
+    velocity = 0.5
+  []
+
+  [diffusion-term]
+    type = DiffusionTerm
+    variable = u
+	#D = 1 #Testing Variable due to divergence in solution
+    D = -2.91e+05
+  []
+
+  [source-term]
+    type = SourceTerm
+    variable = u
+    K = -2.1967650842762097e-06
+  []
+[]
+
+[BCs]
+  [entry]
+    type = DirichletBC
+    variable = u
+    boundary = left
+    value = 3.6e-07
+  []
+
+  [exit]
+    type = NeumannBC
+    variable = u
+    boundary = right
+    value = 0.0
+  []
+[]
+
+[Executioner]
+  type = Steady
+  solve_type = PJFNK
+  nl_rel_tol = 1e-12
+  nl_abs_tol = 1e-12
+  nl_max_its = 500
+  l_tol = 1e-6
+  l_max_its = 100
+[]
+
+[VectorPostprocessors]
+ [u]                                 # our unknown variable
+  type = LineValueSampler
+  execute_on = 'timestep_end final'
+  variable = 'u'                     # our unknown variable from the [Variables] block
+  start_point = '0 0 0'
+  end_point = '1500000.0 0 0'
+  num_points = 300
+  sort_by = id
+ []
+[]
+[Outputs]
+  [csv]
+    type = CSV
+    file_base = output
+    execute_on = 'final timestep_end'
+  []
+[]
