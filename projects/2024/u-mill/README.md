@@ -15,6 +15,11 @@ Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https
  >[Dept. of Chemical Engineering (Nuclear Energy Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
  >University of Massachusetts Lowell, USA <br>
 
+### Repository Folder Organization
+'pics': all reference photos used in report files
+'reports': overall and individual process report files
+'src': individual process initialization python files and run process python files
+
 Conventional uranium mills are chemical plants that extract uranium through the following process:
 1. Uranium ore is delivered to the mill where is it crushed and refined before being leached (extracted by sulfuric acid or alkaline solutions)
 1. Extracted uranium is concentrated to a substance known as "yellowcake"
