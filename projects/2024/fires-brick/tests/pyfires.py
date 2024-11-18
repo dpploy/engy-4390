@@ -110,8 +110,12 @@ def inner_product(u, v, patches):
     from scipy.integrate import quad
     integrand = lambda x: u(x) * v(x)
     inner_product = 0.0
+    epsrel = 1e-7
+    epsabs = 1e-7
+    limit = 100
     for nodes_x in patches:
-        (inner_product_e, _) = quad(integrand, nodes_x[0], nodes_x[-1])
+        (inner_product_e, _) = quad(integrand, nodes_x[0], nodes_x[-1],
+                                    epsrel=epsrel, epsabs=epsabs, limit=limit)
         inner_product += inner_product_e
 
     return inner_product
