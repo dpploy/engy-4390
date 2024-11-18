@@ -18,7 +18,7 @@ Tritium (T), a radioactive isotope of hydrogen, plays a crucial role in fusion r
 
 |  |
 |:---:|
-| <img width="380" src="pics/1dDomain.png" title="Problem domain"> |
+| <img width="380" src="pics/domain.png" title="Problem domain"> |
 | <p style="text-align:center;"><b>Problem domain sketch.</b></p> |
 
 References:
