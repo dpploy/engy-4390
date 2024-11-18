@@ -22,7 +22,7 @@ Conventional uranium mills are chemical plants that extract uranium through the 
 
 |  |
 |:---:|
-| <img width="800" src="pics/typical-conventional-uranium-mill.jpg" title="Typical Uranium Mill"> |
+| <img width="500" src="pics/typical-conventional-uranium-mill.jpg" title="Typical Uranium Mill"> |
 | <p style="text-align:center;"><b>Milling Process of Typical Conventional Uranium Mill</b></p> |
 
 
