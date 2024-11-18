@@ -34,7 +34,9 @@ Conventional uranium mills are chemical plants that extract uranium through the 
 ### Repository Purpose
 This reposititory is oriented around modeling the uranium milling processes that take place at the White Mesa Mill. The White Mesa Mill is the only fully-licensed and operating conventional uranium mill in the United States. The mill is central to the highest-grade uranium mines and deposits in the U.S. 
 
-Our goal is to provide user-friendly White Mesa Mill case scenarios, accessed and run through Jupyter Notebook, of the uranium leaching, decantation/filtration, solvent extraction, precipitation, and evaporation/calcination processes. Cortix is an open-source Python library for enabling development of simulation of network modules and will be used to create a dynamic network of each separation process. 
+[White Mesa Process Flow](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/pics/white-mesa.png)
+Our goal is to provide user-friendly White Mesa Mill case scenarios, accessed and run through Jupyter Notebook, of the uranium leaching, decantation/filtration, [solvent extraction](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/solvex-project-report.ipynb), [precipitation](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/Precipitation-Project-Report-GuiLima.ipynb), and [evaporation/calcination](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/evaporation-calcination-project-report.ipynb) processes.
+Cortix is an open-source Python library for enabling development of simulation of network modules and will be used to create a dynamic network of each separation process. 
 
 |  |
 |:---:|
