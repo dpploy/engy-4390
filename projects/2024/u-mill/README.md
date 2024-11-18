@@ -20,6 +20,11 @@ Conventional uranium mills are chemical plants that extract uranium through the 
 1. Extracted uranium is concentrated to a substance known as "yellowcake"
 1. Yellowcake is then transported from the mill to a uranium conversion facility where it is processed through the stages of the nuclear fuel cycle
 
+|  |
+|:---:|
+| <img width="1200" src="pics/typical-conventional-uranium-mill.jpg" title="Typical Uranium Mill"> |
+| <p style="text-align:center;"><b>Milling Process of Typical Conventional Uranium Mill</b></p> |
+
 
 This reposititory is oriented around modeling the uranium milling processes that take place at the White Mesa Mill. The White Mesa Mill is the only fully-licensed and operating conventional uranium mill in the United States. The mill is central to the highest-grade uranium mines and deposits in the U.S. 
 
