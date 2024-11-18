@@ -16,9 +16,9 @@ Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https
  >University of Massachusetts Lowell, USA <br>
 
 ### Repository Folder Organization
-*pics*: all reference photos used in report files <br>
-*reports*: overall and individual process report files <br>
-*src*: individual process initialization python files and run process python files
+[*pics*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/pics): all reference photos used in report files <br>
+[*reports*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/reports): overall and individual process report files <br>
+[*src*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/src): individual process initialization python files and run process python files
 
 ### Conventional Uranium Milling
 Conventional uranium mills are chemical plants that extract uranium through the following process:
