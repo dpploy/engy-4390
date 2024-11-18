@@ -15,15 +15,28 @@ Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https
  >[Dept. of Chemical Engineering (Nuclear Energy Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
  >University of Massachusetts Lowell, USA <br>
 
+### Repository Folder Organization
+[*pics*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/pics): all reference photos used in report files <br>
+[*reports*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/reports): overall and individual process report files <br>
+[*src*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/src): individual process initialization python files and run process python files
+
+### Conventional Uranium Milling
 Conventional uranium mills are chemical plants that extract uranium through the following process:
 1. Uranium ore is delivered to the mill where is it crushed and refined before being leached (extracted by sulfuric acid or alkaline solutions)
 1. Extracted uranium is concentrated to a substance known as "yellowcake"
 1. Yellowcake is then transported from the mill to a uranium conversion facility where it is processed through the stages of the nuclear fuel cycle
 
+|  |
+|:---:|
+| <img width="700" src="pics/typical-conventional-uranium-mill.jpg" title="Typical Uranium Mill"> |
+| <p style="text-align:center;"><b>Milling Process of Typical Conventional Uranium Mill</b></p> |
 
+### Repository Purpose
 This reposititory is oriented around modeling the uranium milling processes that take place at the White Mesa Mill. The White Mesa Mill is the only fully-licensed and operating conventional uranium mill in the United States. The mill is central to the highest-grade uranium mines and deposits in the U.S. 
 
-Our goal is to provide user-friendly White Mesa Mill case scenarios, accessed and run through Jupyter Notebook, of the uranium leaching, decantation/filtration, solvent extraction, precipitation, and evaporation/calcination processes. Cortix is an open-source Python library for enabling development of simulation of network modules and will be used to create a dynamic network of each separation process. 
+[White Mesa Process Flow](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/pics/white-mesa.png)
+Our goal is to provide user-friendly White Mesa Mill case scenarios, accessed and run through Jupyter Notebook, of the uranium leaching, decantation/filtration, [solvent extraction](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/solvex-project-report.ipynb), [precipitation](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/Precipitation-Project-Report-GuiLima.ipynb), and [evaporation/calcination](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/evaporation-calcination-project-report.ipynb) processes.
+Cortix is an open-source Python library for enabling development of simulation of network modules and will be used to create a dynamic network of each separation process. 
 
 |  |
 |:---:|
