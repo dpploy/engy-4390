@@ -58,7 +58,7 @@ from cortix.support.phase_new import PhaseNew as Phase
 from cortix import Quantity
 from cortix import Species
 
-import unit
+from cortix import Units as unit
 
 class Precipitation(Module):
     """Precipitation.
@@ -191,6 +191,40 @@ class Precipitation(Module):
         #***************************************************************************************
         # S T A T E  P H A S E
         #***************************************************************************************
+# State Phase History
+        quantities = list()
+        species = list()
+
+        state_mass_flowrate = Quantity(name='mass-flowrate',
+                                        formal_name='mdot', unit='kg/s',
+                                        value=0.0,
+                                        latex_name=r'$\dot{m}_{s}$',
+                                        info='State Mass Flowrate')
+        quantities.append(state_mass_flowrate)
+
+        residence_time = Quantity(name='tau_p',
+                                   formal_name='tau', unit='s',
+                                   value=0.0,
+                                   latex_name=r'$\tau_{p}$',
+                                   info='Residence Time in Precipitation')
+        quantities.append(residence_time)
+
+        heat_flux = Quantity(name='heatflux',
+                              formal_name='q', unit='W',
+                              value=0.0,
+                              latex_name=r'$q$',
+                              info='Heat Transfer Rate')
+        quantities.append(heat_flux)
+
+        nusselt_number = Quantity(name='nusselt_number',
+                                   formal_name='Nu', unit='-',
+                                   value=0.0,
+                                   latex_name=r'Nu',
+                                   info='Nusselt Number')
+        quantities.append(nusselt_number)
+
+        self.state_phase = Phase(time_stamp=self.initial_time,
+                                 time_unit='s', quantities=quantities, species=species)
 
 
     def run(self, *args):
