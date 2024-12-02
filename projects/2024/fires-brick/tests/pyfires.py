@@ -82,7 +82,7 @@ def global_basis_function(i, x, domain_partition, parent_mapping, parent_basis_f
                 break
     return [phi_i_x, phi_prime_i_x]
 
-def get_global_basis_functions(domain_partition, parent_mapping, parent_basis_functions, 
+def get_global_basis_functions(domain_partition, parent_mapping, parent_basis_functions,
                                global_basis_function):
 
     basis_func_list = list()
@@ -90,8 +90,10 @@ def get_global_basis_functions(domain_partition, parent_mapping, parent_basis_fu
     n_elem = len(domain_partition[0])
     n_gnodes = domain_partition[1].size
     local_to_global_node_id_map = domain_partition[2]
-    phi_i = lambda i, x: global_basis_function(i,x, domain_partition,parent_mapping,parent_basis_functions)[0]
-    phi_prime_i = lambda i, x: global_basis_function(i,x, domain_partition,parent_mapping,parent_basis_functions)[1]
+    phi_i = lambda i, x: global_basis_function(i, x, domain_partition, parent_mapping,
+                                               parent_basis_functions)[0]
+    phi_prime_i = lambda i, x: global_basis_function(i, x, domain_partition,parent_mapping,
+                                               parent_basis_functions)[1]
 
     visited = [False]*n_gnodes
     for e in range(n_elem):
