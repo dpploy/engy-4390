@@ -1,0 +1,2 @@
+#addition of sodium hydroxide
+2 Na4UO2[CO3]3(s) + 6 NaOH(a) -> Na2U2O7(s) + 6 Na2CO3(a) + 3 H2O(l)
