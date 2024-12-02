@@ -1,0 +1,2 @@
+#acid along side hydrogen peroxide
+UO2^2(a) + H2O2(a) -> UO4(s) + 2 H^+(a)

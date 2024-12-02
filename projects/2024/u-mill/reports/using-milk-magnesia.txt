@@ -1,0 +1,2 @@
+#using milk magnesia
+UO2SO4(a) + MgO(s) -> UO3(s) + MgSO4(a)
