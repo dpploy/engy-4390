@@ -1,0 +1,2 @@
+#amonium hydrate and gaseous amaonia reaction
+2 UO2[SO4]3^-4(a) + 6 NH3(a) -> [NH4]2U2O7(s) + 4 SO4^-2(a)
