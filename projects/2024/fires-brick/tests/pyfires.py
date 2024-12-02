@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # This file is part of the Engy-4390 course
+import numpy as np 
+from scipy.integrate import quad
+from scipy.interpolate import interp1d
 def get_domain_partition(degree, n_elem, x_min, x_max, bc_x_min='essential', bc_x_max='essential'):
     #assert degree == 1
     # Local node numbering on parent domain
     # --0--------------1---->
     #  -1      0      +1    zetta
-    import numpy as np
     gnodes_x = np.linspace(x_min, x_max, n_elem*degree+1, dtype=np.float64)
     patches = list()
     local_to_global_node_id_map = list()
@@ -47,26 +49,20 @@ def get_parent_basis_functions():
     return (parent_basis_func_list, parent_basis_func_prime_list)
 
 def global_basis_function(i, x, domain_partition, parent_mapping, parent_basis_functions):
-    import numpy as np
     try:
         len(x)
     except TypeError:
         x = np.array([x])
-
     if not isinstance(x, np.ndarray):
        assert isinstance(x, list) or isinstance(x, tuple)
        x = np.array(x)
-
     phi_i_x = np.copy(x) * 0.0 # initialization
     phi_prime_i_x = np.copy(x) * 0.0 # initialization
-
     patches = domain_partition[0]
     local_to_global_node_id_map = domain_partition[2]
     inverse_parent_mapping = parent_mapping[2]
-
     parent_basis_func_list = parent_basis_functions[0]
     parent_basis_func_prime_list = parent_basis_functions[1]
-
     # expensive reverse lookup
     for j, x_j in enumerate(x):
         for e, nodes_x in enumerate(patches):
@@ -82,19 +78,14 @@ def global_basis_function(i, x, domain_partition, parent_mapping, parent_basis_f
                 break
     return [phi_i_x, phi_prime_i_x]
 
-def get_global_basis_functions(domain_partition, parent_mapping, parent_basis_functions,
-                               global_basis_function):
-
+def get_global_basis_functions(domain_partition, parent_mapping, parent_basis_functions,global_basis_function):
     basis_func_list = list()
     basis_func_prime_list = list()
     n_elem = len(domain_partition[0])
     n_gnodes = domain_partition[1].size
     local_to_global_node_id_map = domain_partition[2]
-    phi_i = lambda i, x: global_basis_function(i, x, domain_partition, parent_mapping,
-                                               parent_basis_functions)[0]
-    phi_prime_i = lambda i, x: global_basis_function(i, x, domain_partition,parent_mapping,
-                                               parent_basis_functions)[1]
-
+    phi_i = lambda i, x: global_basis_function(i, x, domain_partition, parent_mapping, parent_basis_functions)[0]
+    phi_prime_i = lambda i, x: global_basis_function(i, x, domain_partition,parent_mapping, parent_basis_functions)[1]
     visited = [False]*n_gnodes
     for e in range(n_elem):
         for I in range(len(local_to_global_node_id_map[e])):
@@ -104,12 +95,10 @@ def get_global_basis_functions(domain_partition, parent_mapping, parent_basis_fu
                       basis_func_prime_list.append(lambda x, i=gnode_id: phi_prime_i(i,x))
 
                       visited[gnode_id] = True
-
     assert len(basis_func_list) >= 1, 'There are no basis functions to build.'
     return [basis_func_list, basis_func_prime_list]
 
 def inner_product(u, v, patches):
-    from scipy.integrate import quad
     integrand = lambda x: u(x) * v(x)
     inner_product = 0.0
     epsrel = 1e-6
@@ -119,5 +108,33 @@ def inner_product(u, v, patches):
         (inner_product_e, _) = quad(integrand, nodes_x[0], nodes_x[-1],
                                     epsrel=epsrel, epsabs=epsabs, limit=limit)
         inner_product += inner_product_e
-
     return inner_product
+
+def constant_thermal():
+    #Cond_shape_pts = [(0,31.93),(0.05,29.94)]
+    tc_pts = [(0,31),(0.05,31)] #thermal conductivity between the two channels 
+    therm_cond = np.array(tc_pts) 
+    k_cond = interp1d(therm_cond[:,0],therm_cond[:,1])
+    return k_cond
+
+def heat_gen_pts():
+    #Use of points to build f(x) 
+    #Using constant heat generation
+    heat_gen_pts = [(0,156940),(0.05,156940)] #Values of heat generation across the domain 
+    heat_source=np.array(heat_gen_pts)
+    func_x=interp1d(heat_source[:,0],heat_source[:,1])
+    return func_x 
+
+def slope_func(x_min, x_max):
+    u_a=20 #temperature at point a
+    u_b=40 #temperature at point b
+
+    temp_area = [(0,u_a),(0.05,u_b)] #change in temperature from point a to point b 
+    temperature = np.array(temp_area)
+    temp_func = interp1d(temperature[:,0],temperature[:,1])
+    #Slope of heat generation source 
+    func_prime = ((u_b-u_a)/(x_max-x_min)) 
+    slope_pts = [(0,func_prime),(0.05,func_prime)]
+    slope_prime = np.array(slope_pts)
+    slope_func = interp1d(slope_prime[:,0],slope_prime[:,1])
+    return [temp_func, slope_func] 
