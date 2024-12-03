@@ -25,7 +25,8 @@ projects/2020/*/*/*/*.png
 projects/2023/*/*.png
 projects/2023/*/*/*.png
 #
-projects/2024/*/*.png
+#projects/2024/*/*.png
+projects/2024/neutron-ball/*
 projects/2024/u-mill/*.png
 projects/2024/u-mill/src/*.png
 projects/2024/u-mill/usecases/*.png
