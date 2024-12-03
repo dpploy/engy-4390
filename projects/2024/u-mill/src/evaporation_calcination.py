@@ -36,16 +36,21 @@
 
 + Calcination:
      1) Calciner Heat Parameters
-       - # of Rotary Calciners:                    2
-       - Volume per Calciner:                    350 m^3
+       - # of rotary calciners:                    2
+       - Volume per calciner:                    350 m^3
        - Temperature Setpoint per Calciner:     850.0 C
-       - Feed Flowrate Entering Evaporator:    0.07 gallons/min
-       - feed mass fraction of solids:
-       - wash water mass fraction of solids:
-       - overflow mass fraction of solids:
-       - underflow mass fraction of solids:
+       - Feed flowrate entering calciner:    0.07 gallons/min
+       - Feed mass fraction of solids:
+       - Wash water mass fraction of solids:
+       - Overflow mass fraction of solids:
+       - Underflow mass fraction of solids:
 
-   Source of info:
+Source of info:
+ 1993 Uranium Extraction Technology, IAEA Technical Reports Series No. 359
+  p. ??? (White Mesa),
+  p. ??? (Evap/Calc)
+ URL: https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf
+
 """
 
 import logging
@@ -256,16 +261,18 @@ class EvaporationCalcination(Module):
     def run(self, *args):
 
         # Some logic for logging time stamps
-        if self.initial_time + self.time_step > self.end_time:
-            self.end_time = self.initial_time + self.time_step
+        # Leave this here: rebuild logger
+        logger_name = args[0][0].name
+        self.rebuild_logger(logger_name)
+
+        self.end_time = max(self.end_time, self.initial_time + self.time_step)
 
         time = self.initial_time
 
         print_time = self.initial_time
         print_time_step = self.show_time[1]
 
-        if print_time_step < self.time_step:
-            print_time_step = self.time_step
+        print_time_step = max(print_time_step, self.time_step)
 
         while time <= self.end_time:
 
