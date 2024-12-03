@@ -444,16 +444,18 @@ class Solvex(Module):
     def run(self, *args):
 
         # Some logic for logging time stamps
-        if self.initial_time + self.time_step > self.end_time:
-            self.end_time = self.initial_time + self.time_step
+        # Leave this here: rebuild logger
+        logger_name = args[0][0].name
+        self.rebuild_logger(logger_name)
+
+        self.end_time = max(self.end_time, self.initial_time + self.time_step)
 
         time = self.initial_time
 
         print_time = self.initial_time
         print_time_step = self.show_time[1]
 
-        if print_time_step < self.time_step:
-            print_time_step = self.time_step
+        print_time_step = max(print_time_step, self.time_step)
 
         while time <= self.end_time:
 
