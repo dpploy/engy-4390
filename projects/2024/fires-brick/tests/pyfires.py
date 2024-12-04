@@ -123,18 +123,16 @@ def heat_gen_pts():
     heat_gen_pts = [(0,156940),(0.05,156940)] #Values of heat generation across the domain 
     heat_source=np.array(heat_gen_pts)
     func_x=interp1d(heat_source[:,0],heat_source[:,1])
-    return func_x 
+    return func_x  
 
-def slope_func(x_min, x_max):
-    u_a=20 #temperature at point a
-    u_b=40 #temperature at point b
+def u_star(x):
+    g_x=temp_func(x)
+    for (j,phi_i) in enumerate(phi_list):
+        g_x=g_x+(c_star_vec[j])*phi_i(x)
+    return g_x
 
-    temp_area = [(0,u_a),(0.05,u_b)] #change in temperature from point a to point b 
-    temperature = np.array(temp_area)
-    temp_func = interp1d(temperature[:,0],temperature[:,1])
-    #Slope of heat generation source 
-    func_prime = ((u_b-u_a)/(x_max-x_min)) 
-    slope_pts = [(0,func_prime),(0.05,func_prime)]
-    slope_prime = np.array(slope_pts)
-    slope_func = interp1d(slope_prime[:,0],slope_prime[:,1])
-    return [temp_func, slope_func] 
+def u_star_prime(x):
+    g_x=slope_func(x)
+    for j in range(len(phi_list)):
+        g_x=g_x+(c_star_vec[j])*((2/h_e)*phi_prime_list[j](x))
+    return g_x
