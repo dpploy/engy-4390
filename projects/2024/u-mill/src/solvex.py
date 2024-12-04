@@ -559,10 +559,10 @@ class Solvex(Module):
         aq_feed_mass_flowrate = self.solvex_feed_mass_flowrate
         aq_rho_feed = self.solvex_feed_mass_density
 
-        #if aq_feed_mass_flowrate == 0.0:
-        #    aq_feed_vol_flowrate = 0.0
-        #else:
-        #    aq_feed_vol_flowrate = aq_feed_mass_flowrate/aq_rho_feed
+        if aq_feed_mass_flowrate == 0.0:
+            aq_feed_vol_flowrate = 0.0
+        else:
+            aq_feed_vol_flowrate = aq_feed_mass_flowrate/aq_rho_feed
 
         # Ideal solution
         aqueous_mass_flowrate_inflow = aq_feed_mass_flowrate + scrub_raffinate_mass_flowrate_inflow
