@@ -1,0 +1,2 @@
+# forming ammonium diuranate (ADU)
+2 UO2[SO4]3^-4(a) + 2 NH3(a) + 6 H2O(l) -> UO2SO4[OH]2*4H2O(s)
