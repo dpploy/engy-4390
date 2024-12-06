@@ -141,10 +141,10 @@ def heat_gen_pts():
     func_x=interp1d(heat_source[:,0],heat_source[:,1])
     return func_x  
 
-def u_star(x):
-    g_x = temp_func(x)
-    for (j,phi_i) in enumerate(phi_list):
-        g_x = g_x + (c_star_vec[j])*phi_i(x)
+def u_star(x, phi_lst, lift_func, c_vec):
+    g_x = lift_func(x)
+    for (j, phi_i) in enumerate(phi_lst):
+        g_x = g_x + (c_vec[j]) * phi_i(x)
     return g_x
 
 def u_star_prime(x):
@@ -152,3 +152,48 @@ def u_star_prime(x):
     for j in range(len(phi_list)):
         g_x = g_x + (c_star_vec[j]) * ((2/h_e)*phi_prime_list[j](x))
     return g_x
+
+def build_a_mtrx(phi_lst, phi_prime_lst, k_func, domain_partition, x_min, x_max, n_elem):
+
+    A_mtrx = np.zeros((len(phi_lst), len(phi_lst)), dtype=np.float64)
+    patches = domain_partition[0]
+    for i in range(len(phi_lst)):
+        for j in range(len(phi_lst)):
+
+            phi_i=phi_lst[i]
+            phi_j=phi_lst[j]
+
+            phi_prime_i=phi_prime_lst[i]
+            phi_prime_j=phi_prime_lst[j]
+
+            h_e=(x_max-x_min)/n_elem
+
+            d_x_phi_prime_j = lambda x: k_func(x) * ((2/h_e)*phi_prime_j(x))
+
+            prima = lambda x: phi_prime_i(x)*(2/h_e)
+
+            A_mtrx[i,j] = inner_product(prima, d_x_phi_prime_j, patches)
+
+    return A_mtrx
+
+def build_b_vec(phi_lst, phi_prime_lst,
+                k_func, f_func, lift_func_prime, domain_partition, x_min, x_max, n_elem):
+
+    b_vec = np.zeros(len(phi_lst), dtype=np.float64)
+    patches = domain_partition[0]
+
+    for i in range(len(phi_lst)):
+        phi_i=phi_lst[i]
+        phi_prime_i=phi_prime_lst[i]
+
+        h_e=(x_max-x_min)/n_elem
+
+        b_vec[i] = inner_product(f_func, phi_i, patches)
+
+        first_term = lambda x: lift_func_prime(x) * k_func(x)
+        phi_prima_i = lambda x: phi_prime_i(x)*(2/h_e)
+
+        b_vec[i] -= inner_product(first_term, phi_prima_i, patches)
+
+    return b_vec
+
