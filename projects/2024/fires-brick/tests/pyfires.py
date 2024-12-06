@@ -4,6 +4,8 @@
 import numpy as np 
 from scipy.integrate import quad
 from scipy.interpolate import interp1d
+import matplotlib.pyplot as plt
+
 def get_domain_partition(degree, n_elem, x_min, x_max, bc_x_min='essential', bc_x_max='essential'):
     #assert degree == 1
     # Local node numbering on parent domain
@@ -110,12 +112,26 @@ def inner_product(u, v, patches):
         inner_product += inner_product_e
     return inner_product
 
-def constant_thermal():
-    #Cond_shape_pts = [(0,31.93),(0.05,29.94)]
-    tc_pts = [(0,31),(0.05,31)] #thermal conductivity between the two channels 
-    therm_cond = np.array(tc_pts) 
-    k_cond = interp1d(therm_cond[:,0],therm_cond[:,1])
-    return k_cond
+def linear_func(x_min, x_max, vals):
+    """1D function with interpolation wrapper.
+    """
+
+    cond_shape_pts = [(x_min, vals[0]), (x_max, vals[1])]
+    cond_shape_pts_mtrx = np.array(cond_shape_pts)
+    cte_func = interp1d(cond_shape_pts_mtrx[:,0], cond_shape_pts_mtrx[:,1])
+
+    return cte_func
+
+def plot_func(func, x_min, x_max, n_pts, xlabel='xlabel', ylabel='ylabel', title='title'):
+
+    plt.figure()
+    n_plot_pts = n_pts
+    plt.plot(np.linspace(x_min, x_max, n_plot_pts), func(np.linspace(x_min, x_max, n_plot_pts)))
+    plt.title (title)
+    plt.xlabel(xlabel)
+    plt.ylabel (ylabel)
+    plt.grid()
+    plt.show()
 
 def heat_gen_pts():
     #Use of points to build f(x) 
@@ -126,13 +142,13 @@ def heat_gen_pts():
     return func_x  
 
 def u_star(x):
-    g_x=temp_func(x)
+    g_x = temp_func(x)
     for (j,phi_i) in enumerate(phi_list):
-        g_x=g_x+(c_star_vec[j])*phi_i(x)
+        g_x = g_x + (c_star_vec[j])*phi_i(x)
     return g_x
 
 def u_star_prime(x):
-    g_x=slope_func(x)
+    g_x = slope_func(x)
     for j in range(len(phi_list)):
-        g_x=g_x+(c_star_vec[j])*((2/h_e)*phi_prime_list[j](x))
+        g_x = g_x + (c_star_vec[j]) * ((2/h_e)*phi_prime_list[j](x))
     return g_x
