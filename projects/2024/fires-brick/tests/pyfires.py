@@ -147,10 +147,10 @@ def u_star(x, phi_lst, lift_func, c_vec):
         g_x = g_x + (c_vec[j]) * phi_i(x)
     return g_x
 
-def u_star_prime(x):
-    g_x = slope_func(x)
-    for j in range(len(phi_list)):
-        g_x = g_x + (c_star_vec[j]) * ((2/h_e)*phi_prime_list[j](x))
+def u_star_prime(x, phi_prime_lst, lift_func, c_vec, h_e):
+    g_x = lift_func(x)
+    for j in range(len(phi_prime_lst)):
+        g_x = g_x + (c_vec[j]) * ((2/h_e)*phi_prime_lst[j](x))
     return g_x
 
 def build_a_mtrx(phi_lst, phi_prime_lst, k_func, domain_partition, x_min, x_max, n_elem):
@@ -174,7 +174,7 @@ def build_a_mtrx(phi_lst, phi_prime_lst, k_func, domain_partition, x_min, x_max,
 
             A_mtrx[i,j] = inner_product(prima, d_x_phi_prime_j, patches)
 
-    return [A_mtrx, h_e] 
+    return A_mtrx
 
 def build_b_vec(phi_lst, phi_prime_lst,
                 k_func, f_func, lift_func_prime, domain_partition, x_min, x_max, n_elem):
