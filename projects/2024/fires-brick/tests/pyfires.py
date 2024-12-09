@@ -174,7 +174,7 @@ def build_a_mtrx(phi_lst, phi_prime_lst, k_func, domain_partition, x_min, x_max,
 
             A_mtrx[i,j] = inner_product(prima, d_x_phi_prime_j, patches)
 
-    return A_mtrx
+    return [A_mtrx, h_e] 
 
 def build_b_vec(phi_lst, phi_prime_lst,
                 k_func, f_func, lift_func_prime, domain_partition, x_min, x_max, n_elem):
