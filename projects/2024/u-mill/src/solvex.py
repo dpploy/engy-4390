@@ -110,8 +110,8 @@ class Solvex(Module):
 
         # Configuration parameters
 
-        # Solvex
-        self.solvex_tank_volume = 4 * 1400 * unit.ft**2 * 6 * unit.ft
+        # Extraction
+        self.extract_tank_volume = 4 * 1400 * unit.ft**2 * 6 * unit.ft
         self.aqueous_to_organic_volume_ratio = 3
         self.aqueous_raffinate_to_feed_rho_ratio = 0.73
         self.organic_product_to_feed_rho_ratio = 1.25
@@ -126,16 +126,16 @@ class Solvex(Module):
 
         # Solvent Extraction
         if self.get_port('extraction-feed').connected_port:
-            self.solvex_feed_mass_flowrate = 0.0 * unit.liter / unit.minute
-            self.solvex_feed_mass_density = 0.0 * unit.kg / unit.liter
+            self.extract_feed_mass_flowrate = 0.0 * unit.liter / unit.minute
+            self.extract_feed_mass_density = 0.0 * unit.kg / unit.liter
         else:
-            self.solvex_feed_mass_flowrate = 100.0 * unit.kg / unit.minute
-            self.solvex_feed_mass_density = 1.6 * unit.kg / unit.liter
+            self.extract_feed_mass_flowrate = 100.0 * unit.kg / unit.minute
+            self.extract_feed_mass_density = 1.6 * unit.kg / unit.liter
 
-        self.solvex_organic_feed_mass_flowrate = self.solvex_feed_mass_flowrate /\
+        self.extract_organic_feed_mass_flowrate = self.extract_feed_mass_flowrate /\
                                                  self.aqueous_to_organic_volume_ratio
 
-        self.solvex_organic_feed_mass_density = 0.8 * unit.kg/unit.liter
+        self.extract_organic_feed_mass_density = 0.8 * unit.kg/unit.liter
 
         #***************************************************************************************
         # E X T R A C T I O N
@@ -184,7 +184,7 @@ class Solvex(Module):
                 info='H$^+$')
         species.append(hPlus_aqu)
 
-        self.solvex_raffinate_phase = Phase(time_stamp=self.initial_time,
+        self.extract_raffinate_phase = Phase(time_stamp=self.initial_time,
                                             time_unit='s', quantities=quantities, species=species)
 
         # Extraction Product Phase History (internal state/external)
@@ -241,7 +241,7 @@ class Solvex(Module):
                              info='C24H51N-UO2-(SO4)3')
         species.append(toauo2so43)
 
-        self.solvex_product_phase = Phase(time_stamp=self.initial_time,
+        self.extract_product_phase = Phase(time_stamp=self.initial_time,
                                           time_unit='s', quantities=quantities, species=species)
 
         #***************************************************************************************
@@ -438,7 +438,7 @@ class Solvex(Module):
                         info='Solvent Extraction Liquid (Aqueous + Organic)  Volume')
         quantities.append(liq_volume)
 
-        self.solvex_state_phase = Phase(time_stamp=self.initial_time, time_unit='s',
+        self.extract_state_phase = Phase(time_stamp=self.initial_time, time_unit='s',
                                         quantities=quantities, species=species)
 
     def run(self, *args):
@@ -542,7 +542,7 @@ class Solvex(Module):
             self.send((msg_time, raffinate), 'raffinate')
 
     def __step(self, time=0.0):
-        """Stepping Solvex in time
+        """Stepping Extraction in time
         """
 
         #------------------------------------
@@ -551,13 +551,13 @@ class Solvex(Module):
         # Ideal flow mixing
 
         # Aqueous
-        solvex_raffinate_mass_flowrate_initial = self.solvex_raffinate_phase.get_value('mass-flowrate', time)
+        extract_raffinate_mass_flowrate_initial = self.extract_raffinate_phase.get_value('mass-flowrate', time)
 
         scrub_raffinate_mass_flowrate_inflow = self.scrub_raffinate_phase.get_value('mass-flowrate', time)
         scrub_raffinate_mass_density_inflow = self.scrub_raffinate_phase.get_value('mass-density', time)
 
-        aq_feed_mass_flowrate = self.solvex_feed_mass_flowrate
-        aq_rho_feed = self.solvex_feed_mass_density
+        aq_feed_mass_flowrate = self.extract_feed_mass_flowrate
+        aq_rho_feed = self.extract_feed_mass_density
 
         if aq_feed_mass_flowrate == 0.0:
             aq_feed_vol_flowrate = 0.0
@@ -570,20 +570,20 @@ class Solvex(Module):
                       scrub_raffinate_mass_density_inflow) / 2
         aqueous_vol_flowrate_inflow = aqueous_mass_flowrate_inflow/aqueous_rho
 
-        aqueous_mass_flowrate_initial = solvex_raffinate_mass_flowrate_initial
+        aqueous_mass_flowrate_initial = extract_raffinate_mass_flowrate_initial
         aqueous_vol_flowrate_initial = aqueous_mass_flowrate_initial/aqueous_rho
 
-        aqueous_volume_initial = self.solvex_state_phase.get_value('aqueous-volume', time)
+        aqueous_volume_initial = self.extract_state_phase.get_value('aqueous-volume', time)
 
         aqueous_volume = aqueous_volume_initial + \
                          (aqueous_vol_flowrate_inflow - aqueous_vol_flowrate_initial) * self.time_step
 
         # Organic
-        solvex_organic_mass_flowrate_initial = self.solvex_product_phase.get_value('mass-flowrate', time)
+        extract_organic_mass_flowrate_initial = self.extract_product_phase.get_value('mass-flowrate', time)
 
-        org_feed_mass_flowrate = self.solvex_organic_feed_mass_flowrate
+        org_feed_mass_flowrate = self.extract_organic_feed_mass_flowrate
 
-        org_rho_feed = self.solvex_organic_feed_mass_density
+        org_rho_feed = self.extract_organic_feed_mass_density
 
         #if org_feed_mass_flowrate == 0.0:
         #    org_feed_vol_flowrate = 0.0
@@ -595,10 +595,10 @@ class Solvex(Module):
         organic_rho = org_rho_feed * self.organic_product_to_feed_rho_ratio
         organic_vol_flowrate_inflow = organic_mass_flowrate_inflow/organic_rho
 
-        organic_mass_flowrate_initial = solvex_organic_mass_flowrate_initial
+        organic_mass_flowrate_initial = extract_organic_mass_flowrate_initial
         organic_vol_flowrate_initial = organic_mass_flowrate_initial/organic_rho
 
-        organic_volume_initial = self.solvex_state_phase.get_value('organic-volume', time)
+        organic_volume_initial = self.extract_state_phase.get_value('organic-volume', time)
 
         organic_volume = organic_volume_initial + \
                          (organic_vol_flowrate_inflow - organic_vol_flowrate_initial) * self.time_step
@@ -606,9 +606,9 @@ class Solvex(Module):
         liquid_volume = aqueous_volume + organic_volume
 
         # Place-holder for mass balance
-        if liquid_volume >= 0.5 * self.solvex_tank_volume:
+        if liquid_volume >= 0.5 * self.extract_tank_volume:
 
-            flow_residence_time = self.solvex_tank_volume /\
+            flow_residence_time = self.extract_tank_volume /\
                                   (aqueous_vol_flowrate_inflow + organic_vol_flowrate_inflow)
 
             mass_flowrate_raffinate = aqueous_mass_flowrate_inflow + \
@@ -623,16 +623,16 @@ class Solvex(Module):
             mass_flowrate_organic   = 0.0
 
 
-        tmp_solvex_state = self.solvex_state_phase.get_row(time)
-        tmp_solvex_raffinate = self.solvex_raffinate_phase.get_row(time)
-        tmp_solvex_product = self.solvex_product_phase.get_row(time)
+        tmp_extract_state = self.extract_state_phase.get_row(time)
+        tmp_extract_raffinate = self.extract_raffinate_phase.get_row(time)
+        tmp_extract_product = self.extract_product_phase.get_row(time)
 
         #---------------------------
         # Evolve the Scrubbing State
         #---------------------------
         # Ideal flow mixing
 
-        tmp_scrub_raffinate = self.solvex_raffinate_phase.get_row(time)
+        tmp_scrub_raffinate = self.extract_raffinate_phase.get_row(time)
 
         #----------------------------
         # Step All Quantities in Time
@@ -643,20 +643,21 @@ class Solvex(Module):
         #-------
         # SolvEx
         #-------
-        self.solvex_state_phase.add_row(time, tmp_solvex_state)
-        self.solvex_state_phase.set_value('aqueous-volume', aqueous_volume, time)
-        self.solvex_state_phase.set_value('organic-volume', organic_volume, time)
-        self.solvex_state_phase.set_value('liquid-volume', liquid_volume, time)
+        self.extract_state_phase.add_row(time, tmp_extract_state)
+        self.extract_state_phase.set_value('aqueous-volume', aqueous_volume, time)
+        self.extract_state_phase.set_value('organic-volume', organic_volume, time)
+        self.extract_state_phase.set_value('liquid-volume', liquid_volume, time)
 
-        self.solvex_raffinate_phase.add_row(time, tmp_solvex_raffinate)
-        self.solvex_raffinate_phase.set_value('mass-flowrate', mass_flowrate_raffinate, time)
-        self.solvex_raffinate_phase.set_value('mass-density', aqueous_rho, time)
+        self.extract_raffinate_phase.add_row(time, tmp_extract_raffinate)
+        self.extract_raffinate_phase.set_value('mass-flowrate', mass_flowrate_raffinate, time)
+        self.extract_raffinate_phase.set_value('mass-density', aqueous_rho, time)
 
-        self.solvex_product_phase.add_row(time, tmp_solvex_product)
-        self.solvex_product_phase.set_value('mass-flowrate', mass_flowrate_organic, time)
-        self.solvex_product_phase.set_value('mass-density', organic_rho, time)
+        self.extract_product_phase.add_row(time, tmp_extract_product)
+        self.extract_product_phase.set_value('mass-flowrate', mass_flowrate_organic, time)
+        self.extract_product_phase.set_value('mass-density', organic_rho, time)
 
 
         self.scrub_raffinate_phase.add_row(time, tmp_scrub_raffinate)
+        self.scrub_raffinate_phase.set_value('mass-flowrate', scrub_raffinate_mass_flowrate_inflow)
 
         return time
