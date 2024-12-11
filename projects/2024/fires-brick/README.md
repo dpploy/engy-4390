@@ -26,4 +26,4 @@ References:
  + [Daniel Stack, [Development of high-temperature firebrick resistance-heated energy storage (FIRES) using doped ceramic heating system]
  + [Daniel Stack, Daniel Curtis, Charles Forsberg [Performance of firebrick resistance-heated energy storage for industrial heat applications and round-trip electricity storage]()
  + [James F. Shackleford, [CRC Materials Science and Engineering Handbook]()
--+ [ R. Bird, W. Stewart, E. Lightfoot [Transport Phenomena, Revised Second Edition]()
+ + [ R. Bird, W. Stewart, E. Lightfoot [Transport Phenomena, Revised Second Edition]()
