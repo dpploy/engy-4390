@@ -658,5 +658,6 @@ class Solvex(Module):
 
 
         self.scrub_raffinate_phase.add_row(time, tmp_scrub_raffinate)
+        self.scrub_raffinate_phase.set_value('mass-flowrate', scrub_raffinate_mass_flowrate_inflow)
 
         return time
