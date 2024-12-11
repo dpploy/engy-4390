@@ -7,17 +7,19 @@ Cortix Module
 This module is a model of the Precipitation process in the White Mesa Uranium Milling Plant Project
 
 
-          Feed (Uranyl Tri-Sulfate Stripping product from SolvEx)
+           Feed (Uranyl Tri-Sulfate Stripping product from SolvEx)
              |
              |
              V
-   ----------------------
-   |                    |
-   |   Precipitation    |<------ NH4 (anhydrous) + air
-   |                    |
-   | Thickening/Washing |<------ wash water centrifuge
-   |                    |
-   ----------------------
+   ------------------------
+   |                      |
+   |    Precipitation     |<------ NH4 (anhydrous) + air
+   |                      |
+   |----------------------|
+   |                      |
+   | Thickening / Washing |<------ wash water centrifuge
+   |                      |
+   ------------------------
              |
              |
              |
@@ -226,27 +228,28 @@ class Precipitation(Module):
         self.state_phase = Phase(time_stamp=self.initial_time,
                                  time_unit='s', quantities=quantities, species=species)
 
-
     def run(self, *args):
 
         # Some logic for logging time stamps
-        if self.initial_time + self.time_step > self.end_time:
-            self.end_time = self.initial_time + self.time_step
+        # Leave this here: rebuild logger
+        logger_name = args[0][0].name
+        self.rebuild_logger(logger_name)
+
+        self.end_time = max(self.end_time, self.initial_time + self.time_step)
 
         time = self.initial_time
 
         print_time = self.initial_time
         print_time_step = self.show_time[1]
 
-        if print_time_step < self.time_step:
-            print_time_step = self.time_step
+        print_time_step = max(print_time_step, self.time_step)
 
         while time <= self.end_time:
 
             if self.show_time[0] and \
                (print_time <= time < print_time+print_time_step):
 
-                msg = self.name+'::run():time[m]='+ str(round(time/unit.minute, 1))
+                msg = self.name+'::run():time[d]='+ str(round(time/unit.day, 1))
                 self.log.info(msg)
 
                 self.__logit = True

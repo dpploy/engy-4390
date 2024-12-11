@@ -3,6 +3,7 @@ readme-md-to-pdf.txt
 *.DS_Store
 *~
 *syllabus.md
+*pyfem1d
 #projects/sm-pwr/*
 *.png
 *.gv
@@ -16,6 +17,7 @@ readme-md-to-pdf.txt
 p*moose*
 *solution*
 *.PNG
+*.jpg
 *vista*
 cubit
 projects/2020/*/*.png
@@ -25,13 +27,14 @@ projects/2020/*/*/*/*.png
 projects/2023/*/*.png
 projects/2023/*/*/*.png
 #
-projects/2024/*/*.png
+#projects/2024/*/*.png
+projects/2024/neutron-ball/*
 projects/2024/u-mill/*.png
 projects/2024/u-mill/src/*.png
 projects/2024/u-mill/usecases/*.png
 projects/2024/u-mill/white_mesa/*.png
 #projects/2024/neutron-ball/*/*.png
-projects/2024/tritium/pics/*.png
+#projects/2024/tritium/pics/*.png
 #
 projects/2024/sm-pwr/*.png
 projects/2024/tritium/*.C

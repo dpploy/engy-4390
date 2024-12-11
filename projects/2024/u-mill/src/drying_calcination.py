@@ -3,7 +3,7 @@
 # This file is part of the Cortix toolkit environment.
 # https://cortix.org
 """Cortix Module.
-   Evaporation/Calcination process in the White Mesa Uranium Milling Plant.
+   Drying/Calcination process in the White Mesa Uranium Milling Plant.
 
 
             Ammonium Diuranate Feed
@@ -12,7 +12,7 @@
                      v
              ____________________
  Off-Gas     |                  |
-    <--------|   Evaporation    |<----- Steam Sparging (internal)
+    <--------|     Drying       |<----- Steam Sparging (internal)
              |                  |<----- Resistance Heating (internal)
              |------------------|
              |                  |<----- Sweeping Gas
@@ -23,12 +23,13 @@
                 v            v
              Product      Off-Gas
               (U3O8)
-+ Evaporation:
-     1) Evaporator Base Parameters
-       - # of Evaporator Columns:                 5
-       - Volume per Evaporator:                 200 m^3
-       - Temperature Setpoint per Evaporator:   351.85 C
-       - Feed Flowrate Entering Evaporator:    0.09 gallons/min
++ Drying:
+     1) Drying Base Parameters
+       - 6 hearth furnace
+       - # of Drying Columns:                 5
+       - Volume per Drying:                 200 m^3
+       - Temperature Setpoint per Drying:   351.85 C
+       - Feed Flowrate Entering Drying:    0.09 gallons/min
        - feed mass fraction of solids:
        - wash water mass fraction of solids:
        - overflow mass fraction of solids:
@@ -36,16 +37,22 @@
 
 + Calcination:
      1) Calciner Heat Parameters
-       - # of Rotary Calciners:                    2
-       - Volume per Calciner:                    350 m^3
+       - # of rotary calciners:                    2
+       - 6 hearth furnace
+       - Volume per calciner:                    350 m^3
        - Temperature Setpoint per Calciner:     850.0 C
-       - Feed Flowrate Entering Evaporator:    0.07 gallons/min
-       - feed mass fraction of solids:
-       - wash water mass fraction of solids:
-       - overflow mass fraction of solids:
-       - underflow mass fraction of solids:
+       - Feed flowrate entering calciner:    0.07 gallons/min
+       - Feed mass fraction of solids:
+       - Wash water mass fraction of solids:
+       - Overflow mass fraction of solids:
+       - Underflow mass fraction of solids:
 
-   Source of info:
+Source of info:
+ 1993 Uranium Extraction Technology, IAEA Technical Reports Series No. 359
+  p. ??? (White Mesa),
+  p. ??? (Drying/Calc)
+ URL: https://www-pub.iaea.org/MTCD/Publications/PDF/trs359_web.pdf
+
 """
 
 import logging
@@ -60,8 +67,8 @@ from cortix import Quantity
 from cortix import Species
 from cortix import Units as unit
 
-class EvaporationCalcination(Module):
-    """Evaporation-calcination system.
+class DryingCalcination(Module):
+    """Drying-calcination system.
 
     Notes
     -----
@@ -98,28 +105,28 @@ class EvaporationCalcination(Module):
 
         # Configuration parameters
 
-        # Evaporation
-        self.evaporator_tank_volume = 2 * 200 * unit.meter**3
-        self.five_tau_evaporation = 48 * unit.hour
-        self.evap_densification_factor = 1.2
-        self.evap_shrink_factor = 1.1
-        self.evap_volume_reduction = 50/100
+        # Drying
+        self.dryer_tank_volume = 2 * 200 * unit.meter**3
+        self.five_tau_drying = 48 * unit.hour
+        self.dry_densification_factor = 1.2
+        self.dry_shrink_factor = 1.1
+        self.dry_volume_reduction = 50/100
         self.product_discharge_time = 1.0 * unit.day
-        self.evaporator_status = 'empty' # filling-up, evaporating, discharging
+        self.dryer_status = 'empty' # filling-up, drying, discharging
 
         # Calcination
 
         # Initialization
 
-        # Evaporation
+        # Drying
         if self.get_port('adu-feed').connected_port:
-            self.evap_feed_mass_flowrate = 0 * unit.kg/unit.minute
-            self.evap_feed_mass_density = 0 * unit.kg/unit.liter
-            self.evap_feed_solids_massfrac = 0 * unit.ppm
+            self.dry_feed_mass_flowrate = 0 * unit.kg/unit.minute
+            self.dry_feed_mass_density = 0 * unit.kg/unit.liter
+            self.dry_feed_solids_massfrac = 0 * unit.ppm
         else:
-            self.evap_feed_mass_flowrate = 5800.0 * unit.kg/unit.minute
-            self.evap_feed_mass_density = 8.7 * unit.kg/unit.liter
-            self.evap_feed_solids_massfrac = 100 * unit.ppm
+            self.dry_feed_mass_flowrate = 5800.0 * unit.kg/unit.minute
+            self.dry_feed_mass_density = 8.7 * unit.kg/unit.liter
+            self.dry_feed_solids_massfrac = 100 * unit.ppm
 
         # Calcination
 
@@ -129,7 +136,7 @@ class EvaporationCalcination(Module):
         # E V A P O R A T I O N
         #***************************************************************************************
 
-        # Evaporation Feed Phase History (precipitation outflow)
+        # Drying Feed Phase History (precipitation outflow)
         quantities = list()
         species = list()
 
@@ -137,21 +144,21 @@ class EvaporationCalcination(Module):
                         formal_name='mdot', unit='kg/s',
                         value=0.0,
                         latex_name=r'$\dot{m}$',
-                        info='Evaporation Product Mass Flowrate')
+                        info='Drying Product Mass Flowrate')
         quantities.append(mass_flowrate)
 
         mass_density = Quantity(name='mass-density',
                         formal_name='rho', unit='kg/m^3',
                         value=0.0,
                         latex_name=r'$\rho$',
-                        info='Evaporation Product Mass Density')
+                        info='Drying Product Mass Density')
         quantities.append(mass_density)
 
         solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=0.0,
                         latex_name=r'$C_1$',
-                        info='Evaporation Product Solids Mass Fraction')
+                        info='Drying Product Solids Mass Fraction')
 
         quantities.append(solids_massfrac)
 
@@ -160,10 +167,10 @@ class EvaporationCalcination(Module):
                             info='UO2-(SO4)3^4-')
         species.append(diuranate)
 
-        self.evap_product_phase = Phase(time_stamp=self.initial_time,
+        self.dry_product_phase = Phase(time_stamp=self.initial_time,
                                         time_unit='s', quantities=quantities, species=species)
 
-        # Evaporation Off-Gas Phase History
+        # Drying Off-Gas Phase History
         quantities = list()
         species = list()
 
@@ -171,21 +178,21 @@ class EvaporationCalcination(Module):
                         formal_name='mdot', unit='kg/s',
                         value=0.0,
                         latex_name=r'$\dot{m}$',
-                        info='Evaporation Off-Gas Mass Flowrate')
+                        info='Drying Off-Gas Mass Flowrate')
         quantities.append(mass_flowrate)
 
         mass_density = Quantity(name='mass-density',
                         formal_name='rho', unit='kg/m^3',
                         value=0.0,
                         latex_name=r'$\rho$',
-                        info='Evaporation Off-Gas Mass Density')
+                        info='Drying Off-Gas Mass Density')
         quantities.append(mass_density)
 
         solids_massfrac = Quantity(name='solids_massfrac',
                         formal_name='solids_massfrac', unit='ppm',
                         value=0.0,
                         latex_name=r'$C_1$',
-                        info='Evaporation Off-Gas Solids Mass Fraction')
+                        info='Drying Off-Gas Solids Mass Fraction')
 
         quantities.append(solids_massfrac)
 
@@ -194,7 +201,7 @@ class EvaporationCalcination(Module):
                             info='UO2-(SO4)3^4-')
         species.append(diuranate)
 
-        self.evap_offgas_phase = Phase(time_stamp=self.initial_time,
+        self.dry_offgas_phase = Phase(time_stamp=self.initial_time,
                                        time_unit='s', quantities=quantities, species=species)
 
         #***************************************************************************************
@@ -239,7 +246,7 @@ class EvaporationCalcination(Module):
         # S T A T E  P H A S E
         #***************************************************************************************
 
-        # Evaporation
+        # Drying
         quantities = list()
         species = list()
 
@@ -247,25 +254,27 @@ class EvaporationCalcination(Module):
                         formal_name='v', unit='m$^3$',
                         value=0.0,
                         latex_name=r'$V_{e}$',
-                        info='Evaporation Tank Liquid Volume')
+                        info='Drying Tank Liquid Volume')
         quantities.append(liq_volume)
 
-        self.evap_state_phase = Phase(time_stamp=self.initial_time, time_unit='s',
+        self.dry_state_phase = Phase(time_stamp=self.initial_time, time_unit='s',
                                       quantities=quantities, species=species)
 
     def run(self, *args):
 
         # Some logic for logging time stamps
-        if self.initial_time + self.time_step > self.end_time:
-            self.end_time = self.initial_time + self.time_step
+        # Leave this here: rebuild logger
+        logger_name = args[0][0].name
+        self.rebuild_logger(logger_name)
+
+        self.end_time = max(self.end_time, self.initial_time + self.time_step)
 
         time = self.initial_time
 
         print_time = self.initial_time
         print_time_step = self.show_time[1]
 
-        if print_time_step < self.time_step:
-            print_time_step = self.time_step
+        print_time_step = max(print_time_step, self.time_step)
 
         while time <= self.end_time:
 
@@ -366,85 +375,85 @@ class EvaporationCalcination(Module):
         '''
 
         #-----------------------------
-        # Evolve the Evaporation state
+        # Evolve the Drying state
         #-----------------------------
-        rho_evap_ideal = self.evap_feed_mass_density * self.evap_densification_factor
+        rho_dry_ideal = self.dry_feed_mass_density * self.dry_densification_factor
 
-        if self.evaporator_status == 'empty' or self.evaporator_status == 'filling-up':
-            rho_evap_feed = self.evap_feed_mass_density
-            mass_flowrate_evap_feed = self.evap_feed_mass_flowrate
-            vol_flowrate_feed = mass_flowrate_evap_feed/rho_evap_feed
+        if self.dryer_status == 'empty' or self.dryer_status == 'filling-up':
+            rho_dry_feed = self.dry_feed_mass_density
+            mass_flowrate_dry_feed = self.dry_feed_mass_flowrate
+            vol_flowrate_feed = mass_flowrate_dry_feed/rho_dry_feed
 
-            rho_evap = rho_evap_feed
-            mass_flowrate_evap = 0
+            rho_dry = rho_dry_feed
+            mass_flowrate_dry = 0
         else:
-            rho_evap_feed = 0.0
-            mass_flowrate_evap_feed = 0.0
+            rho_dry_feed = 0.0
+            mass_flowrate_dry_feed = 0.0
             vol_flowrate_feed = 0.0
 
-        evap_liq_volume_initial = self.evap_state_phase.get_value('liquid-volume', time)
+        dry_liq_volume_initial = self.dry_state_phase.get_value('liquid-volume', time)
 
-        rho_evap_initial = self.evap_product_phase.get_value('mass-density', time)
+        rho_dry_initial = self.dry_product_phase.get_value('mass-density', time)
 
-        if self.evaporator_status != 'discharging':
-            vol_flowrate_evap_initial = 0.0
-            mass_flowrate_evap = 0
+        if self.dryer_status != 'discharging':
+            vol_flowrate_dry_initial = 0.0
+            mass_flowrate_dry = 0
         else:
-            vol_flowrate_evap_initial = evap_liq_volume_initial/self.product_discharge_time
-            mass_flowrate_evap = rho_evap_initial * vol_flowrate_evap_initial
-            rho_evap = evap_liq_volume_initial
+            vol_flowrate_dry_initial = dry_liq_volume_initial/self.product_discharge_time
+            mass_flowrate_dry = rho_dry_initial * vol_flowrate_dry_initial
+            rho_dry = dry_liq_volume_initial
 
-        evap_liq_volume = evap_liq_volume_initial + \
-                          (vol_flowrate_feed - vol_flowrate_evap_initial) * self.time_step
+        dry_liq_volume = dry_liq_volume_initial + \
+                          (vol_flowrate_feed - vol_flowrate_dry_initial) * self.time_step
 
-        assert evap_liq_volume >= 0.0
+        assert dry_liq_volume >= 0.0
 
-        # Ideal evaporation
+        # Ideal Drying
 
         # Filling-up
-        if evap_liq_volume < self.evaporator_tank_volume and self.evaporator_status == 'empty':
-            self.evaporator_status = 'filling-up'
+        if dry_liq_volume < self.dryer_tank_volume and self.dryer_status == 'empty':
+            self.dryer_status = 'filling-up'
 
-        # Evaporating
-        if (evap_liq_volume > self.evaporator_tank_volume and self.evaporator_status == 'filling-up') or \
-           self.evaporator_status == 'evaporating':
-            self.evaporator_status = 'evaporating'
-            tau = self.five_tau_evaporation
-            rho_evap = rho_evap_ideal + math.exp(-self.time_step/tau) * (rho_evap_initial - rho_evap_ideal)
-            mass_flowrate_evap = 0.0
+        # Drying
+        if (dry_liq_volume > self.dryer_tank_volume and self.dryer_status == 'filling-up') or \
+           self.dryer_status == 'drying':
+            self.dryer_status = 'drying'
+            tau = self.five_tau_drying
+            rho_dry = rho_dry_ideal + math.exp(-self.time_step/tau) * (rho_dry_initial - rho_dry_ideal)
+            mass_flowrate_dry = 0.0
 
-            delta_rho = rho_evap - rho_evap_initial
-            delta_vol = self.evap_shrink_factor / delta_rho
-            evap_liq_volume = evap_liq_volume_initial - delta_vol
+            delta_rho = rho_dry - rho_dry_initial
+            delta_vol = self.dry_shrink_factor / delta_rho
+            dry_liq_volume = dry_liq_volume_initial - delta_vol
 
-            if evap_liq_volume <= self.evap_volume_reduction * self.evaporator_tank_volume:
-                self.evaporator_status = 'discharging'
+            if dry_liq_volume <= self.dry_volume_reduction * self.dryer_tank_volume:
+                self.dryer_status = 'discharging'
                 print('Discharging')
 
         # Discharge
-        if rho_evap_initial >= 0.95*rho_evap_ideal:
-            self.evaporator_status = 'discharging'
+        if rho_dry_initial >= 0.95*rho_dry_ideal:
+            self.dryer_status = 'discharging'
 
-        tmp_evap_state = self.evap_state_phase.get_row(time)
-        tmp_evap_product = self.evap_product_phase.get_row(time)
+        tmp_dry_state = self.dry_state_phase.get_row(time)
+        tmp_dry_product = self.dry_product_phase.get_row(time)
 
 
-        '''mass_flowrate_initial = self.evaporation_phase.get_value('mass_flowrate', time)
+        '''mass_flowrate_initial = self.drying_phase.get_value('mass_flowrate', time)
 
-        mass_flowrate_inflow = self.evaporation_feed_mass_flowrate
+        mass_flowrate_inflow = self.drying_feed_mass_flowrate
 
-        rho_evaporation = self.evaporation_feed_mass_density
+        rho_drying = self.drying_feed_mass_density
 
-        vol_flowrate_initial = mass_flowrate_initial/rho_evaporation
+        vol_flowrate_initial = mass_flowrate_initial/rho_drying
 
         if vol_flowrate_initial == 0:
             vol_flowrate_initial = mass_flowrate_inflow
-            tau = self.evaporator_volume/vol_flowrate_initial
+            tau = self.dryer_volume/vol_flowrate_initial
         else:
-            tau = self.evaporator_volume/vol_flowrate_initial
+            tau = self.dryer_volume/vol_flowrate_initial
 
         # Mass balance
-        mass_flowrate_evaporation = mass_flowrate_inflow + \
+        mass_flowrate_drying = mass_flowrate_inflow + \
                                  math.exp(-time/tau) * (mass_flowrate_initial - mass_flowrate_inflow)
 '''
         '''
@@ -459,9 +468,9 @@ class EvaporationCalcination(Module):
 
         if vol_flowrate_initial == 0:
             vol_flowrate_initial = mass_flowrate_outflow
-            tau = self.evaporator_volume/vol_flowrate_initial
+            tau = self.dryer_volume/vol_flowrate_initial
         else:
-            tau = self.evaporator_volume/vol_flowrate_initial
+            tau = self.dryer_volume/vol_flowrate_initial
 
         # Mass balance
         mass_flowrate_product = mass_flowrate_outflow + \
@@ -476,23 +485,23 @@ class EvaporationCalcination(Module):
 
         time += self.time_step
 
-        # Evaporation
-        self.evap_state_phase.add_row(time, tmp_evap_state)
-        self.evap_state_phase.set_value('liquid-volume', evap_liq_volume, time)
+        # Drying
+        self.dry_state_phase.add_row(time, tmp_dry_state)
+        self.dry_state_phase.set_value('liquid-volume', dry_liq_volume, time)
 
-        self.evap_product_phase.add_row(time, tmp_evap_product)
-        self.evap_product_phase.set_value('mass-flowrate', mass_flowrate_evap, time)
-        self.evap_product_phase.set_value('mass-density', rho_evap, time)
+        self.dry_product_phase.add_row(time, tmp_dry_product)
+        self.dry_product_phase.set_value('mass-flowrate', mass_flowrate_dry, time)
+        self.dry_product_phase.set_value('mass-density', rho_dry, time)
 
         '''
         # Calcination
         self.calcination_product_phase.add_row(time, tmp_calcination)
-        #self.evaporation_phase.add_row(time, tmp_calcination)
+        #self.drying_phase.add_row(time, tmp_calcination)
 
         self.calcination_product_phase.set_value('mass_flowrate', mass_flowrate_product, time)
         self.calcination_product_phase.set_value('mass_density', rho_calcination, time)
 
-        #self.evaporation_phase.set_value('mass_flowrate', mass_flowrate_evaporation, time)
+        #self.drying_phase.set_value('mass_flowrate', mass_flowrate_drying, time)
         '''
 
         return time

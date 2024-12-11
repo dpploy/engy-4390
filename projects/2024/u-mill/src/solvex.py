@@ -444,16 +444,18 @@ class Solvex(Module):
     def run(self, *args):
 
         # Some logic for logging time stamps
-        if self.initial_time + self.time_step > self.end_time:
-            self.end_time = self.initial_time + self.time_step
+        # Leave this here: rebuild logger
+        logger_name = args[0][0].name
+        self.rebuild_logger(logger_name)
+
+        self.end_time = max(self.end_time, self.initial_time + self.time_step)
 
         time = self.initial_time
 
         print_time = self.initial_time
         print_time_step = self.show_time[1]
 
-        if print_time_step < self.time_step:
-            print_time_step = self.time_step
+        print_time_step = max(print_time_step, self.time_step)
 
         while time <= self.end_time:
 
@@ -557,10 +559,10 @@ class Solvex(Module):
         aq_feed_mass_flowrate = self.solvex_feed_mass_flowrate
         aq_rho_feed = self.solvex_feed_mass_density
 
-        #if aq_feed_mass_flowrate == 0.0:
-        #    aq_feed_vol_flowrate = 0.0
-        #else:
-        #    aq_feed_vol_flowrate = aq_feed_mass_flowrate/aq_rho_feed
+        if aq_feed_mass_flowrate == 0.0:
+            aq_feed_vol_flowrate = 0.0
+        else:
+            aq_feed_vol_flowrate = aq_feed_mass_flowrate/aq_rho_feed
 
         # Ideal solution
         aqueous_mass_flowrate_inflow = aq_feed_mass_flowrate + scrub_raffinate_mass_flowrate_inflow
