@@ -3,6 +3,7 @@ readme-md-to-pdf.txt
 *.DS_Store
 *~
 *syllabus.md
+*pyfem1d
 #projects/sm-pwr/*
 *.png
 *.gv
