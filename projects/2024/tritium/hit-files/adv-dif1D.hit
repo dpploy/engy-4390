@@ -4,27 +4,28 @@
 # Student: James Frye
 # Original Student: Anthony Bowers
 # Personal Instructor (PI): Dr. Shubash Sharma
-# 16Nov24
+# 9Dec24
 
 #Parameters
 #vel = 0.5 #m/s
-#D = -291015.73302994575 #Diffusion/Dispersion Coefficient, m^2/s
-#K = 2.1967650842762097e-06 #Source Constant m^2/s
+#D = 29.101573307468403 #Taylor Dispersion Coefficient, m^2/s
+#D = 4.474271269723303e-09 #Purely Diffusion Coefficient m^2/s
+#K = -1.26669084146312575e-03 #Source Constant 1/s
  
 [Mesh]
   type = GeneratedMesh
   dim = 1
   xmin = 0.0
-  xmax = 1500000.0
-  nx = 300
+  xmax = 25000.0
+  nx = 100
   elem_type = EDGE3
 []
 
 [Variables]
   [u]
-    order = SECOND
+    order = FIRST
     family = LAGRANGE
-    initial_condition = 3.6e-07
+    initial_condition = 1.0
   []
 []
 
@@ -38,14 +39,13 @@
   [diffusion-term]
     type = DiffusionTerm
     variable = u
-	#D = 1 #Testing Variable due to divergence in solution
-    D = -2.91e+05
+    D = 29.101573307468403
   []
 
   [source-term]
     type = SourceTerm
     variable = u
-    K = -2.1967650842762097e-06
+    K = -0.0012666908414631257
   []
 []
 
@@ -54,7 +54,7 @@
     type = DirichletBC
     variable = u
     boundary = left
-    value = 3.6e-07
+    value = 1.0
   []
 
   [exit]
@@ -67,12 +67,12 @@
 
 [Executioner]
   type = Steady
-  solve_type = PJFNK
-  nl_rel_tol = 1e-12
-  nl_abs_tol = 1e-12
-  nl_max_its = 500
+  solve_type = JFNK
+  nl_rel_tol = 1e-7
+  nl_abs_tol = 1e-10
+  nl_max_its = 100
   l_tol = 1e-6
-  l_max_its = 100
+  l_max_its = 10
 []
 
 [VectorPostprocessors]
@@ -81,8 +81,8 @@
   execute_on = 'timestep_end final'
   variable = 'u'                     # our unknown variable from the [Variables] block
   start_point = '0 0 0'
-  end_point = '1500000.0 0 0'
-  num_points = 300
+  end_point = '2500.0 0 0'
+  num_points = 100
   sort_by = id
  []
 []
