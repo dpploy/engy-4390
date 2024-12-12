@@ -169,7 +169,7 @@ def build_a_mtrx(phi_lst, phi_prime_lst, k_func, domain_partition, x_min, x_max,
 
     return A_mtrx
 
-def build_b_vec(phi_lst, phi_prime_lst,
+def build_b_vec(phi_list, phi_prime_list,
                 k_func, f_func, lift_func_prime, domain_partition, x_min, x_max, n_elem):
 
     b_vec = np.zeros(len(phi_list), dtype=np.float64)
