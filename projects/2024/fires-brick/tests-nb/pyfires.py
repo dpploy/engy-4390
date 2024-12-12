@@ -123,11 +123,17 @@ def linear_func(x_min, x_max, vals):
     return cte_func
 
 def plot_func(func, x_min, x_max, n_pts, xlabel='xlabel', ylabel='ylabel', title='title',
-              x_scale=1.0, y_scale=1.0):
+              x_scale=1.0, y_scale=1.0, gold_data=None):
+
+    if gold_data is not None:
+        assert isinstance(gold_data, np.ndarray) and len(gold_data.shape) == 2
 
     plt.figure()
     x_vals = np.linspace(x_min, x_max, n_pts)
-    plt.plot(x_vals*x_scale, func(x_vals)*y_scale)
+    if gold_data is not None:
+        plt.plot(x_vals*x_scale, func(x_vals)*y_scale, '-b', gold_data[:,0], gold_data[:,1], '--r')
+    else:
+        plt.plot(x_vals*x_scale, func(x_vals)*y_scale)
     plt.title (title)
     plt.xlabel(xlabel)
     plt.ylabel (ylabel)
