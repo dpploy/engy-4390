@@ -169,15 +169,15 @@ def build_a_mtrx(phi_lst, phi_prime_lst, k_func, domain_partition, x_min, x_max,
 
     return A_mtrx
 
-def build_b_vec_1(phi_lst, phi_prime_lst,
+def build_b_vec(phi_list, phi_prime_list,
                 k_func, f_func, lift_func_prime, domain_partition, x_min, x_max, n_elem):
 
-    b_vec = np.zeros(len(phi_lst), dtype=np.float64)
+    b_vec = np.zeros(len(phi_list), dtype=np.float64)
     patches = domain_partition[0]
 
-    for i in range(len(phi_lst)):
-        phi_i=phi_lst[i]
-        phi_prime_i=phi_prime_lst[i]
+    for i in range(len(phi_list)):
+        phi_i=phi_list[i]
+        phi_prime_i=phi_prime_list[i]
 
         h_e=(x_max-x_min)/n_elem
 
@@ -186,27 +186,29 @@ def build_b_vec_1(phi_lst, phi_prime_lst,
         first_term = lambda x: lift_func_prime(x) * k_func(x)
         phi_prima_i = lambda x: phi_prime_i(x)*(2/h_e)
 
-        b_vec_1[i] -= inner_product(first_term, phi_prima_i, patches)
+        b_vec[i] -= inner_product(first_term, phi_prima_i, patches)
 
-    return b_vec_1
+    return b_vec
 
-def build_b_vec_2(phi_1st, phi_prime_1st, 
+def build_b_vec_2(phi_list, phi_prime_list, 
                   k_func, f_func, lift_func_prime, domain_partition, x_min, x_max, n_elem, htc, u_a, u_b):
     
-    b_vec = np.zeros(len(phi_1st), dtype=np.float64)
+    b_vec_2 = np.zeros(len(phi_list), dtype=np.float64)
     patches = domain_partition[0]
 
-    for i in range(len(phi_1st)):
-        phi_i=phi_1st[i]
-        phi_prime_i=phi_prime_1st[i]
+    for i in range(len(phi_list)):
+        phi_i=phi_list[i]
+        phi_prime_i=phi_prime_list[i]
+
+        h_e=(x_max-x_min)/n_elem
     
-        b_vec[i] = inner_product(f_func, phi_i, patches)-htc*(f_func(x_max)-u_b)*phi_i(x_max)-htc*(f_func(x_min)-u_a)*phi_i(x_min)
+        b_vec_2[i] = inner_product(f_func, phi_i, patches)-htc*(f_func(x_max)-u_b)*phi_i(x_max)-htc*(f_func(x_min)-u_a)*phi_i(x_min)
     
         first_term = lambda x: lift_func_prime(x)*k_func(x)
         phi_prima_i = lambda x: phi_prime_i(x)*(2/h_e)
     
         b_vec_2[i] -= inner_product(first_term, phi_prima_i, patches)
-    return b_vec_2(phi_list, phi_prime_1st, 
-                  k_func, f_func, lift_func_prime, domain_partition, x_min, x_max, n_elem, htc, u_a, u_b)
+        
+    return b_vec_2
 
     
