@@ -1849,4 +1849,3 @@ def u_prime_star(x, femlb, c_star_vec):
 
 def diff_flux_x_star(x, femlb, c_star_vec):
     return -femlb.diff_coeff(x)*u_prime_star(x, femlb, c_star_vec)
-
