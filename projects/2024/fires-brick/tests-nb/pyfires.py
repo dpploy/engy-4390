@@ -175,6 +175,29 @@ def build_a_mtrx(phi_lst, phi_prime_lst, k_func, domain_partition, x_min, x_max,
 
     return A_mtrx
 
+def build_a_mtrx_2(phi_list, phi_prime_list, k_func, domain_partition, x_min, x_max, n_elem, htc):
+
+    A_mtrx_2 = np.zeros((len(phi_list), len(phi_list)), dtype=np.float64)
+    patches = domain_partition[0]
+    for i in range(len(phi_list)):
+        for j in range(len(phi_list)):
+        
+            phi_i=phi_list[i]
+            phi_j=phi_list[j]
+        
+            phi_prime_i=phi_prime_list[i]
+            phi_prime_j=phi_prime_list[j]
+        
+            h_e=(x_max-x_min)/n_elem
+        
+            d_x_phi_prime_j = lambda x: k_func(x) * ((2/h_e)*phi_prime_j(x))
+        
+            prima = lambda x: phi_prime_i(x)*(2/h_e)
+        
+            A_mtrx_2[i,j] = inner_product(prima, d_x_phi_prime_j, patches) + htc*phi_i(x_min)*phi_j(x_min) + htc*phi_i(x_max)*phi_j(x_max)
+            
+    return A_mtrx_2
+
 def build_b_vec(phi_list, phi_prime_list,
                 k_func, f_func, lift_func_prime, domain_partition, x_min, x_max, n_elem):
 
