@@ -1,3 +1,6 @@
+# local
+*exact*
+# others
 .libs
 *.la
 *.lo
