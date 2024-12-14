@@ -239,5 +239,3 @@ def build_b_vec_2(phi_list, phi_prime_list,
         b_vec_2[i] -= inner_product(first_term, phi_prima_i, patches)
         
     return b_vec_2
-
-    
