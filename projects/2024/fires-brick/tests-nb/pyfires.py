@@ -146,6 +146,11 @@ def u_star(x, phi_lst, lift_func, c_vec):
         g_x = g_x + c_vec[j] * phi_i(x)
     return g_x
 
+def u_star_no_lift(x, phi_lst, c_vec):
+    for (j, phi_i) in enumerate(phi_lst):
+        g_x = c_vec[j] * phi_i(x)
+    return g_x
+
 def u_star_prime(x, phi_prime_lst, lift_func_prime, c_vec, h_e):
     g_x = lift_func_prime(x)
     for j in range(len(phi_prime_lst)):
@@ -175,28 +180,30 @@ def build_a_mtrx(phi_lst, phi_prime_lst, k_func, domain_partition, x_min, x_max,
 
     return A_mtrx
 
-def build_a_mtrx_2(phi_list, phi_prime_list, k_func, domain_partition, x_min, x_max, n_elem, htc):
+def build_a_mtrx_robin_bc(phi_list, phi_prime_list, k_func, domain_partition, x_min, x_max, n_elem, htc):
 
-    A_mtrx_2 = np.zeros((len(phi_list), len(phi_list)), dtype=np.float64)
+    A_mtrx = np.zeros((len(phi_list), len(phi_list)), dtype=np.float64)
     patches = domain_partition[0]
+
     for i in range(len(phi_list)):
         for j in range(len(phi_list)):
-        
+
             phi_i=phi_list[i]
             phi_j=phi_list[j]
-        
+
             phi_prime_i=phi_prime_list[i]
             phi_prime_j=phi_prime_list[j]
-        
+
             h_e=(x_max-x_min)/n_elem
-        
+
             d_x_phi_prime_j = lambda x: k_func(x) * ((2/h_e)*phi_prime_j(x))
-        
+
             prima = lambda x: phi_prime_i(x)*(2/h_e)
-        
-            A_mtrx_2[i,j] = inner_product(prima, d_x_phi_prime_j, patches) + htc*phi_i(x_min)*phi_j(x_min) + htc*phi_i(x_max)*phi_j(x_max)
-            
-    return A_mtrx_2
+
+            A_mtrx[i,j] = inner_product(prima, d_x_phi_prime_j, patches) + \
+                            htc*phi_i(x_min)*phi_j(x_min) + htc*phi_i(x_max)*phi_j(x_max)
+
+    return A_mtrx
 
 def build_b_vec(phi_list, phi_prime_list,
                 k_func, f_func, lift_func_prime, domain_partition, x_min, x_max, n_elem):
@@ -219,10 +226,10 @@ def build_b_vec(phi_list, phi_prime_list,
 
     return b_vec
 
-def build_b_vec_2(phi_list, phi_prime_list, 
-                  k_func, f_func, lift_func_prime, domain_partition, x_min, x_max, n_elem, htc, u_a, u_b):
-    
-    b_vec_2 = np.zeros(len(phi_list), dtype=np.float64)
+def build_b_vec_robin_bc(phi_list, phi_prime_list,
+                         f_func, domain_partition, x_min, x_max, n_elem, htc, u_ref_a, u_ref_b):
+
+    b_vec = np.zeros(len(phi_list), dtype=np.float64)
     patches = domain_partition[0]
 
     for i in range(len(phi_list)):
@@ -230,12 +237,15 @@ def build_b_vec_2(phi_list, phi_prime_list,
         phi_prime_i=phi_prime_list[i]
 
         h_e=(x_max-x_min)/n_elem
-    
-        b_vec_2[i] = inner_product(f_func, phi_i, patches)-htc*(f_func(x_max)-u_b)*phi_i(x_max)-htc*(f_func(x_min)-u_a)*phi_i(x_min)
-    
-        first_term = lambda x: lift_func_prime(x)*k_func(x)
-        phi_prima_i = lambda x: phi_prime_i(x)*(2/h_e)
-    
-        b_vec_2[i] -= inner_product(first_term, phi_prima_i, patches)
-        
-    return b_vec_2
+
+        #orig b_vec_2[i] = inner_product(f_func, phi_i, patches) - htc*(f_func(x_max)-u_b)*phi_i(x_max) - htc*(f_func(x_min)-u_a)*phi_i(x_min)
+
+        b_vec[i] = inner_product(f_func, phi_i, patches) \
+                   + htc*u_ref_b*phi_i(x_max) + htc*u_ref_a*phi_i(x_min)
+
+        #orig first_term = lambda x: lift_func_prime(x)*k_func(x)
+        #orig phi_prima_i = lambda x: phi_prime_i(x)*(2/h_e)
+
+        #orig b_vec_2[i] -= inner_product(first_term, phi_prima_i, patches)
+
+    return b_vec
