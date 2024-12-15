@@ -18,7 +18,8 @@ Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https
 ### Repository Folder Organization
 [*pics*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/pics): all reference photos used in report files <br>
 [*reports*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/reports): overall and individual process report files <br>
-[*src*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/src): individual process initialization python files and run process python files
+[*src*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/src): individual process initialization python files and run process python files <br>
+[*usecases*](https://github.com/dpploy/engy-4390/tree/main/projects/2024/u-mill/usecases): Jupyter NB files demonstrating source code applications
 
 ### Conventional Uranium Milling
 Conventional uranium mills are chemical plants that extract uranium through the following process:
