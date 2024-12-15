@@ -157,6 +157,11 @@ def u_star_prime(x, phi_prime_lst, lift_func_prime, c_vec, h_e):
         g_x = g_x + c_vec[j] * 2/h_e * phi_prime_lst[j](x)
     return g_x
 
+def u_star_prime_no_lift(x, phi_prime_lst, c_vec, h_e):
+    for j in range(len(phi_prime_lst)):
+        g_x = c_vec[j] * 2/h_e * phi_prime_lst[j](x)
+    return g_x
+
 def build_a_mtrx(phi_lst, phi_prime_lst, k_func, domain_partition, x_min, x_max, n_elem):
 
     A_mtrx = np.zeros((len(phi_lst), len(phi_lst)), dtype=np.float64)
