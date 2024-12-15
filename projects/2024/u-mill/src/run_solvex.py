@@ -55,26 +55,26 @@ def main():
         # Solvent extraction plots
         solvex = plant_net.modules[0]
 
-        (quant, time_unit) = solvex.solvex_state_phase.get_quantity_history('aqueous-volume')
+        (quant, time_unit) = solvex.extract_state_phase.get_quantity_history('aqueous-volume')
 
         quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('solvex-state-aqueous-volume.png', dpi=300)
+        plt.savefig('extract-state-aqueous-volume.png', dpi=300)
 
-        (quant, time_unit) = solvex.solvex_state_phase.get_quantity_history('organic-volume')
-
-        quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
-                   y_label=quant.latex_name+' ['+quant.unit+']')
-        plt.grid()
-        plt.savefig('solvex-state-organic-volume.png', dpi=300)
-
-        (quant, time_unit) = solvex.solvex_state_phase.get_quantity_history('liquid-volume')
+        (quant, time_unit) = solvex.extract_state_phase.get_quantity_history('organic-volume')
 
         quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
                    y_label=quant.latex_name+' ['+quant.unit+']')
         plt.grid()
-        plt.savefig('solvex-state-liquid-volume.png', dpi=300)
+        plt.savefig('extract-state-organic-volume.png', dpi=300)
+
+        (quant, time_unit) = solvex.extract_state_phase.get_quantity_history('liquid-volume')
+
+        quant.plot(x_scaling=1/unit.day, x_label='Time [d]',
+                   y_label=quant.latex_name+' ['+quant.unit+']')
+        plt.grid()
+        plt.savefig('extract-state-liquid-volume.png', dpi=300)
 
 if __name__ == '__main__':
     main()

@@ -14,11 +14,11 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 
 
 # Overview
-Tritium (T), a radioactive isotope of hydrogen, plays a crucial role in fusion reactions. The U.S. currently produces tritium using lithium control rods at the Watts Bar Nuclear Power Plant, after which it is extracted at the Savannah River Site. This is a batch process that requires tritium to be shipped between facilities for purification, costing between $40-60k per gram. Tritium has a half-life of 12.33 years, and decays at an annual rate of 5.5%, with current existing demand primarily being met by recycling tritium from dismantled nuclear weapons. However, the demand for tritium is projected to rise due to its use in fusion reactors and the need to replenish the U.S. government’s stockpile. Tritium is generated as a byproduct in Molten Salt Reactors (MSRs), which use lithium as part of the molten salt. In these reactors, tritium is a waste product that must be removed from the primary loop before the steam generator to prevent its release into the environment. One method for tritium removal involves permeation through the primary piping under vacuum. This project aims to model this removal method in a 1D frame as an advection-diffusion with a flux out of the pipe wall. 
+Tritium (T), a radioactive isotope of hydrogen, plays a crucial role in fusion reactions. The U.S. currently produces tritium using lithium control rods at the Watts Bar Nuclear Power Plant, after which it is extracted at the Savannah River Site. This is a batch process that requires tritium to be shipped between facilities for purification, costing between $40-60k per gram. Tritium has a half-life of 12.33 years, and decays at an annual rate of 5.5%; with current existing demand primarily being met by recycling tritium from dismantled nuclear weapons. However, the demand for tritium is projected to rise due to its use in fusion reactors and the need to replenish the U.S. government’s stockpile. Tritium is generated as a byproduct in Molten Salt Reactors (MSRs), which use lithium as part of the molten salt. In these reactors, tritium is a waste product that must be removed from the primary loop before the steam generator to prevent its release into the environment. One method for tritium removal involves permeation through the primary piping under vacuum. This project aims to model this removal method in a 1D frame as an advection-diffusion with a flux out of the pipe wall. 
 
 |  |
 |:---:|
-| <img width="380" src="pics/domain.png" title="Problem domain"> |
+| <img width="900" src="pics/domain.png" title="Problem domain"> |
 | <p style="text-align:center;"><b>Problem domain sketch.</b></p> |
 
 References:
