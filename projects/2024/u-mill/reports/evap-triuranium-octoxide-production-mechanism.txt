@@ -1,3 +1,0 @@
-#Reaction for the production of triuranium octoxide
-#
-9 [NH4]2U2O7(a) -> 14 NH3(a) + 15 H2O(a) + 2 N2(v) + 6 U3O8(s) 
