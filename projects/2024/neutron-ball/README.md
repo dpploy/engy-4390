@@ -8,13 +8,14 @@ View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/j
 
 Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Fneutron-ball)
 
- >[Melanie Breeze](https://github.com/harvest-breeze), and [Prof. Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
- >[Dept. of Chemical Engineering (Nuclear Energy)](xxx) <br>
- >University of Massachusetts Lowell, USA <br>
+  >**Student:** [Melanie Breeze](https://github.com/harvest-breeze) <br>
+  >**Mentor/Collaborator:** [Prof. Valmor F. de Almeida](https://github.com/dealmeidavf) <br>
+  >[Dept. of Chemical Engineering (Nuclear Energy Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
+  >University of Massachusetts Lowell, USA <br>
 
 |  |
 |:---:|
-| <img width="380" src="pics/domain.png" title="Domain"> |
+| <img width="800" src="pics/domain.png" title="Domain"> |
 | <p style="text-align:center;"><b>Domain of netron absorption: spherical annulus.</b></p> |
 <!-- | <img width="380" src="pics/readme-result.png" title="Result"> |
 | <p style="text-align:center;"><b>Neutron scalar flux absorption for 3-energy group diffusion.</b></p> | -->
