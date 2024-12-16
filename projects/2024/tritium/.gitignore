@@ -20,8 +20,8 @@
 *.aux
 *.toc
 *.snm
-*.csv
-*.csv.*
+#*.csv
+#*.csv.*
 *.dylib
 *.so
 *.so.*

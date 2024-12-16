@@ -8,16 +8,17 @@ View the project (python) on `NBViewer`: [![NBViewer](https://raw.githubusercont
 
 Run the project (python) on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Ffires-brick)
 
- >[Kyle Mills](https://github.com/KMills245), [Billy Manco](https://github.com/Bmanco), and [Donaita Anglade](https://github.com/Donaita), and [Prof. Subash Sharma](https://github.com/SubashSharma1008) <br>
- >[Dept. of Chemical Engineering (Nuclear Energy)](https://www.uml.edu/Engineering/Chemical/) <br>
- >University of Massachusetts Lowell, USA <br>
+  >**Students:** [Kyle Mills](https://github.com/KMills245), [Billy Manco](https://github.com/Bmanco), and [Donaita Anglade](https://github.com/Donaita) <br>
+  >**Mentor/Collaborator:** [Prof. Valmor F. de Almeida](https://github.com/dealmeidavf), [Prof. Subash Sharma](https://github.com/SubashSharma1008) <br>
+  >[Dept. of Chemical Engineering (Nuclear Energy Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
+  >University of Massachusetts Lowell, USA <br>
 
 |  |
 |:---:|
-| <img width="450" src="pics/domain" title="Domain"> |
-| <p style="text-align:center;"><b>Temperature Distribution versus Heat Flux graph showing how a FIRE brick is heated</b></p> |
-| <img width="450" src="pics/gold_test_4" title="Brick Heating"> |
-| <p style="text-align:center;"><b>Temperature Distribution versus Heat Flux graph showing how a FIRE brick is heated</b></p> |
+| <img width="450" src="pics/domain.png" title="Domain"> |
+| <p style="text-align:center;"><b>Firebrick model, visulizing the brick in red with air channels on either side in yellow.</b></p> |
+| <img width="850" src="pics/results.png" title="Brick Heating"> |
+| <p style="text-align:center;"><b>Temperature Distribution versus Heat Flux graph showing how a FIRE brick is cooled.</b></p> |
 
 References:
  + [Eng-5330: Computational Continuum Transport Phenomena: course notes](https://github.com/dpploy/engy-5330)
