@@ -16,8 +16,8 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 |:---:|
 | <img width="380" src="pics/domain.png" title="Domain"> |
 | <p style="text-align:center;"><b>Domain of netron absorption: spherical annulus.</b></p> |
-| <img width="380" src="pics/readme-result.png" title="Result"> |
-| <p style="text-align:center;"><b>Neutron scalar flux absorption for 3-energy group diffusion.</b></p> |
+<!-- | <img width="380" src="pics/readme-result.png" title="Result"> |
+| <p style="text-align:center;"><b>Neutron scalar flux absorption for 3-energy group diffusion.</b></p> | -->
 
 
 References:
