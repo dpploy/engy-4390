@@ -4,9 +4,9 @@ UMass Lowell Fall 2024 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
 Engy-4390: Nuclear Systems Design and Analysis
 
-View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/projects/2024/u-mill/reports/overall-project-report.ipynb)
+View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/projects/2024/u-mill)
 
-Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Fu-mill%2Freports%2Foverall-project-report.ipynb)
+Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Fu-mill%2Freports)
 
 Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Fu-mill%2Fusecases)
 
@@ -18,11 +18,12 @@ Run usecases on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https
 ### Repository Folder Organization
 [*pics*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/pics): all reference photos used in report files <br>
 [*reports*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/reports): overall and individual process report files <br>
-[*src*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/src): individual process initialization python files and run process python files
+[*src*](https://github.com/dpploy/engy-4390/tree/alyssa/projects/2024/u-mill/src): individual process initialization python files and run process python files <br>
+[*usecases*](https://github.com/dpploy/engy-4390/tree/main/projects/2024/u-mill/usecases): Jupyter NB files demonstrating source code applications
 
 ### Conventional Uranium Milling
 Conventional uranium mills are chemical plants that extract uranium through the following process:
-1. Uranium ore is delivered to the mill where is it crushed and refined before being leached (extracted by sulfuric acid or alkaline solutions)
+1. Uranium ore is delivered to the mill where it is crushed and refined before being leached (extracted by sulfuric acid or alkaline solutions)
 1. Extracted uranium is concentrated to a substance known as "yellowcake"
 1. Yellowcake is then transported from the mill to a uranium conversion facility where it is processed through the stages of the nuclear fuel cycle
 
@@ -32,10 +33,10 @@ Conventional uranium mills are chemical plants that extract uranium through the 
 | <p style="text-align:center;"><b>Milling Process of Typical Conventional Uranium Mill</b></p> |
 
 ### Repository Purpose
-This reposititory is oriented around modeling the uranium milling processes that take place at the White Mesa Mill. The White Mesa Mill is the only fully-licensed and operating conventional uranium mill in the United States. The mill is central to the highest-grade uranium mines and deposits in the U.S. 
+This reposititory is oriented around modeling the uranium milling processes that take place at the White Mesa Mill. The White Mesa Mill is the only fully-licensed and operating conventional uranium mill in the United States, located in Utah. The W.M. mill is central to the highest-grade uranium mines and deposits in the U.S. 
 
 [White Mesa Process Flow](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/pics/white-mesa.png)
-Our goal is to provide user-friendly White Mesa Mill case scenarios, accessed and run through Jupyter Notebook, of the uranium leaching, decantation/filtration, [solvent extraction](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/solvex-project-report.ipynb), [precipitation](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/Precipitation-Project-Report-GuiLima.ipynb), and [evaporation/calcination](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/evaporation-calcination-project-report.ipynb) processes.
+Our goal is to provide user-friendly White Mesa Mill case scenarios, accessed and run through Jupyter Notebook, of the uranium leaching, decantation/filtration, [solvent extraction](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/solvex-project-report.ipynb), [precipitation](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/Precipitation-Project-Report-GuiLima.ipynb), and [drying/calcination](https://github.com/dpploy/engy-4390/blob/alyssa/projects/2024/u-mill/reports/evaporation-calcination-project-report.ipynb) processes.
 Cortix is an open-source Python library for enabling development of simulation of network modules and will be used to create a dynamic network of each separation process. 
 
 |  |

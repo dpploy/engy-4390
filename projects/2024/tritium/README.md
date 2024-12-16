@@ -4,21 +4,21 @@ UMass Lowell Fall 2024 <br>
 Dept. of Chemical Engineering, Nuclear Program <br>
 Engy-4390: Nuclear Systems Design and Analysis
 
-View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/projects/2024/tritium/report.ipynb)
+View the project on `NBViewer`: [![NBViewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/dpploy/engy-4390/blob/main/projects/2024/tritium)
 
-Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Ftritium%2Freport.ipynb)
+Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dpploy/engy-4390/HEAD?filepath=projects%2F2024%2Ftritium)
 
- >[James R. Frye](https://github.com/JamesFrye03), and [Prof. Subash L. Sharma](https://github.com/SubashSharma1008) <br>
- >[Dept. of Chemical Engineering (Nuclear Energy)](xxx) <br>
- >University of Massachusetts Lowell, USA <br>
-
+  >**Student:** [James R. Frye](https://github.com/JamesFrye03) <br>
+  >**Mentor:**  [Prof. Subash Sharma](https://github.com/SubashSharma1008) <br>
+  >[Dept. of Chemical Engineering (Nuclear Energy Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
+  >University of Massachusetts Lowell, USA <br>
 
 # Overview
 Tritium (T), a radioactive isotope of hydrogen, plays a crucial role in fusion reactions. In the U.S., tritium is currently produced using lithium control rods at the Watts Bar Nuclear Power Plant, after which it is extracted at the Savannah River Site. This batch process involves transporting tritium between facilities for purification, with costs ranging from \$40,000 to \$60,000 per gram. Tritium has a half-life of 12.33 years and decays at an annual rate of 5.5%. Currently, most of the demand is met by recycling tritium from dismantled nuclear weapons. However, the demand for tritium is expected to increase due to its use in fusion reactors and the need to replenish the U.S. government’s stockpile. Tritium is also generated as a byproduct in Molten Salt Reactors (MSRs), which use lithium as part of the molten salt. In these reactors, tritium is considered a waste product that must be removed from the primary loop before reaching the steam generator to prevent environmental release. One method for tritium removal involves permeation through the primary piping under vacuum. This approach enables the continuous extraction and simultaneous on-site separation of tritium, transforming a waste product into a valuable resource for other industrial applications. This project aims to model this removal method within a 1D framework, treating it as an advection-diffusion process with flux through the pipe wall. Humrickhouse's model will be used for the source term to evaluate the feasibility of such a permeator and to analyze the mechanics of its operation within the proposed model.
 
 |  |
 |:---:|
-| <img width="600" src="pics/domain.png" title="Problem domain"> |
+| <img width="900" src="pics/domain.png" title="Problem domain"> |
 | <p style="text-align:center;"><b>Problem domain sketch.</b></p> |
 
 References:
