@@ -15,9 +15,9 @@ Run the project (python) on `Binder`: [![Binder](https://mybinder.org/badge_logo
 |  |
 |:---:|
 | <img width="450" src="pics/domain.png" title="Domain"> |
-| <p style="text-align:center;"><b>Firebrick model, visulizing the brick in red with air channels on either side modeled in yellow.</b></p> |
-| <img width="450" src="pics/results.png" title="Brick Heating"> |
-| <p style="text-align:center;"><b>Temperature Distribution versus Heat Flux graph showing how a FIRE brick is heated</b></p> |
+| <p style="text-align:center;"><b>Firebrick model, visulizing the brick in red with air channels on either side in yellow.</b></p> |
+| <img width="850" src="pics/results.png" title="Brick Heating"> |
+| <p style="text-align:center;"><b>Temperature Distribution versus Heat Flux graph showing how a FIRE brick is cooled</b></p> |
 
 References:
  + [Eng-5330: Computational Continuum Transport Phenomena: course notes](https://github.com/dpploy/engy-5330)
