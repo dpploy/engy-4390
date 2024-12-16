@@ -5,8 +5,9 @@ readme-md-to-pdf.txt
 *syllabus.md
 *pyfem1d
 #projects/sm-pwr/*
-#*.png
+*.png
 *.gv
+*.txt
 .*saved
 *.log
 *.swp
