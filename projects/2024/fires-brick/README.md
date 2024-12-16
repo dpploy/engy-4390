@@ -14,7 +14,9 @@ Run the project (python) on `Binder`: [![Binder](https://mybinder.org/badge_logo
 
 |  |
 |:---:|
-| <![gold_test_4](https://github.com/user-attachments/assets/241d5139-0122-45a2-878e-cb4044453d19)> |
+| <img width="450" src="pics/domain" title="Domain"> |
+| <p style="text-align:center;"><b>Temperature Distribution versus Heat Flux graph showing how a FIRE brick is heated</b></p> |
+| <img width="450" src="pics/gold_test_4" title="Brick Heating"> |
 | <p style="text-align:center;"><b>Temperature Distribution versus Heat Flux graph showing how a FIRE brick is heated</b></p> |
 
 References:
