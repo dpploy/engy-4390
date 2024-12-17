@@ -7,7 +7,7 @@ readme-md-to-pdf.txt
 #projects/sm-pwr/*
 *.png
 *.gv
-*.txt
+#*.txt
 .*saved
 *.log
 *.swp
