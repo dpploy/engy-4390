@@ -15,13 +15,13 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 
 |  |
 |:---:|
-| <img width="450" src="pics/HeatedPlate.png" title="My result"> |
+| <img width="450" src="pics/domain.png" title="pyvista"> |
 | <p style="text-align:center;"><b>Heat transfer between a heated plate, a fluid channel, and an unheated plate.</b></p> |
 
 |  |
 |:---:|
-| <img width="800" src="pics/3Domain_Neumann_Neumann.png" title="My result"> |
-| <p style="text-align:center;"><b>No-flux Neumann boundary conditions with a heat source in the left plate and an equivalent sink in the fluid channel.</b></p> |
+| <img width="800" src="pics/results.png" title="My result"> |
+| <p style="text-align:center;"><b>No-flux Neumann boundary conditions on the left with a heat source in the left plate and an equivalent heat sink in the fluid channel with a Robin boundary condition on the far right.</b></p> |
 
 
 References:
