@@ -13,14 +13,18 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
   >[Dept. of Chemical Engineering (Nuclear Energy Program)](https://www.uml.edu/Engineering/Chemical/faculty/de-Almeida-Valmor.aspx) <br>
   >University of Massachusetts Lowell, USA <br>
 
+This is a 1-D model of the fuel plate and cooling channel of the UMass Lowell Research Reactor. This problem help students to think about heat transfer in
+multi-domains. The interfacial boundary conditions used are standard. The temperature profile and heat flux are calculated using two different implementations of the 
+Finite Element method.
+
 |  |
 |:---:|
-| <img width="600" src="pics/domain.png" title="pyvista"> |
+| <img width="900" src="pics/domain.png" title="pyvista"> |
 | <p style="text-align:center;"><b>Heat transfer between a heated plate, a fluid channel, and an unheated plate.</b></p> |
 
 |  |
 |:---:|
-| <img width="600" src="pics/results.png" title="My result"> |
+| <img width="900" src="pics/results.png" title="My result"> |
 | <p style="text-align:center;"><b>No-flux Neumann boundary conditions on the left with a heat source in the left plate and an equivalent heat sink in the fluid channel with a Robin boundary condition on the far right.</b></p> |
 
 
