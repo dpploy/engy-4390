@@ -78,7 +78,6 @@ def genCollocationPtsDeriv(x, y, x_tilde_pts):
         y_tilde_pts.append(y_tilde)
     return (np.asarray(y_tilde_pts))
 
-
 def genCollocationPts_Step(x, y, x_colloc_pts):
     xpts = [x[0]]
     ypts = [y[0]]
@@ -100,7 +99,6 @@ def genCollocationPts_Step(x, y, x_colloc_pts):
         y_colloc_pts.append(y[x_collocLoc])
     return (np.asarray(y_colloc_pts))
 
-
 def genStepCollocPts(x, y, x_colloc_pts):
     xpts = [x[0]]
     ypts = [y[0]]
@@ -118,7 +116,6 @@ def genStepCollocPts(x, y, x_colloc_pts):
         y_colloc_pts.append(y[x_collocLoc])
     return (np.asarray(y_colloc_pts))
 
-
 def build_fourier_linear_system(mu, n_pairs, time_vec, no_mass_cc_vec):
     a_mtrx = np.zeros((len(time_vec), 2 * n_pairs + 1))
     b_vec = np.copy(no_mass_cc_vec)
@@ -130,7 +127,6 @@ def build_fourier_linear_system(mu, n_pairs, time_vec, no_mass_cc_vec):
             a_mtrx[j, (k + 1) * 2] = np.sin((k + 1) * mu * time_vec[j])
 
     return (a_mtrx, b_vec)
-
 
 def genStepFunction(x, y, offset=0.0):
     xpts = [x[0]]
@@ -146,7 +142,6 @@ def genStepFunction(x, y, offset=0.0):
         ypts.append(y[i])
     return (np.asarray(xpts), np.asarray(ypts))
 
-
 def gen_A_mtrx(kappa, m, n, colloc_x_vec,centered=False):
     if centered:
         x_bar = (colloc_x_vec[-1]-colloc_x_vec[0])/2
@@ -159,40 +154,33 @@ def gen_A_mtrx(kappa, m, n, colloc_x_vec,centered=False):
         A_mtrx[:, 2 * colNum] = np.sin((colloc_x_vec-x_bar) * kappa * (colNum))
     return (A_mtrx)
 
-
 def fourierSolution(x, kappa, n, c_vec,centered=False):
     solMtrx = gen_A_mtrx(kappa, m=1, n=n, colloc_x_vec=np.array([x]),centered=centered)
     solValue = solMtrx @ c_vec
     return (solValue[0])
-
 
 def wavSolution(x, NList, bunch_pts, shift, sigmas, kappa, c_vec, centered=False):
     solMtrx = genWavMtrx_Updated(NList, bunch_pts, shift, sigmas, kappa, x_colloc_pts=np.array([x]),centered=centered)
     solValue = solMtrx @ c_vec
     return (solValue[0])
 
-
 def wavSolutionSquared(x, NList, bunch_pts, shift, sigmas, kappa, c_vec,centered=False):
     result = wavSolution(x, NList, bunch_pts, shift, sigmas, kappa, c_vec,centered=centered)
     return (result ** 2)
-
 
 def gen_wav_residual(x, NList, bunch_pts, shift, sigmas, kappa, c_vec, xList, yList):
     f = genCollocationPts(xList, yList, np.array([x]))[0]
     g = wavSolution(x, NList, bunch_pts, shift, sigmas, kappa, c_vec)
     return (f - g)
 
-
 def gen_f_pt_wav_squared(x, xList, yList):
     result = genCollocationPts(xList, yList, np.array([x]))[0]
     return (result ** 2)
-
 
 def fourierSolutionSquared(x, kappa, n, c_vec,centered=False):
     solMtrx = gen_A_mtrx(kappa, m=1, n=n, colloc_x_vec=np.array([x]),centered=centered)
     solValue = solMtrx @ c_vec
     return (solValue[0] ** 2)
-
 
 def genStepChangeList(x, y):
     xpts = [x[0]]
@@ -210,11 +198,9 @@ def genStepChangeList(x, y):
     y = np.asarray(ypts)
     return (x, y)
 
-
 def gen_f_pt_squared(x, xStepChangeList, yStepChangeList):
     result = np.where(x < xStepChangeList)
     return ((yStepChangeList[result[-1][0]] ** 2))
-
 
 def genWavMtrx(N, bunch_pts, shift, sigma, kappa, x_colloc_pts):
     # Old function which sums the bounding gaussians for each packet
@@ -238,7 +224,6 @@ def genWavMtrx(N, bunch_pts, shift, sigma, kappa, x_colloc_pts):
     wav_mtrx = wav_mtrx * np.sqrt(2 * np.pi) * sigma
     return (wav_mtrx)
 
-
 def genEquallySpacedBunchPts(x_min, x_max, n):
     # Generate equally spaced means for wavelet packets
     wavelength = x_max - x_min
@@ -248,7 +233,6 @@ def genEquallySpacedBunchPts(x_min, x_max, n):
         bunch_pt = x_min + point_num * mean_dist
         bunch_pts.append(bunch_pt)
     return (bunch_pts)
-
 
 def genWavMtrx_Updated(NList, bunch_pts, shift, sigmas, kappa, x_colloc_pts,centered=False):
     # Initialize wavelet matrix
@@ -290,7 +274,6 @@ def genWavMtrx_Updated(NList, bunch_pts, shift, sigmas, kappa, x_colloc_pts,cent
                 np.sin(k * kappa * (x-x_bar) + (shift * x ** 2) / 2))
 
     return (wav_mtrx)
-
 
 def plotWavelet(NList, bunch_pts, shift, sigmas, kappa, x_min, x_max, x, y, num_plotting_pts=1000,
                 continuous=False,centered=False):
@@ -349,7 +332,6 @@ def plotWavelet(NList, bunch_pts, shift, sigmas, kappa, x_min, x_max, x, y, num_
         # plt.legend()
         plt.show()
 
-
 def genExpanded_g_vec(NList, bunch_pts, shift, sigmas, kappa, c_vec, x_min, x_max, num_pts=10000,centered=False):
     x_colloc_pts = np.linspace(x_min, x_max, num_pts)
 
@@ -363,7 +345,6 @@ def genExpanded_g_vec_fourier(n, kappa, c_vec, x_min, x_max, num_pts=10000,cente
     A_mtrx = gen_A_mtrx(kappa,num_pts,int(2*n+1),x_colloc_pts,centered=centered)
     g_vec = A_mtrx @ c_vec
     return (g_vec)
-
 
 def genLoadMtrx(NList, bunch_pts, shift, sigmas, kappa, x_min, x_max, xList, yList, constrain=False, centered=False):
     # Initialize load matrix
@@ -571,7 +552,6 @@ def genGramMtrx(NList, bunch_pts, shift, sigmas, kappa, x_min, x_max, xList, yLi
                 gramMtrx[rowNum, i] = gramMtrx[i, rowNum]
 
     return (gramMtrx)
-
 
 class wavBasisFunctionVec:
     """
@@ -903,9 +883,6 @@ def genGlobalNodes(x_min, x_max, locList, numPartsList):
     partList.sort()
     return(partList)
 
-
-
-
 #######################################################################################################################
 #######################################################################################################################
 """
@@ -970,7 +947,6 @@ Expanded by Andrew Hamel Fall 2021
 
     return (patches, gnodes_x, local_to_global_node_id_map)"""
 
-
 def get_domain_partition(degree, locList, numPartsList, x_min, x_max, bc_x_min='flux', bc_x_max='flux'):
     partList = genGlobalNodes(x_min, x_max, locList, numPartsList)
     n_elem = len(partList) - 1
@@ -1018,7 +994,6 @@ def get_parent_mapping():
     inverse_parent_mapping = lambda x, x_e_bar, h_e: (x - x_e_bar)*2/h_e # compute zeta
     inverse_parent_mapping_der = lambda h_e: 2/h_e
     return (parent_mapping, parent_mapping_prime, inverse_parent_mapping,inverse_parent_mapping_der)
-
 
 '''Parent basis functions'''
 
@@ -1073,10 +1048,7 @@ def get_parent_basis_functions(degree):
 
     return (parent_basis_func_list, parent_basis_func_prime_list)
 
-
-
 '''Any global basis function'''
-
 
 def global_basis_function(i, x, domain_partition, parent_mapping, parent_basis_functions):
     """Evaluate the ith global FE basis function and its derivative on x points.
@@ -1215,7 +1187,6 @@ def global_basis_deriv_forIntegrating(i, x, domain_partition, parent_mapping, pa
     return phi_prime_i_x
 '''All global basis functions'''
 
-
 def get_global_basis_functions(domain_partition, parent_mapping, parent_basis_functions, global_basis_function):
     basis_func_list = list()
     n_gnodes = domain_partition[1].size
@@ -1234,7 +1205,6 @@ def get_global_basis_functions(domain_partition, parent_mapping, parent_basis_fu
     assert len(basis_func_list) >= 1, 'There are no basis functions to build.'
 
     return basis_func_list
-
 
 def get_global_basis_deriv(domain_partition, parent_mapping, parent_basis_functions, global_basis_deriv):
     basis_func_list = list()
@@ -1275,9 +1245,7 @@ def get_global_basis_deriv_forIntegrating(domain_partition, parent_mapping, pare
     return basis_func_list
 '''Plot global basis functions'''
 
-
-def plot_func(domain_partition,phi_list, x_min,x_max,title='Lagrange Basis Functions'):
-    import matplotlib.pyplot as plt
+def plot_basis_func(domain_partition, phi_list, x_min, x_max, title='Lagrange Basis Functions'):
 
     plt.style.use('classic')
     plt.figure(1, figsize=(14, 5))
@@ -1322,7 +1290,6 @@ def get_gram_matrix(basis_func_list, domain_partition, inner_product,constrain=F
             else:
                 a_mtrx[i, j] = inner_product(phi_i, phi_j, patches)
     return a_mtrx
-
 
 def assemble_a_mtrx(femlb):
     n_dof = femlb.n_dof  # total number of degrees of freedom
@@ -1605,7 +1572,6 @@ def assemble_load_vector(b_vec, domain_partition, parent_mapping, parent_basis_f
         for (I, i) in enumerate(gnode_ids):
             b_vec[i] += local_b_vec[I] * parent_mapping_jacobian
 
-
 def g_Legendre(x, phi_list, c_star_vec):
     eval_mtrx = np.zeros(len(phi_list), dtype=np.float64)
 
@@ -1614,14 +1580,12 @@ def g_Legendre(x, phi_list, c_star_vec):
     g_best = eval_mtrx @ c_star_vec
     return (g_best)
 
-
 def g_LegendreSquared(x, phi_list, c_star_vec):
     eval_mtrx = np.zeros(len(phi_list), dtype=np.float64)
     for (j, phi_j) in enumerate(phi_list):
         eval_mtrx[j] = phi_j(x)
     g_best = eval_mtrx @ c_star_vec
     return (g_best ** 2)
-
 
 def f_Squared(x, f):
     return (f(x) ** 2)
@@ -1835,7 +1799,6 @@ class femLagrange:
 
             return(eval_mtrx)
 
-
 def u_star(x, femlb, c_star_vec):
     u_0 = femlb.evaluation_matrix(x)@c_star_vec
     w = femlb.w_lift(x)
@@ -1849,3 +1812,59 @@ def u_prime_star(x, femlb, c_star_vec):
 
 def diff_flux_x_star(x, femlb, c_star_vec):
     return -femlb.diff_coeff(x)*u_prime_star(x, femlb, c_star_vec)
+
+def plot_func(func, x_min, x_max, n_pts, xlabel='xlabel', ylabel='ylabel', title='title',
+              x_scaling=1.0, y_scaling=1.0, figsize=[15,5], gold_data=None):
+
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+    fig = plt.figure(figsize=figsize)
+    plt.style.use('classic')
+    if gold_data is not None:
+        assert isinstance(gold_data, np.ndarray) and len(gold_data.shape) == 2
+
+    x_vals = np.linspace(x_min, x_max, n_pts)
+    plt.plot(x_vals*x_scaling, func(x_vals)*y_scaling, '-b', label='This work')
+    if gold_data is not None:
+        plt.plot(gold_data[:,0]*x_scaling, gold_data[:,1]*y_scaling, '--r', label='Gold data')
+    else:
+        plt.plot(x_vals*x_scaling, func(x_vals)*y_scaling)
+    plt.title (title)
+    plt.xlabel(xlabel)
+    plt.ylabel (ylabel)
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+def plot_solution(femlb, u_star, diff_flux_x_star, c_star,
+                  x_scaling=1, y_scaling=1, figsize=[15,5]):
+
+    plt.clf()
+    plt.cla()
+    plt.close()
+    plt.style.use('classic')
+
+    n_pts = 500
+    x_pts = np.linspace(femlb.x_a, femlb.x_b, n_pts)
+    N = len(femlb.phi_list)
+
+    (fig, ax1) = plt.subplots(1, figsize=figsize)
+    ax2 = ax1.twinx()
+    plt.style.use('classic')
+    ax1.plot(x_pts*x_scaling, u_star(x_pts, femlb, c_star),"r-",
+             label="u - Temperature (°C)")
+    ax2.plot(x_pts*x_scaling, diff_flux_x_star(x_pts, femlb, c_star)*y_scaling,"b-",
+             label=r"q_x - Heat Flux $\frac{kW}{m^2 s}$")
+    ax1.grid()
+    plt.title(f"Temperature and Heat Flux",fontsize=22)
+    ax1.set_ylabel(r"Temperature (°C)",fontsize=22, color="red")
+    ax2.set_ylabel(r"Heat Flux $\frac{kW}{{m}^2  * K}$",fontsize=22, color="blue")
+    ax1.set_xlabel(r"x [cm]",fontsize=22)
+    ax1.tick_params(axis="y",labelcolor="red")
+    ax2.tick_params(axis="y",labelcolor="blue")
+    ax1.legend(loc=(0.6,0.7))
+    ax2.legend(loc=(0.6,0.55))
+    ax1.set_xlim(femlb.x_a*x_scaling, femlb.x_b*x_scaling)
+    plt.show()

@@ -16,13 +16,12 @@ Run the project on `Binder`: [![Binder](https://mybinder.org/badge_logo.svg)](ht
 |  |
 |:---:|
 | <img width="800" src="pics/domain.png" title="Domain"> |
-| <p style="text-align:center;"><b>Domain of netron absorption: spherical annulus.</b></p> |
+| <p style="text-align:center;"><b>Neutron source in the center sphere with diffusion and absorption, and a spherical annulus absorbing/diffusive material.</b></p> |
 <!-- | <img width="380" src="pics/readme-result.png" title="Result"> |
 | <p style="text-align:center;"><b>Neutron scalar flux absorption for 3-energy group diffusion.</b></p> | -->
 
 
 References:
 
- + [Eng-5330: Computational Continuum Transport Phenomena: course notes](https://github.com/dpploy/engy-5330)
- + [Other references, MOOSE etc.](https://github.com/dpploy/engy-5330)
+ + [Eng-5330: Computational ransport Phenomena: course notes](https://github.com/dpploy/engy-5330)
 
